@@ -7,6 +7,7 @@ interface DriverStatusBadgeProps {
 
 const statusColorMap: Record<DriverStatus, string> = {
   'متاح': 'bg-green-100 text-green-800',
+  // Fix: Added 'مشغول' to the color map to support all possible driver statuses.
   'مشغول': 'bg-yellow-100 text-yellow-800',
   'غير متصل': 'bg-gray-100 text-gray-800',
 };

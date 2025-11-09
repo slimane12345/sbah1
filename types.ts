@@ -28,7 +28,7 @@ export type CustomerPage = 'home' | 'restaurant' | 'category-products' | 'produc
 
 export type ViewMode = 'admin' | 'customer' | 'driver';
 
-export type DriverView = 'overview' | 'orders' | 'earnings' | 'profile';
+export type DriverView = 'overview' | 'orders' | 'my-orders' | 'earnings' | 'profile';
 
 
 // ========= MODELS & DATA STRUCTURES =========
@@ -246,6 +246,7 @@ export interface ProductManagementData {
   options?: ProductOptionGroup[];
 }
 
+// Fix: Added 'مشغول' to DriverStatus to align with its usage in DriversManagementPage.
 export type DriverStatus = 'متاح' | 'مشغول' | 'غير متصل';
 
 export interface Driver {
