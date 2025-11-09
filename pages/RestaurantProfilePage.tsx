@@ -41,7 +41,9 @@ const RestaurantProfilePage: React.FC<RestaurantProfilePageProps> = ({ restauran
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    const fetchedRestaurant = {
+                    // Fix: Explicitly typing the fetchedRestaurant object as Restaurant resolves the type
+                    // inference issue where `status` was being treated as a generic `string` instead of `RestaurantStatus`.
+                    const fetchedRestaurant: Restaurant = {
                         id: docSnap.id,
                         name: data.name || 'اسم غير معروف',
                         logo: data.logoUrl || 'https://i.pravatar.cc/150?img=21',

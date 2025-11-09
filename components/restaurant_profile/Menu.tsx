@@ -60,7 +60,9 @@ const Menu: React.FC<MenuProps> = ({ menu, onProductClick }) => {
                 {Object.entries(menu).map(([category, items]) => (
                     <div 
                         key={category}
-                        ref={el => categoryRefs.current[category] = el}
+                        // Fix: The ref callback was implicitly returning the assigned element, which is not a valid
+                        // ref callback return type. Wrapping the assignment in curly braces ensures it returns void.
+                        ref={el => { categoryRefs.current[category] = el; }}
                         className="pt-4" // Padding top to account for sticky nav height
                     >
                         <h2 className="text-2xl font-bold mb-4 text-gray-900">{category}</h2>
