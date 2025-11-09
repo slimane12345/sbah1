@@ -77,14 +77,12 @@ const mapBackendStatusToFrontend = (status: string): OrderStatus => {
 };
 
 const MainApp: React.FC = () => {
-    const isCustomerView = window.location.pathname.includes('/admin-dashboard.html');
-
-    const getInitialViewMode = (): ViewMode => {
-        if (isCustomerView) return 'customer';
-        return 'admin';
-    };
-
-    const [viewMode, setViewMode] = useState<ViewMode>(getInitialViewMode());
+    // Determine view mode based on the HTML file being served. This is now fixed per entry point.
+    const path = window.location.pathname;
+    const isCustomerPath = path.includes('/admin-dashboard.html');
+    const isDriverPath = path.includes('/driver.html');
+    const viewMode: ViewMode = isDriverPath ? 'driver' : isCustomerPath ? 'customer' : 'admin';
+    
     const [activePage, setActivePage] = useState<Page>('dashboard');
     const [customerPage, setCustomerPage] = useState<CustomerPage>('home');
     const [previousCustomerPage, setPreviousCustomerPage] = useState<CustomerPage>('home');
@@ -129,7 +127,8 @@ const MainApp: React.FC = () => {
     const handleDriverLogout = () => {
         localStorage.removeItem('sbahDriverId');
         setDriverId(null);
-        setViewMode('admin'); // Go back to admin view after logout
+        // Redirect to the main admin page after logout.
+        window.location.href = '/';
     };
 
     useEffect(() => {
@@ -464,7 +463,7 @@ const MainApp: React.FC = () => {
     if (viewMode === 'admin') {
          return (
             <div className="flex h-screen bg-gray-100" dir="rtl">
-                <Sidebar activePage={activePage} setActivePage={setActivePage} setViewMode={setViewMode} />
+                <Sidebar activePage={activePage} setActivePage={setActivePage} />
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <Header title={pageTitles[activePage] || 'لوحة التحكم'} />
                     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-8">
@@ -479,11 +478,9 @@ const MainApp: React.FC = () => {
     return (
         <div className="bg-gray-50 min-h-screen">
             <CustomerHeader 
-              setViewMode={setViewMode} 
               setCustomerPage={setCustomerPage} 
               cartItems={cartItems}
               setCartItems={setCartItems}
-              showAdminButton={!isCustomerView} // Only show admin button if not on the standalone customer view
               settings={appSettings?.general ?? null}
             />
             <main>{renderCustomerPage()}</main>

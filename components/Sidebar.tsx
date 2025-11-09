@@ -1,13 +1,12 @@
 import React from 'react';
-import type { Page, ViewMode } from '../types';
+import type { Page } from '../types';
 
 interface SidebarProps {
   activePage: Page;
   setActivePage: (page: Page) => void;
-  setViewMode: (mode: ViewMode) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage, setViewMode }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
     
     const navItems: { id: Page; label: string; icon: React.ReactNode }[] = [
         { id: 'dashboard', label: 'لوحة التحكم', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg> },
@@ -54,21 +53,25 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage, setViewMod
         
         <div className="border-t my-4"></div>
         
-         <button
-            onClick={() => setViewMode('customer')}
+         <a
+            href="/admin-dashboard.html"
+            target="_blank"
+            rel="noopener noreferrer"
             className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900`}
         >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
             <span className="mr-3">عرض واجهة العميل</span>
-        </button>
+        </a>
         
-        <button
-            onClick={() => setViewMode('driver')}
+        <a
+            href="/driver.html"
+            target="_blank"
+            rel="noopener noreferrer"
             className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900`}
         >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15a3 3 0 100-6 3 3 0 000 6z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1v2m0 18v2m-8-9H2m20 0h-2m-3.414-5.586l-1.414-1.414M6.828 6.828L5.414 5.414m12.728 0l-1.414 1.414M6.828 17.172l-1.414 1.414" /></svg>
             <span className="mr-3">واجهة الموزع</span>
-        </button>
+        </a>
 
 
       </nav>
