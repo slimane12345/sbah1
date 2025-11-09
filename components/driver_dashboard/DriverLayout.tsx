@@ -7,15 +7,14 @@ interface DriverLayoutProps {
     children: React.ReactNode;
     activeView: DriverView;
     setActiveView: (view: DriverView) => void;
-    activeOrderCount: number;
 }
 
-const DriverLayout: React.FC<DriverLayoutProps> = ({ children, activeView, setActiveView, activeOrderCount }) => {
+const DriverLayout: React.FC<DriverLayoutProps> = ({ children, activeView, setActiveView }) => {
     return (
         <div className="flex h-screen bg-[#F8FAFC]">
             {/* Desktop Sidebar */}
             <div className="hidden lg:flex">
-                <DriverSidebar activeView={activeView} setActiveView={setActiveView} activeOrderCount={activeOrderCount} />
+                <DriverSidebar activeView={activeView} setActiveView={setActiveView} />
             </div>
 
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -24,7 +23,7 @@ const DriverLayout: React.FC<DriverLayoutProps> = ({ children, activeView, setAc
 
             {/* Mobile Bottom Navigation */}
             <div className="lg:hidden">
-                <DriverBottomNav activeView={activeView} setActiveView={setActiveView} activeOrderCount={activeOrderCount} />
+                <DriverBottomNav activeView={activeView} setActiveView={setActiveView} />
             </div>
         </div>
     );

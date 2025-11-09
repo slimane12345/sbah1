@@ -10,12 +10,11 @@ interface OverviewContentProps {
     nearbyOrders: OrderManagementData[];
     setActiveView: (view: DriverView) => void;
     onAcceptOrder: (order: OrderManagementData) => void;
-    activeOrderCount: number;
 }
 
-const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearbyOrders, setActiveView, onAcceptOrder, activeOrderCount }) => {
+const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearbyOrders, setActiveView, onAcceptOrder }) => {
     const { t } = useLanguage();
-    const isOnline = driver.status === 'متاح';
+    const isOnline = driver.status === 'متاح' || driver.status === 'مشغول';
 
     return (
         <div className="space-y-6 pb-20 lg:pb-0">
@@ -25,20 +24,6 @@ const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearby
                 <DriverStatCard title={t('totalDeliveries')} value={stats.completedToday.toString()} icon="check" />
                 <DriverStatCard title="التقييم" value={driver.rating.toFixed(1)} icon="star" />
             </div>
-
-            {/* Active Orders Summary */}
-            {activeOrderCount > 0 && (
-                <div 
-                    onClick={() => setActiveView('my-orders')}
-                    className="bg-blue-600 text-white p-4 rounded-lg shadow-lg flex justify-between items-center cursor-pointer hover:bg-blue-700 transition-colors"
-                >
-                    <div>
-                        <p className="font-bold text-lg">لديك {activeOrderCount} طلبات نشطة</p>
-                        <p className="text-sm opacity-90">انقر هنا لإدارة توصيلاتك الحالية</p>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                </div>
-            )}
 
             {/* Orders Section */}
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
@@ -65,7 +50,7 @@ const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearby
                                             <span>{t('earnings')}: {(order.total * 0.1).toFixed(2)} {t('currency')}</span>
                                         </div>
                                     </div>
-                                    <button onClick={() => onAcceptOrder(order)} className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 text-sm font-semibold w-full sm:w-auto">
+                                    <button onClick={() => onAcceptOrder(order)} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-semibold w-full sm:w-auto">
                                         {t('acceptOrder')}
                                     </button>
                                 </div>
