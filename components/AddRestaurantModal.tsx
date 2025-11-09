@@ -71,7 +71,9 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
                 const map = L.map(mapContainerRef.current).setView(initialCoords, 13);
                 mapInstance.current = map;
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri'
+                }).addTo(map);
 
                 const marker = L.marker(initialCoords, { draggable: true }).addTo(map);
                 markerInstance.current = marker;

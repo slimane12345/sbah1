@@ -15,7 +15,8 @@ interface ActiveOrderContentProps {
 const ActiveOrderContent: React.FC<ActiveOrderContentProps> = ({ order, driver, driverLocation, onUpdateStatus, onLogout }) => {
     const { t } = useLanguage();
 
-    const isPickupPhase = order.status === 'confirmed';
+    // Fix: Corrected the order status check to use the frontend status 'مؤكد' instead of the backend status 'confirmed'.
+    const isPickupPhase = order.status === 'مؤكد';
     const destinationAddress = isPickupPhase ? order.restaurant : order.deliveryAddress.addressText;
     const buttonText = isPickupPhase ? t('orderPickedUp') : t('orderDelivered');
     const buttonAction = () => onUpdateStatus(order.id, isPickupPhase ? 'picked_up' : 'delivered');

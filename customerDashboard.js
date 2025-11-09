@@ -1,4 +1,5 @@
 
+
 import { getFirestore, collection, getDocs, orderBy, query, doc, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { db } from "./firebase/firebaseConfig.js";
 
@@ -94,8 +95,8 @@ function closeModal() {
 function initializeMap() {
     map = L.map('map').setView([33.9716, -6.8498], 13); // Default to Rabat
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri'
     }).addTo(map);
     
     marker = L.marker(map.getCenter(), { draggable: true }).addTo(map);

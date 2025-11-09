@@ -53,7 +53,9 @@ const OrderTrackingMap: React.FC<OrderTrackingMapProps> = ({ driverLocation, res
         if (!mapContainerRef.current || mapInstance.current) return;
 
         mapInstance.current = L.map(mapContainerRef.current);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapInstance.current);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri'
+        }).addTo(mapInstance.current);
 
         // Add static markers
         L.marker([restaurantLocation.lat, restaurantLocation.lng], { icon: restaurantIcon }).addTo(mapInstance.current).bindPopup('المطعم');
