@@ -1,0 +1,272 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sbah ☀️ – تأكيد الطلب</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-beige: #FFF9E6;
+      --accent-gold: #FFD700;
+      --text-coffee: #3E2F1C;
+      --text-secondary: #6E5C3E;
+      --border-radius: 16px;
+    }
+
+    body {
+      font-family: "Cairo", sans-serif;
+      background-color: var(--bg-beige);
+      color: var(--text-coffee);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    header p {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-top: 5px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .confirmation-card {
+      background-color: white;
+      padding: 30px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      width: 100%;
+      margin-bottom: 30px;
+    }
+
+    .confirmation-card .icon {
+      color: #28a745; /* Green for success */
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 15px;
+    }
+
+    .confirmation-card h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .confirmation-card .subtitle {
+      color: var(--text-secondary);
+      margin: 10px 0;
+    }
+    
+    .confirmation-card .eta {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 15px 0;
+    }
+
+    .confirmation-card .order-id {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-top: 5px;
+      letter-spacing: 1px;
+    }
+    
+    .divider {
+        border: 0;
+        height: 1px;
+        background-color: #eee;
+        margin: 20px 0;
+    }
+
+    .order-summary {
+      width: 100%;
+      margin-bottom: 30px;
+    }
+    
+    .order-summary h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background-color: white;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      transition: background-color 0.3s ease;
+    }
+
+    .item-row:hover {
+      background-color: #fffdf2;
+    }
+
+    .item-row img {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .item-details {
+      flex-grow: 1;
+    }
+
+    .item-details .name {
+      font-weight: 600;
+      display: block;
+    }
+
+    .item-details .quantity {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    
+    .item-price {
+        font-weight: 600;
+    }
+    
+    .total-section {
+        text-align: left;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .btn {
+      background-color: #D9982C;
+      color: #3E2F1C;
+      padding: 14px 32px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 16px;
+      text-decoration: none;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      cursor: pointer;
+      border: none;
+      display: inline-block;
+      text-align: center;
+    }
+    
+    .btn:hover {
+      background-color: #C6891D;
+      transform: scale(1.03);
+    }
+    .btn:active {
+      background-color: #B77D1A;
+      transform: scale(1);
+    }
+    .btn.btn-secondary {
+        background-color: #F3F4F6;
+        color: #374151;
+        border: 1px solid #D1D5DB;
+    }
+    .btn.btn-secondary:hover {
+        background-color: #E5E7EB;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: auto;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Sbah ☀️</h1>
+    <p>شكراً لطلبك!</p>
+  </header>
+
+  <main>
+    <div class="confirmation-card">
+      <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <h2>تم تأكيد الطلب!</h2>
+      <p class="subtitle">فطورك قيد التحضير 🍞☕</p>
+      
+      <hr class="divider" />
+
+      <p class="eta">التوصيل المتوقع خلال <strong>25 دقيقة</strong></p>
+      <p class="order-id">رقم الطلب: #SB12345</p>
+    </div>
+
+    <div class="order-summary">
+      <h3>ملخص الطلب</h3>
+      <div class="item-row">
+        <img src="https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38" alt="كرواسان">
+        <div class="item-details">
+          <span class="name">كرواسان كلاسيك</span>
+          <span class="quantity">الكمية: 2</span>
+        </div>
+        <span class="item-price">30 د.م.</span>
+      </div>
+      <div class="item-row">
+        <img src="https://images.unsplash.com/photo-1497032628192-86f99bcd76bc" alt="شاي مغربي">
+        <div class="item-details">
+          <span class="name">شاي مغربي</span>
+          <span class="quantity">الكمية: 1</span>
+        </div>
+        <span class="item-price">15 د.م.</span>
+      </div>
+      <div class="total-section">
+        الإجمالي: 75 د.م.
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <a href="#" class="btn btn-primary">تتبع طلبي 🚴‍♂️</a>
+      <a href="#" class="btn btn-secondary">العودة للرئيسية ☀️</a>
+    </div>
+  </main>
+
+  <footer>
+    <p>شكراً لاختيارك Sbah — صباحك يبدأ من هنا 🌞</p>
+  </footer>
+
+</body>
+</html>

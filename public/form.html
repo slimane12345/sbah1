@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sbah – Morning Breakfast Form</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #FFF8E7;
+      color: #3B3B3B;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h2 {
+      color: #FB8500;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+
+    form {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 320px;
+    }
+
+    input {
+      padding: 12px;
+      border: 2px solid #FFB703;
+      border-radius: 8px;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    input:focus {
+      border-color: #FB8500;
+    }
+
+    button {
+      background-color: #D9982C;
+      color: #3E2F1C;
+      font-family: "Poppins", sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      padding: 14px 32px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #C6891D;
+      transform: scale(1.03);
+    }
+
+    button:active {
+      background-color: #B77D1A;
+      transform: scale(1);
+    }
+
+    #status {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/": "https://aistudiocdn.com/firebase@^12.5.0/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <h2>🥐 Add Morning Order to Firestore</h2>
+  <form id="userForm">
+    <input type="text" id="name" placeholder="Customer Name" required />
+    <input type="email" id="email" placeholder="Customer Email" required />
+    <button type="submit">☕ Add Order</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script type="module">
+    import { db } from "/scripts/firebase/firebaseConfig.js";
+    import { collection, addDoc } from "firebase/firestore";
+
+    const form = document.getElementById("userForm");
+    const status = document.getElementById("status");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+
+      try {
+        const docRef = await addDoc(collection(db, "users"), {
+          name,
+          email,
+          createdAt: new Date(),
+        });
+        status.textContent = "✅ Order added with ID: " + docRef.id;
+        status.style.color = "#FB8500";
+        form.reset();
+      } catch (error) {
+        console.error("Error adding document:", error);
+        status.textContent = "❌ Failed to add data.";
+        status.style.color = "red";
+      }
+    });
+  </script>
+</body>
+</html>

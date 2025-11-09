@@ -1,0 +1,122 @@
+
+:root {
+  --bg-beige: #FFF9E6;
+  --accent-gold: #FFD700;
+  --text-coffee: #3E2F1C;
+  --text-secondary: #6E5C3E;
+  --brand-orange: #D9982C;
+  --brand-orange-hover: #C6891D;
+  --border-radius: 16px;
+}
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background-color: var(--bg-beige);
+  color: var(--text-coffee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+}
+
+.login-card {
+  background-color: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  padding: 30px 40px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.logo {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 10px;
+    color: var(--brand-orange);
+}
+
+h2 {
+  color: var(--text-coffee);
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+
+p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+#phone-entry, #otpSection {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+input {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  font-family: 'Cairo', sans-serif;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+input:focus {
+    border-color: var(--brand-orange);
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 2px var(--brand-orange-hover);
+}
+
+.btn-primary {
+  background-color: var(--brand-orange);
+  color: white;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--brand-orange-hover);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+#recaptcha-container {
+  margin: 10px auto;
+  transform: scale(0.9);
+  transform-origin: center;
+}
+
+.hidden {
+  display: none;
+}
+
+#loginStatus {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  height: 20px; /* Reserve space */
+}

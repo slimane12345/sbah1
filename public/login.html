@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تسجيل الدخول | Sbah</title>
+  <link rel="stylesheet" href="/assets/styles/client-login.css" />
+  <script type="module" src="/scripts/client-login.js" defer></script>
+  <!-- Use modular Firebase SDKs -->
+  <script type="module">
+    import "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <h1 class="logo">Sbah ☀️</h1>
+      <h2>أهلاً بك مجدداً!</h2>
+      <p>أدخل رقم هاتفك لتسجيل الدخول أو إنشاء حساب جديد.</p>
+
+      <div id="phone-entry">
+        <input type="tel" id="phoneNumber" placeholder="+212 6XXXXXXXX" autocomplete="tel" />
+        <div id="recaptcha-container"></div>
+        <button id="sendCodeBtn" class="btn-primary">إرسال الرمز</button>
+      </div>
+
+      <div id="otpSection" class="hidden">
+        <p>تم إرسال رمز التحقق إلى رقمك. الرجاء إدخاله أدناه.</p>
+        <input type="text" id="otpCode" placeholder="أدخل رمز التحقق" inputmode="numeric" autocomplete="one-time-code" />
+        <button id="verifyCodeBtn" class="btn-primary">تأكيد وتسجيل الدخول</button>
+      </div>
+
+      <p id="loginStatus"></p>
+    </div>
+  </div>
+</body>
+</html>

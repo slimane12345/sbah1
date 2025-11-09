@@ -1,0 +1,76 @@
+import React, { useState, useEffect } from 'react';
+import type { Driver } from '../types';
+
+interface DriverModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSave: (driverData: any, id: string | null) => void;
+    driver: Driver | null;
+    isSubmitting: boolean;
+}
+
+const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, driver, isSubmitting }) => {
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [vehicle, setVehicle] = useState('');
+    const [licensePlate, setLicensePlate] = useState('');
+
+    useEffect(() => {
+        if (driver) {
+            setName(driver.name);
+            setPhone(driver.phone || '');
+            setVehicle(driver.vehicle);
+            setLicensePlate(driver.licensePlate);
+        } else {
+            setName('');
+            setPhone('');
+            setVehicle('');
+            setLicensePlate('');
+        }
+    }, [driver, isOpen]);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSave({ name, phone, vehicle, licensePlate }, driver ? driver.id : null);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center" onClick={onClose}>
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md m-4" onClick={e => e.stopPropagation()}>
+                <form onSubmit={handleSubmit}>
+                    <div className="p-6 border-b">
+                        <h2 className="text-xl font-bold text-gray-900">{driver ? 'تعديل بيانات السائق' : 'إضافة سائق جديد'}</h2>
+                    </div>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">الاسم الكامل</label>
+                            <input type="text" value={name} onChange={e => setName(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" required />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">رقم الهاتف (مع رمز الدولة)</label>
+                            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" placeholder="+212612345678" required />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">المركبة</label>
+                            <input type="text" value={vehicle} onChange={e => setVehicle(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" placeholder="مثال: Toyota Yaris 2021" required />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">رقم لوحة المركبة</label>
+                            <input type="text" value={licensePlate} onChange={e => setLicensePlate(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" required />
+                        </div>
+                    </div>
+                    <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">
+                        <button type="button" onClick={onClose} disabled={isSubmitting} className="bg-white py-2 px-4 border rounded-md">إلغاء</button>
+                        <button type="submit" disabled={isSubmitting} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-blue-300">
+                            {isSubmitting ? 'جاري الحفظ...' : 'حفظ'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default DriverModal;
