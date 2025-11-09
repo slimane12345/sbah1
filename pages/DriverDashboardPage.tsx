@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { db } from '../scripts/firebase/firebaseConfig.js';
-import { doc, onSnapshot, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import type { Driver, OrderManagementData, DriverView } from '../types.ts';
+import { doc, onSnapshot, updateDoc, collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, PaymentStatus } from '../types.ts';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ErrorDisplay from '../components/ErrorDisplay.tsx';
 import { useLanguage } from '../contexts/LanguageContext.tsx';
@@ -19,12 +19,12 @@ interface DriverDashboardPageProps {
 }
 
 // Helper functions (could be moved to a utils file)
-const mapBackendStatusToFrontend = (status: string): any => {
-    const map: { [key: string]: any } = { pending: 'جديد', confirmed: 'مؤكد', preparing: 'قيد التجهيز', ready: 'جاهز', picked_up: 'بالتوصيل', delivered: 'مكتمل', cancelled: 'ملغي' };
+const mapBackendStatusToFrontend = (status: string): OrderAdminStatus => {
+    const map: { [key: string]: OrderAdminStatus } = { pending: 'جديد', confirmed: 'مؤكد', preparing: 'قيد التجهيز', ready: 'جاهز', picked_up: 'بالتوصيل', delivered: 'مكتمل', cancelled: 'ملغي' };
     return map[status] || 'جديد';
 };
-const mapPaymentStatusToFrontend = (status: string): any => {
-    const map: {[key: string]: any} = { pending: 'معلق', paid: 'مدفوع', failed: 'غير مدفوع', refunded: 'مسترجع' };
+const mapPaymentStatusToFrontend = (status: string): PaymentStatus => {
+    const map: {[key: string]: PaymentStatus} = { pending: 'معلق', paid: 'مدفوع', failed: 'غير مدفوع', refunded: 'مسترجع' };
     return map[status] || 'معلق';
 };
 export function calculateDistance(loc1: { lat: number, lng: number }, loc2: { lat: number, lng: number }): number {
@@ -35,6 +35,33 @@ export function calculateDistance(loc1: { lat: number, lng: number }, loc2: { la
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
 }
+
+// Maps a Firestore document to the OrderManagementData type
+const mapFirestoreDocToOrder = (doc: any): OrderManagementData => {
+    const data = doc.data();
+    return {
+        id: doc.id,
+        orderNumber: data.orderNumber || 'N/A',
+        customer: { name: data.customerName || 'N/A', avatar: data.customerAvatar || '' },
+        restaurant: data.restaurantName || 'N/A',
+        total: data.finalAmount || 0,
+        status: mapBackendStatusToFrontend(data.status),
+        paymentStatus: mapPaymentStatusToFrontend(data.paymentStatus),
+        paymentMethod: data.paymentMethod === 'cash' ? 'COD' : 'Credit Card',
+        date: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toLocaleDateString('ar-SA') : 'N/A',
+        courier: data.driverId ? { name: data.driverName || 'N/A', avatar: data.driverAvatar || '' } : null,
+        items: (data.items || []).map((item: any) => ({
+            name: item.productName,
+            quantity: item.quantity,
+            price: item.unitPrice,
+            options: item.options || []
+        })),
+        deliveryAddress: data.deliveryAddress,
+        restaurantLocation: data.restaurantLocation || null,
+        driverId: data.driverId || null
+    };
+};
+
 
 const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onLogout }) => {
     const [driver, setDriver] = useState<Driver | null>(null);
@@ -113,17 +140,17 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         if (!driver) return;
         const newOrdersQuery = query(collection(db, 'orders'), where('status', '==', 'confirmed'), where('driverId', '==', null));
         const unsubscribeNew = onSnapshot(newOrdersQuery, (snapshot) => {
-            const orders: OrderManagementData[] = snapshot.docs.map(docRef => ({ id: docRef.id, ...docRef.data() } as OrderManagementData));
-            setAllNewOrders(orders.map(o => ({...o, status: mapBackendStatusToFrontend(o.status as any), paymentStatus: mapPaymentStatusToFrontend(o.paymentStatus as any)})));
+            const orders = snapshot.docs.map(mapFirestoreDocToOrder);
+            setAllNewOrders(orders);
         });
 
         const activeOrderQuery = query(collection(db, 'orders'), where('driverId', '==', driverId), where('status', 'in', ['confirmed', 'picked_up']));
         const unsubscribeActive = onSnapshot(activeOrderQuery, (snapshot) => {
-            if (snapshot.empty) setActiveOrder(null);
-            else {
+            if (snapshot.empty) {
+                setActiveOrder(null);
+            } else {
                 const docRef = snapshot.docs[0];
-                const data = docRef.data();
-                setActiveOrder({id: docRef.id, ...data, status: mapBackendStatusToFrontend(data.status), paymentStatus: mapPaymentStatusToFrontend(data.paymentStatus)} as OrderManagementData);
+                setActiveOrder(mapFirestoreDocToOrder(docRef));
             }
         });
 
