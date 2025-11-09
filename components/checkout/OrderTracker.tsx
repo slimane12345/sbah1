@@ -7,6 +7,7 @@ interface OrderTrackerProps {
         deliveryAddress: {
             addressText: string;
         };
+        etaMinutes: number;
     };
 }
 
@@ -20,6 +21,10 @@ const OrderTracker: React.FC<OrderTrackerProps> = ({ order }) => {
     { name: t('step4'), completed: false },
     { name: t('step5'), completed: false },
   ];
+
+  const etaRangeStart = Math.max(10, order.etaMinutes - 5);
+  const etaRangeEnd = order.etaMinutes + 5;
+  const etaDisplay = t('etaValue', { start: etaRangeStart.toString(), end: etaRangeEnd.toString() });
 
   return (
     <div className="bg-gray-100 min-h-screen flex items-center justify-center py-12" dir={t('language') === 'ar' ? 'rtl' : 'ltr'}>
@@ -52,6 +57,7 @@ const OrderTracker: React.FC<OrderTrackerProps> = ({ order }) => {
             </div>
 
             <div className="mt-8 border-t pt-6 text-sm text-gray-700">
+                <p>{t('eta')}: <span className="font-bold">{etaDisplay}</span></p>
                 <p className="mt-2">{t('deliveryDestination')}: <span className="font-bold">{order.deliveryAddress.addressText}</span></p>
             </div>
         </div>

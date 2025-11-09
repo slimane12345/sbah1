@@ -111,6 +111,7 @@ const CustomerHomePage: React.FC<CustomerHomePageProps> = ({
                     commissionRate: data.commissionRate || 15,
                     totalOrders: data.totalOrders || 0,
                     coverImage: data.coverPhotoUrl || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1974&auto=format&fit=crop',
+                    deliveryTime: data.deliveryTime || '25-35 دقيقة',
                  };
             });
             setRestaurants(fetchedRestaurants);

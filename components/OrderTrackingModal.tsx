@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import type { OrderManagementData } from '../types';
 import OrderTrackingMap from './OrderTrackingMap';
@@ -106,6 +105,7 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ order, onClose 
   }
 
   const courier = order.courier || { name: 'مندوب غير معين', avatar: 'https://i.pravatar.cc/150' };
+  const eta = '15 دقيقة';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center" onClick={onClose}>
@@ -132,6 +132,10 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ order, onClose 
                 <p className="font-semibold">{courier.name}</p>
                 <p className="text-sm text-gray-500">مندوب التوصيل</p>
               </div>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">الوقت المتوقع للوصول</p>
+              <p className="font-bold text-2xl text-blue-600">{eta}</p>
             </div>
              <div>
               <p className="text-sm text-gray-500">حالة الطلب الحالية</p>

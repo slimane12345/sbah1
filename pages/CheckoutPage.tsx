@@ -7,7 +7,7 @@ import AddressSelection from '../components/checkout/AddressSelection';
 import PaymentMethods from '../components/checkout/PaymentMethods';
 import CustomerInfo from '../components/checkout/CustomerInfo';
 import OrderTracker from '../components/checkout/OrderTracker';
-import { useLanguage } from '../../contexts/LanguageContext.tsx';
+import { useLanguage } from '../contexts/LanguageContext.tsx';
 import { db } from '../scripts/firebase/firebaseConfig.js';
 import { collection, addDoc, Timestamp, query, where, getDocs, limit } from 'firebase/firestore';
 
@@ -167,6 +167,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                 status: 'pending',
                 orderNumber: `SBH-${Date.now().toString().slice(-6)}`,
                 createdAt: Timestamp.now(),
+                estimatedDeliveryTimeMinutes: 35, // Mock value
                 driverId: null,
                 restaurantLocation: restaurantLocation, 
             };
@@ -182,6 +183,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                 status: 'جديد',
                 items: newOrder.items.map(item => ({ name: item.productName, quantity: item.quantity, category: item.category })),
                 deliveryAddress: newOrder.deliveryAddress,
+                estimatedDeliveryTimeMinutes: newOrder.estimatedDeliveryTimeMinutes,
             };
 
             setPlacedOrder(orderForTracker);
@@ -198,6 +200,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
         return <OrderTracker order={{
             orderNumber: placedOrder.id,
             deliveryAddress: { addressText: placedOrder.deliveryAddress.addressText },
+            etaMinutes: placedOrder.estimatedDeliveryTimeMinutes,
         }} />;
     }
 

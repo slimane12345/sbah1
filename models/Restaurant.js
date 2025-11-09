@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const addressSchema = new mongoose.Schema({
@@ -27,6 +26,7 @@ const restaurantSchema = new mongoose.Schema({
     logoUrl: String,
     coverPhotoUrl: String,
     cuisineType: String,
+    deliveryTime: String, // e.g., "25-35 minutes"
     minimumOrder: {
         type: Number,
         default: 0,

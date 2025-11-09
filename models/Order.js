@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 const orderItemSchema = new mongoose.Schema({
@@ -78,6 +77,7 @@ const orderSchema = new mongoose.Schema({
         enum: ['pending', 'paid', 'failed', 'refunded'],
         default: 'pending',
     },
+    estimatedDeliveryTime: Date,
     actualDeliveryTime: Date,
     customerNotes: String,
 

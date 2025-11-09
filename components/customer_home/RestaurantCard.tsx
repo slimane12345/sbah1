@@ -12,6 +12,9 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant, onClick }) 
             <div className="relative">
                 <img src={restaurant.coverImage} alt={restaurant.name} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute top-2 left-2 bg-white rounded-full px-2 py-1 text-xs font-bold">
+                    {restaurant.deliveryTime}
+                </div>
                  <img src={restaurant.logo} alt={`${restaurant.name} logo`} className="absolute bottom-2 right-2 h-14 w-14 rounded-full border-2 border-white shadow-md object-cover" />
             </div>
             <div className="p-4">

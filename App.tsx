@@ -211,6 +211,7 @@ const MainApp: React.FC = () => {
                         status: mapBackendStatusToFrontend(data.status),
                         items: data.items.map((i: any) => ({ name: i.productName, quantity: i.quantity, category: i.category })),
                         deliveryAddress: data.deliveryAddress,
+                        estimatedDeliveryTimeMinutes: data.estimatedDeliveryTimeMinutes,
                     }));
                 setPastOrders(fetchedOrders);
 

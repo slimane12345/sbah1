@@ -53,6 +53,7 @@ const RestaurantProfilePage: React.FC<RestaurantProfilePageProps> = ({ restauran
                         totalOrders: data.totalOrders || 0,
                         commissionRate: data.commissionRate || 15,
                         coverImage: data.coverPhotoUrl || 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1974&auto=format&fit=crop',
+                        deliveryTime: data.deliveryTime || '25-35 دقيقة',
                     };
                     setRestaurant(fetchedRestaurant);
                 } else {
@@ -123,6 +124,7 @@ const RestaurantProfilePage: React.FC<RestaurantProfilePageProps> = ({ restauran
                 cuisine={restaurant.cuisine}
                 rating={restaurant.rating}
                 reviewsCount={mockReviews.length}
+                deliveryTime={restaurant.deliveryTime || '30 دقيقة'}
                 coverImage={restaurant.coverImage || ''}
                 logo={restaurant.logo}
                 onBack={onBack}
