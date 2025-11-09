@@ -6,7 +6,6 @@ interface RestaurantHeaderProps {
     cuisine: string;
     rating: number;
     reviewsCount: number;
-    deliveryTime: string;
     coverImage: string;
     logo: string;
     onBack: () => void;
@@ -18,7 +17,7 @@ const RestaurantHeader: React.FC<RestaurantHeaderProps> = (props) => {
     <div className="relative mb-8">
       {/* Back Button */}
       <button onClick={props.onBack} className="absolute top-4 right-4 z-20 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>
@@ -44,8 +43,8 @@ const RestaurantHeader: React.FC<RestaurantHeaderProps> = (props) => {
                 {props.rating} ({props.reviewsCount} {t('ratingUnit')})
               </span>
               <span className="flex items-center font-semibold">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                {props.deliveryTime}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1 text-gray-500" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                10-15 دقيقة
               </span>
             </div>
           </div>

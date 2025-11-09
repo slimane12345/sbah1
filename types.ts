@@ -1,3 +1,5 @@
+import type { Timestamp } from 'firebase/firestore';
+
 // ========= GENERAL & APP SHELL =========
 
 export type Page =
@@ -64,7 +66,6 @@ export interface Restaurant {
   commissionRate: number;
   totalOrders: number;
   coverImage?: string;
-  deliveryTime?: string;
 }
 
 export interface CartItem {
@@ -99,7 +100,6 @@ export interface PastOrder {
   status: OrderStatus;
   items: { name: string; quantity: number; category: string }[];
   deliveryAddress: { addressText: string; latitude: number; longitude: number };
-  estimatedDeliveryTimeMinutes: number;
 }
 
 export interface SavedAddress {

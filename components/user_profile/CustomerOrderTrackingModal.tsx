@@ -94,8 +94,8 @@ const CustomerOrderTrackingModal: React.FC<CustomerOrderTrackingModalProps> = ({
 
   if (!isOpen || !order) return null;
 
-  const etaRangeStart = order?.estimatedDeliveryTimeMinutes ? Math.max(10, order.estimatedDeliveryTimeMinutes - 5) : 35;
-  const etaRangeEnd = order?.estimatedDeliveryTimeMinutes ? order.estimatedDeliveryTimeMinutes + 5 : 45;
+  const etaRangeStart = 10;
+  const etaRangeEnd = 15;
   const etaDisplay = t('etaCustomerValue', { start: etaRangeStart.toString(), end: etaRangeEnd.toString() });
 
   return (

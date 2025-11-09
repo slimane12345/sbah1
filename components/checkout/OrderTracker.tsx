@@ -7,7 +7,6 @@ interface OrderTrackerProps {
         deliveryAddress: {
             addressText: string;
         };
-        etaMinutes: number;
     };
 }
 
@@ -22,8 +21,8 @@ const OrderTracker: React.FC<OrderTrackerProps> = ({ order }) => {
     { name: t('step5'), completed: false },
   ];
 
-  const etaRangeStart = Math.max(10, order.etaMinutes - 5);
-  const etaRangeEnd = order.etaMinutes + 5;
+  const etaRangeStart = 10;
+  const etaRangeEnd = 15;
   const etaDisplay = t('etaValue', { start: etaRangeStart.toString(), end: etaRangeEnd.toString() });
 
   return (

@@ -167,7 +167,6 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                 status: 'pending',
                 orderNumber: `SBH-${Date.now().toString().slice(-6)}`,
                 createdAt: Timestamp.now(),
-                estimatedDeliveryTimeMinutes: 35, // Mock value
                 driverId: null,
                 restaurantLocation: restaurantLocation, 
             };
@@ -183,7 +182,6 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                 status: 'جديد',
                 items: newOrder.items.map(item => ({ name: item.productName, quantity: item.quantity, category: item.category })),
                 deliveryAddress: newOrder.deliveryAddress,
-                estimatedDeliveryTimeMinutes: newOrder.estimatedDeliveryTimeMinutes,
             };
 
             setPlacedOrder(orderForTracker);
@@ -200,7 +198,6 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
         return <OrderTracker order={{
             orderNumber: placedOrder.id,
             deliveryAddress: { addressText: placedOrder.deliveryAddress.addressText },
-            etaMinutes: placedOrder.estimatedDeliveryTimeMinutes,
         }} />;
     }
 
