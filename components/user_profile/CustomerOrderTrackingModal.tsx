@@ -94,10 +94,6 @@ const CustomerOrderTrackingModal: React.FC<CustomerOrderTrackingModalProps> = ({
 
   if (!isOpen || !order) return null;
 
-  const etaRangeStart = order?.estimatedDeliveryTimeMinutes ? Math.max(10, order.estimatedDeliveryTimeMinutes - 5) : 35;
-  const etaRangeEnd = order?.estimatedDeliveryTimeMinutes ? order.estimatedDeliveryTimeMinutes + 5 : 45;
-  const etaDisplay = t('etaCustomerValue', { start: etaRangeStart.toString(), end: etaRangeEnd.toString() });
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center" onClick={onClose}>
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl m-4" onClick={e => e.stopPropagation()}>
@@ -128,10 +124,6 @@ const CustomerOrderTrackingModal: React.FC<CustomerOrderTrackingModalProps> = ({
                     <div>
                         <p className="text-sm text-gray-500">{t('currentOrderStatus')}</p>
                         <StatusBadge status={order.status} />
-                    </div>
-                    <div>
-                        <p className="text-sm text-gray-500">{t('etaCustomer')}</p>
-                        <p className="font-bold text-xl text-blue-600">{etaDisplay}</p>
                     </div>
                     <div>
                         <p className="text-sm text-gray-500">{t('deliveryDestination')}</p>
