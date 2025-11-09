@@ -28,6 +28,9 @@ export type CustomerPage = 'home' | 'restaurant' | 'category-products' | 'produc
 
 export type ViewMode = 'admin' | 'customer' | 'driver';
 
+export type DriverView = 'overview' | 'orders' | 'earnings' | 'profile';
+
+
 // ========= MODELS & DATA STRUCTURES =========
 
 export interface ProductOption {
