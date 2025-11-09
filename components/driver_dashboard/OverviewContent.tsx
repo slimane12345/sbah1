@@ -1,7 +1,8 @@
 import React from 'react';
-import type { Driver, DriverView, OrderManagementData } from '../../types';
+import type { Driver, OrderManagementData, DriverView } from '../../types';
 import DriverStatCard from './DriverStatCard';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext.tsx';
+import { calculateDistance } from '../../pages/DriverDashboardPage.tsx';
 
 interface OverviewContentProps {
     driver: Driver;
@@ -13,48 +14,57 @@ interface OverviewContentProps {
 
 const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearbyOrders, setActiveView, onAcceptOrder }) => {
     const { t } = useLanguage();
-
-    const statCards = [
-        { title: "أرباح اليوم", value: `${stats.dailyEarnings.toFixed(2)} ${t('currency')}`, icon: 'cash' as const },
-        { title: "طلبات مكتملة", value: stats.completedToday.toString(), icon: 'check' as const },
-        { title: "متوسط التقييم", value: driver.rating.toFixed(1), icon: 'star' as const },
-        { title: "نسبة القبول", value: '95%', icon: 'thumbUp' as const }, // Mock data
-    ];
+    const isOnline = driver.status === 'متاح' || driver.status === 'مشغول';
 
     return (
         <div className="space-y-6 pb-20 lg:pb-0">
-            {/* Stat Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {statCards.map(stat => <DriverStatCard key={stat.title} {...stat} />)}
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <DriverStatCard title={t('totalEarningsValue')} value={`${stats.dailyEarnings.toFixed(2)} ${t('currency')}`} icon="cash" />
+                <DriverStatCard title={t('totalDeliveries')} value={stats.completedToday.toString()} icon="check" />
+                <DriverStatCard title="التقييم" value={driver.rating.toFixed(1)} icon="star" />
             </div>
-            
-            {/* Available Orders Section */}
-            <div>
-                <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-bold text-lg text-gray-800">طلبات جديدة قريبة منك</h3>
-                    <button onClick={() => setActiveView('orders')} className="text-sm font-semibold text-[#3B82F6] hover:underline">
-                        عرض الكل
+
+            {/* Orders Section */}
+            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold text-lg text-gray-800">{t('newOrders')}</h3>
+                    <button onClick={() => setActiveView('orders')} className="text-sm font-semibold text-blue-600 hover:underline">
+                        {t('viewAll')}
                     </button>
                 </div>
-                <div className="space-y-3">
-                    {nearbyOrders.length > 0 ? (
-                        nearbyOrders.map(order => (
-                            <div key={order.id} className="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center">
-                                <div>
-                                    <p className="font-bold text-gray-800">{order.restaurant}</p>
-                                    <p className="text-xs text-gray-500">{order.deliveryAddress.addressText}</p>
+                {isOnline ? (
+                    <div className="space-y-4">
+                        {nearbyOrders.length > 0 ? (
+                            nearbyOrders.map(order => (
+                                <div key={order.id} className="border p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div className="flex-1">
+                                        <p className="font-bold">{order.restaurant}</p>
+                                        <p className="text-sm text-gray-600">{order.deliveryAddress.addressText}</p>
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            <span>{t('distance')}: ~{
+                                                (order.restaurantLocation && order.deliveryAddress) ? 
+                                                `${calculateDistance({ lat: order.restaurantLocation.lat, lng: order.restaurantLocation.lng }, { lat: order.deliveryAddress.latitude, lng: order.deliveryAddress.longitude }).toFixed(1)} ${t('km')}` : 'N/A'
+                                            }</span>
+                                            <span className="mx-2">|</span>
+                                            <span>{t('earnings')}: {(order.total * 0.1).toFixed(2)} {t('currency')}</span>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => onAcceptOrder(order)} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-semibold w-full sm:w-auto">
+                                        {t('acceptOrder')}
+                                    </button>
                                 </div>
-                                <button onClick={() => onAcceptOrder(order)} className="bg-[#10B981] text-white font-bold text-sm px-4 py-2 rounded-full">
-                                    قبول
-                                </button>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="bg-white p-8 rounded-lg shadow-sm text-center">
-                            <p className="text-gray-500">{t('noNewOrders')}</p>
-                        </div>
-                    )}
-                </div>
+                            ))
+                        ) : (
+                            <p className="text-center text-gray-500 py-4">{t('noNewOrders')}</p>
+                        )}
+                    </div>
+                ) : (
+                    <div className="text-center py-8 bg-gray-50 rounded-lg">
+                        <p className="font-semibold text-gray-700">{t('youAreOffline')}</p>
+                        <p className="text-sm text-gray-500 mt-1">اذهب "أونلاين" لترى الطلبات الجديدة.</p>
+                    </div>
+                )}
             </div>
         </div>
     );

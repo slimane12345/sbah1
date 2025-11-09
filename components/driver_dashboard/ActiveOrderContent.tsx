@@ -1,8 +1,8 @@
 import React from 'react';
 import type { OrderManagementData, Driver } from '../../types';
-import OrderTrackingMap from '../OrderTrackingMap';
-import DriverHeader from './DriverHeader';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext.tsx';
+import OrderTrackingMap from '../OrderTrackingMap.tsx';
+import DriverHeader from './DriverHeader.tsx';
 
 interface ActiveOrderContentProps {
     order: OrderManagementData;
@@ -14,47 +14,42 @@ interface ActiveOrderContentProps {
 
 const ActiveOrderContent: React.FC<ActiveOrderContentProps> = ({ order, driver, driverLocation, onUpdateStatus, onLogout }) => {
     const { t } = useLanguage();
-    const isPickupPhase = order.status === 'مؤكد';
+
+    const isPickupPhase = order.status === 'confirmed';
+    const destinationAddress = isPickupPhase ? order.restaurant : order.deliveryAddress.addressText;
+    const buttonText = isPickupPhase ? t('orderPickedUp') : t('orderDelivered');
+    const buttonAction = () => onUpdateStatus(order.id, isPickupPhase ? 'picked_up' : 'delivered');
 
     return (
-        <div className="flex flex-col h-screen bg-[#F8FAFC]">
+        <div className="flex flex-col h-screen bg-gray-100">
             <DriverHeader driver={driver} isOnline={true} onToggleOnline={() => {}} onLogout={onLogout} />
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 overflow-hidden">
-                <div className="lg:col-span-2 h-full min-h-[300px] rounded-lg overflow-hidden shadow-md">
-                    {order.restaurantLocation && order.deliveryAddress && (
+            <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Map takes up the top part */}
+                <div className="h-1/2 md:h-2/3 relative">
+                    {order.restaurantLocation && order.deliveryAddress && driverLocation ? (
                          <OrderTrackingMap 
                             driverLocation={driverLocation}
-                            restaurantLocation={order.restaurantLocation}
+                            restaurantLocation={{ lat: order.restaurantLocation.lat, lng: order.restaurantLocation.lng }}
                             customerLocation={{ lat: order.deliveryAddress.latitude, lng: order.deliveryAddress.longitude }}
-                        />
+                         />
+                    ) : (
+                        <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                            <p>Loading map...</p>
+                        </div>
                     )}
                 </div>
-                <div className="bg-white rounded-lg shadow-md p-4 flex flex-col">
-                    <h2 className="font-bold text-xl border-b pb-3 mb-3">تفاصيل الطلب #{order.orderNumber}</h2>
-                    <div className="flex-1 space-y-4 overflow-y-auto">
-                         <div>
-                            <p className="text-xs text-gray-500">{isPickupPhase ? t('pickupFrom') : t('deliverTo')}</p>
-                            <p className="font-semibold text-gray-800">{isPickupPhase ? order.restaurant : order.customer.name}</p>
-                            <p className="text-sm text-gray-600">{order.deliveryAddress.addressText}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-500">{t('payment')}</p>
-                            <p className="font-semibold text-gray-800">{order.paymentMethod === 'COD' 
-                                ? t('codWithAmount', { amount: order.total.toFixed(2), currency: t('currency') })
-                                : t('paidElectronically')}</p>
+                {/* Details and Actions take the bottom part */}
+                <div className="bg-white p-4 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] flex-1 flex flex-col justify-between">
+                    <div>
+                        <h2 className="font-bold text-xl">{isPickupPhase ? t('pickupFrom') : t('deliverTo')}</h2>
+                        <p className="text-gray-700 text-lg">{destinationAddress}</p>
+                        <div className="text-sm text-gray-500 mt-2">
+                             <p>{t('payment')}: <span className="font-semibold">{order.paymentMethod === 'COD' ? t('codWithAmount', { amount: order.total.toFixed(2), currency: t('currency') }) : t('paidElectronically')}</span></p>
                         </div>
                     </div>
-                     <div className="mt-4">
-                        {isPickupPhase ? (
-                            <button onClick={() => onUpdateStatus(order.id, 'picked_up')} className="w-full bg-[#3B82F6] text-white py-3 rounded-lg font-bold text-lg">
-                                {t('orderPickedUp')}
-                            </button>
-                        ) : (
-                            <button onClick={() => onUpdateStatus(order.id, 'delivered')} className="w-full bg-[#10B981] text-white py-3 rounded-lg font-bold text-lg">
-                                {t('orderDelivered')}
-                            </button>
-                        )}
-                    </div>
+                    <button onClick={buttonAction} className="w-full bg-green-600 text-white font-bold py-4 rounded-lg text-lg hover:bg-green-700">
+                        {buttonText}
+                    </button>
                 </div>
             </div>
         </div>

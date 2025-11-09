@@ -5,12 +5,17 @@ import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, Payment
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ErrorDisplay from '../components/ErrorDisplay.tsx';
 import { useLanguage } from '../contexts/LanguageContext.tsx';
+// Fix: Added '.tsx' extension to component imports.
 import AcceptOrderModal from '../components/AcceptOrderModal.tsx';
 import DriverLayout from '../components/driver_dashboard/DriverLayout.tsx';
+// Fix: Added '.tsx' extension to component imports.
 import DriverHeader from '../components/driver_dashboard/DriverHeader.tsx';
+// Fix: Added '.tsx' extension to component imports.
 import OverviewContent from '../components/driver_dashboard/OverviewContent.tsx';
+// Fix: Added '.tsx' extension to component imports.
 import AvailableOrdersContent from '../components/driver_dashboard/AvailableOrdersContent.tsx';
 import EarningsContent from '../components/driver_dashboard/EarningsContent.tsx';
+// Fix: Added '.tsx' extension to component imports.
 import ActiveOrderContent from '../components/driver_dashboard/ActiveOrderContent.tsx';
 
 interface DriverDashboardPageProps {
@@ -27,6 +32,7 @@ const mapPaymentStatusToFrontend = (status: string): PaymentStatus => {
     const map: {[key: string]: PaymentStatus} = { pending: 'معلق', paid: 'مدفوع', failed: 'غير مدفوع', refunded: 'مسترجع' };
     return map[status] || 'معلق';
 };
+// Fix: Exported the utility function so it can be imported and used in other components.
 export function calculateDistance(loc1: { lat: number, lng: number }, loc2: { lat: number, lng: number }): number {
     const R = 6371; // Earth's radius in km
     const dLat = (loc2.lat - loc1.lat) * Math.PI / 180;
@@ -215,7 +221,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
                 <AcceptOrderModal
                     isOpen={!!orderToAccept}
                     onClose={() => setOrderToAccept(null)}
-                    onConfirm={() => { handleAcceptOrder(orderToAccept); setOrderToAccept(null); }}
+                    onConfirm={() => { orderToAccept && handleAcceptOrder(orderToAccept); setOrderToAccept(null); }}
                     order={orderToAccept}
                 />
             )}
