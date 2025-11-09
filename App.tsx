@@ -79,7 +79,7 @@ const mapBackendStatusToFrontend = (status: string): OrderStatus => {
 const MainApp: React.FC = () => {
     // Determine view mode based on the HTML file being served. This is now fixed per entry point.
     const path = window.location.pathname;
-    const isCustomerPath = path.includes('/admin-dashboard.html');
+    const isCustomerPath = path.includes('/customer.html');
     const isDriverPath = path.includes('/driver.html');
     const viewMode: ViewMode = isDriverPath ? 'driver' : isCustomerPath ? 'customer' : 'admin';
     
@@ -127,8 +127,8 @@ const MainApp: React.FC = () => {
     const handleDriverLogout = () => {
         localStorage.removeItem('sbahDriverId');
         setDriverId(null);
-        // Redirect to the main admin page after logout.
-        window.location.href = '/';
+        // Redirect to the driver login page after logout.
+        window.location.href = '/driver.html';
     };
 
     useEffect(() => {

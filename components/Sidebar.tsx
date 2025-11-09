@@ -54,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
         <div className="border-t my-4"></div>
         
          <a
-            href="/admin-dashboard.html"
+            href="/customer.html"
             target="_blank"
             rel="noopener noreferrer"
             className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900`}

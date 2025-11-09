@@ -17,7 +17,7 @@ export default defineConfig({
         // Fix: Replaced `process.cwd()`, which caused a TypeScript error, with `__dirname`.
         // This is a robust way to resolve paths relative to the config file's location.
         main: resolve(__dirname, 'index.html'),
-        adminDashboard: resolve(__dirname, 'admin-dashboard.html'),
+        customer: resolve(__dirname, 'customer.html'),
         driver: resolve(__dirname, 'driver.html'),
       }
     }
