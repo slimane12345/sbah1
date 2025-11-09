@@ -11,6 +11,7 @@ export type Page =
   | 'finance'
   | 'reports'
   | 'marketing'
+  | 'offers-management'
   | 'home-page-management'
   | 'ai-algorithms'
   | 'support-chatbot'
@@ -288,6 +289,22 @@ export interface Campaign {
     endDate: string;
     performance: string;
 }
+
+export type OfferStatus = 'نشط' | 'مجدول' | 'منتهي';
+
+export interface Offer {
+  id: string;
+  code: string;
+  description: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  status: OfferStatus;
+  validFrom: string; // ISO String date
+  validTo: string; // ISO String date
+  usageCount: number;
+  createdAt: string;
+}
+
 
 export interface CategoryManagementData {
   id: string;

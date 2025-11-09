@@ -18,6 +18,7 @@ import UsersManagementPage from './pages/UsersManagementPage.tsx';
 import FinancePage from './pages/FinancePage.tsx';
 import ReportsPage from './pages/ReportsPage.tsx';
 import MarketingPage from './pages/MarketingPage.tsx';
+import OffersManagementPage from './pages/OffersManagementPage.tsx';
 import HomePageManagementPage from './pages/HomePageManagementPage.tsx';
 import AiAlgorithmsPage from './pages/AiAlgorithmsPage.tsx';
 import SupportChatbotPage from './pages/SupportChatbotPage.tsx';
@@ -50,6 +51,7 @@ const pageTitles: Record<Page, string> = {
     finance: 'المالية',
     reports: 'التقارير',
     marketing: 'التسويق والحملات',
+    'offers-management': 'إدارة العروض والخصومات',
     'home-page-management': 'إدارة واجهة العميل',
     'ai-algorithms': 'خوارزميات الذكاء الاصطناعي',
     'support-chatbot': 'محادثات الدعم',
@@ -349,6 +351,7 @@ const MainApp: React.FC = () => {
             case 'finance': return <FinancePage />;
             case 'reports': return <ReportsPage />;
             case 'marketing': return <MarketingPage />;
+            case 'offers-management': return <OffersManagementPage />;
             case 'home-page-management': return <HomePageManagementPage />;
             case 'ai-algorithms': return <AiAlgorithmsPage />;
             case 'support-chatbot': return <SupportChatbotPage />;
