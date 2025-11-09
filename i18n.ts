@@ -1,4 +1,5 @@
 
+
 export const translations: Record<string, Record<string, string>> = {
   ar: {
     // ======== GLOBAL ========
@@ -84,8 +85,6 @@ export const translations: Record<string, Record<string, string>> = {
     step3: 'المندوب في الطريق للمطعم',
     step4: 'المندوب في طريقه إليك',
     step5: 'تم التوصيل',
-    eta: 'الوقت المتوقع للتوصيل',
-    etaValue: '{{start}}-{{end}} دقائق',
     deliveryDestination: 'سيتم توصيل طلبك إلى',
 
     // ======== CATEGORY PRODUCTS PAGE ========
@@ -101,8 +100,6 @@ export const translations: Record<string, Record<string, string>> = {
     trackOrderTitle: 'تتبع الطلب',
     deliveryDetails: 'تفاصيل التوصيل',
     currentOrderStatus: 'حالة الطلب الحالية',
-    etaCustomer: 'الوقت المتوقع للوصول',
-    etaCustomerValue: '~{{start}}-{{end}} دقائق',
     restaurant: 'المطعم',
     noLocationDataForTracking: "لا توجد بيانات موقع متاحة لتتبع هذا الطلب.",
 
@@ -278,8 +275,6 @@ export const translations: Record<string, Record<string, string>> = {
     step3: 'Livreur en route',
     step4: 'Livreur en chemin vers vous',
     step5: 'Livré',
-    eta: 'Heure de livraison estimée',
-    etaValue: '{{start}}-{{end}} minutes',
     deliveryDestination: 'Votre commande sera livrée à',
 
     // ======== CATEGORY PRODUCTS PAGE ========
@@ -295,8 +290,6 @@ export const translations: Record<string, Record<string, string>> = {
     trackOrderTitle: 'Suivi de commande',
     deliveryDetails: 'Détails de la livraison',
     currentOrderStatus: 'Statut actuel de la commande',
-    etaCustomer: 'Heure d\'arrivée estimée',
-    etaCustomerValue: '~{{start}}-{{end}} minutes',
     restaurant: 'Restaurant',
     noLocationDataForTracking: "Aucune donnée de localisation disponible pour suivre cette commande.",
 
