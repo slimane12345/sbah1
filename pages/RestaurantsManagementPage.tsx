@@ -39,10 +39,6 @@ const RestaurantsManagementPage: React.FC = () => {
     const [analysisError, setAnalysisError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // State for inline editing
-    const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
-    const [editedData, setEditedData] = useState<Partial<Pick<RestaurantManagementData, 'name' | 'ownerName' | 'ownerEmail'>>>({});
-
     useEffect(() => {
         setIsLoading(true);
         const q = query(collection(db, "restaurants"), orderBy("createdAt", "desc"));
@@ -55,6 +51,7 @@ const RestaurantsManagementPage: React.FC = () => {
                     name: data.name || 'N/A',
                     ownerName: data.ownerName || 'N/A',
                     ownerEmail: data.ownerEmail || 'N/A',
+                    ownerPhone: data.ownerPhone || 'N/A',
                     joinDate: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toLocaleDateString('ar-SA') : 'N/A',
                     approvalStatus: mapApprovalStatus(data.approvalStatus || 'Pending'),
                     isActive: data.isActive === true,
@@ -72,44 +69,6 @@ const RestaurantsManagementPage: React.FC = () => {
 
         return () => unsubscribe();
     }, []);
-
-    const handleStartInlineEdit = (restaurant: RestaurantManagementData) => {
-        setInlineEditingId(restaurant.id);
-        setEditedData({
-            name: restaurant.name,
-            ownerName: restaurant.ownerName,
-            ownerEmail: restaurant.ownerEmail,
-        });
-    };
-
-    const handleCancelInlineEdit = () => {
-        setInlineEditingId(null);
-        setEditedData({});
-    };
-
-    const handleInlineInputChange = (field: keyof typeof editedData, value: string) => {
-        setEditedData(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleSaveInlineEdit = async (restaurantId: string) => {
-        if (!editedData.name?.trim() || !editedData.ownerName?.trim() || !editedData.ownerEmail?.trim()) {
-            alert("جميع الحقول مطلوبة.");
-            return;
-        }
-
-        setIsSubmitting(true);
-        try {
-            const restaurantRef = doc(db, 'restaurants', restaurantId);
-            await updateDoc(restaurantRef, editedData);
-            handleCancelInlineEdit(); // Close editing mode on success
-        } catch (err) {
-            console.error("Error updating restaurant:", err);
-            setError("فشل حفظ التغييرات.");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
 
     const handleApprove = async (restaurantId: string) => {
         setIsSubmitting(true);
@@ -160,13 +119,19 @@ const RestaurantsManagementPage: React.FC = () => {
     ) => {
         setIsSubmitting(true);
         try {
-            await addDoc(collection(db, 'restaurants'), {
-                ...newData,
-                approvalStatus: 'Approved',
-                isActive: true,
-                createdAt: Timestamp.now(),
-            });
+            if (id) {
+                const restaurantRef = doc(db, 'restaurants', id);
+                await updateDoc(restaurantRef, newData);
+            } else {
+                await addDoc(collection(db, 'restaurants'), {
+                    ...newData,
+                    approvalStatus: 'Approved',
+                    isActive: true,
+                    createdAt: Timestamp.now(),
+                });
+            }
             setIsRestaurantModalOpen(false);
+            setSelectedRestaurant(null);
         } catch (err) {
             console.error("Error saving restaurant:", err);
         } finally {
@@ -180,6 +145,12 @@ const RestaurantsManagementPage: React.FC = () => {
     };
     
     const handleOpenAddModal = () => {
+        setSelectedRestaurant(null);
+        setIsRestaurantModalOpen(true);
+    };
+    
+    const handleOpenEditModal = (restaurant: RestaurantManagementData) => {
+        setSelectedRestaurant(restaurant);
         setIsRestaurantModalOpen(true);
     };
     
@@ -254,6 +225,11 @@ const RestaurantsManagementPage: React.FC = () => {
         setAnalysisResult(null);
         setAnalysisError(null);
     };
+    
+    const handleCloseRestaurantModal = () => {
+        setIsRestaurantModalOpen(false);
+        setSelectedRestaurant(null);
+    };
 
     return (
         <>
@@ -285,13 +261,7 @@ const RestaurantsManagementPage: React.FC = () => {
                             onOpenAnalysis={handleOpenAnalysisModal} 
                             onReview={handleOpenReviewModal} 
                             onToggleActive={handleToggleActive} 
-                            inlineEditingId={inlineEditingId}
-                            editedData={editedData}
-                            onStartInlineEdit={handleStartInlineEdit}
-                            onCancelInlineEdit={handleCancelInlineEdit}
-                            onSaveInlineEdit={handleSaveInlineEdit}
-                            onInlineInputChange={handleInlineInputChange}
-                            isSubmitting={isSubmitting}
+                            onEdit={handleOpenEditModal}
                         />
                         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                     </>
@@ -314,10 +284,10 @@ const RestaurantsManagementPage: React.FC = () => {
             {isRestaurantModalOpen && (
                 <RestaurantModal
                     isOpen={isRestaurantModalOpen}
-                    onClose={() => setIsRestaurantModalOpen(false)}
+                    onClose={handleCloseRestaurantModal}
                     onSave={handleSaveRestaurant}
                     isSubmitting={isSubmitting}
-                    restaurant={null}
+                    restaurant={selectedRestaurant}
                 />
             )}
         </>

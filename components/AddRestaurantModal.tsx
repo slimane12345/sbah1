@@ -15,6 +15,7 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
     const [name, setName] = useState('');
     const [ownerName, setOwnerName] = useState('');
     const [ownerEmail, setOwnerEmail] = useState('');
+    const [ownerPhone, setOwnerPhone] = useState('');
     const [location, setLocation] = useState<{ latitude: number; longitude: number; addressText: string } | null>(null);
     const [coverPhotoUrl, setCoverPhotoUrl] = useState('');
 
@@ -28,12 +29,14 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
                 setName(restaurant.name);
                 setOwnerName(restaurant.ownerName);
                 setOwnerEmail(restaurant.ownerEmail);
+                setOwnerPhone(restaurant.ownerPhone || '');
                 setLocation(restaurant.location || null);
                 setCoverPhotoUrl(restaurant.coverPhotoUrl || '');
             } else {
                 setName('');
                 setOwnerName('');
                 setOwnerEmail('');
+                setOwnerPhone('');
                 setLocation(null);
                 setCoverPhotoUrl('');
             }
@@ -102,7 +105,7 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         onSave(
-            { name, ownerName, ownerEmail, coverPhotoUrl, location: location || undefined },
+            { name, ownerName, ownerEmail, ownerPhone, coverPhotoUrl, location: location || undefined },
             restaurant ? restaurant.id : null
         );
     };
@@ -142,9 +145,15 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
                             <label htmlFor="ownerName" className="block text-sm font-medium text-gray-700">اسم المالك</label>
                             <input type="text" id="ownerName" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" required />
                         </div>
-                        <div>
-                            <label htmlFor="ownerEmail" className="block text-sm font-medium text-gray-700">البريد الإلكتروني للمالك</label>
-                            <input type="email" id="ownerEmail" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" required />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="ownerEmail" className="block text-sm font-medium text-gray-700">البريد الإلكتروني للمالك</label>
+                                <input type="email" id="ownerEmail" value={ownerEmail} onChange={(e) => setOwnerEmail(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" required />
+                            </div>
+                            <div>
+                                <label htmlFor="ownerPhone" className="block text-sm font-medium text-gray-700">رقم هاتف المالك</label>
+                                <input type="tel" id="ownerPhone" value={ownerPhone} onChange={(e) => setOwnerPhone(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" />
+                            </div>
                         </div>
                          <div>
                             <label className="block text-sm font-medium text-gray-700">الموقع الجغرافي للمطعم</label>

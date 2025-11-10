@@ -218,6 +218,7 @@ export interface RestaurantManagementData {
   name: string;
   ownerName: string;
   ownerEmail: string;
+  ownerPhone: string;
   joinDate: string;
   approvalStatus: ApprovalStatus;
   isActive: boolean;
