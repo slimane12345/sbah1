@@ -73,7 +73,19 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
 
     const [driverLocation, setDriverLocation] = useState<{ lat: number, lng: number } | null>(null);
     const [orderToAccept, setOrderToAccept] = useState<OrderManagementData | null>(null);
-    const [stats, setStats] = useState<{ totalEarnings: number, dailyEarnings: number, completedToday: number }>({ totalEarnings: 0, dailyEarnings: 0, completedToday: 0 });
+    const [stats, setStats] = useState<{ 
+        totalOrderValue: number;
+        dailyOrderValue: number;
+        myTotalEarnings: number;
+        myDailyEarnings: number;
+        completedToday: number;
+    }>({ 
+        totalOrderValue: 0,
+        dailyOrderValue: 0,
+        myTotalEarnings: 0,
+        myDailyEarnings: 0,
+        completedToday: 0
+    });
     const [activeView, setActiveView] = useState<DriverView>('overview');
 
     const { t } = useLanguage();
@@ -86,27 +98,54 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         const fetchCompletedOrders = async () => {
             const q = query(collection(db, 'orders'), where('driverId', '==', driverId), where('status', '==', 'delivered'));
             const querySnapshot = await getDocs(q);
-            let totalEarnings = 0;
-            let dailyEarnings = 0;
+            
+            let totalOrderValue = 0;
+            let dailyOrderValue = 0;
+            let myTotalEarnings = 0;
+            let myDailyEarnings = 0;
             let completedToday = 0;
+            
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
             querySnapshot.forEach(doc => {
                 const order = doc.data();
-                const earnings = order.deliveryFee || 10;
-                totalEarnings += earnings;
                 
-                if (order.createdAt.toDate() >= today) {
-                    dailyEarnings += earnings;
+                const orderFinalAmount = order.finalAmount || 0;
+                totalOrderValue += orderFinalAmount;
+
+                let deliveryEarnings = 0;
+                const restaurantLoc = order.restaurantLocation;
+                const customerLoc = order.deliveryAddress;
+                
+                if (restaurantLoc?.lat && restaurantLoc?.lng && customerLoc?.latitude && customerLoc?.longitude) {
+                    const distance = calculateDistance(
+                        { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
+                        { lat: customerLoc.latitude, lng: customerLoc.longitude }
+                    );
+                    deliveryEarnings = distance * 2; // 2 per km
+                }
+                myTotalEarnings += deliveryEarnings;
+                
+                if (order.createdAt && order.createdAt.toDate() >= today) {
+                    dailyOrderValue += orderFinalAmount;
+                    myDailyEarnings += deliveryEarnings;
                     completedToday++;
                 }
             });
-            setStats({ totalEarnings, dailyEarnings, completedToday });
+
+            // Sync driver's total deliveries count
+            if (driver && driver.totalDeliveries !== querySnapshot.size) {
+                updateDoc(doc(db, 'drivers', driverId), {
+                    totalDeliveries: querySnapshot.size
+                });
+            }
+            
+            setStats({ totalOrderValue, dailyOrderValue, myTotalEarnings, myDailyEarnings, completedToday });
         };
 
         fetchCompletedOrders();
-    }, [driverId, driver?.totalDeliveries]);
+    }, [driverId, driver]);
 
     useEffect(() => {
         const driverRef = doc(db, 'drivers', driverId);
@@ -172,7 +211,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
             setActiveView('active_orders');
             const remainingOrders = myActiveOrders.filter(o => o.id !== orderId);
             const newDriverStatus = remainingOrders.length > 0 ? 'مشغول' : 'متاح';
-            await updateDoc(doc(db, 'drivers', driverId), { status: newDriverStatus, totalDeliveries: (driver?.totalDeliveries || 0) + 1 });
+            await updateDoc(doc(db, 'drivers', driverId), { status: newDriverStatus });
         }
     };
 
@@ -207,11 +246,11 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         switch (activeView) {
             case 'orders': return <AvailableOrdersContent orders={nearbyOrders} onAccept={setOrderToAccept} />;
             case 'active_orders': return <ActiveOrdersContent orders={myActiveOrders} onSelectOrder={setSelectedOrder} />;
-            case 'earnings': return <EarningsContent stats={stats} driver={driver} />;
+            case 'earnings': return <EarningsContent stats={{ totalOrderValue: stats.totalOrderValue, myTotalEarnings: stats.myTotalEarnings }} driver={driver} />;
             case 'profile': return <div className="bg-white p-6 rounded-lg shadow-md">{t('profileSettings')} (coming soon)</div>;
             case 'overview':
             default:
-                return <OverviewContent driver={driver} stats={stats} nearbyOrders={nearbyOrders.slice(0, 3)} setActiveView={setActiveView} onAcceptOrder={setOrderToAccept} />;
+                return <OverviewContent driver={driver} stats={{ myDailyEarnings: stats.myDailyEarnings, completedToday: stats.completedToday }} nearbyOrders={nearbyOrders.slice(0, 3)} setActiveView={setActiveView} onAcceptOrder={setOrderToAccept} />;
         }
     };
 

@@ -6,7 +6,7 @@ import { calculateDistance } from '../../pages/DriverDashboardPage.tsx';
 
 interface OverviewContentProps {
     driver: Driver;
-    stats: { dailyEarnings: number; completedToday: number };
+    stats: { myDailyEarnings: number; completedToday: number };
     nearbyOrders: OrderManagementData[];
     setActiveView: (view: DriverView) => void;
     onAcceptOrder: (order: OrderManagementData) => void;
@@ -20,7 +20,7 @@ const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearby
         <div className="space-y-6 pb-20 lg:pb-0">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <DriverStatCard title={t('totalEarningsValue')} value={`${stats.dailyEarnings.toFixed(2)} ${t('currency')}`} icon="cash" />
+                <DriverStatCard title={t('myDailyEarnings')} value={`${stats.myDailyEarnings.toFixed(2)} ${t('currency')}`} icon="cash" />
                 <DriverStatCard title={t('totalDeliveries')} value={stats.completedToday.toString()} icon="check" />
                 <DriverStatCard title="التقييم" value={driver.rating.toFixed(1)} icon="star" />
             </div>

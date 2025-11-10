@@ -5,7 +5,7 @@ import EarningsChart from './EarningsChart';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 interface EarningsContentProps {
-    stats: { totalEarnings: number };
+    stats: { totalOrderValue: number; myTotalEarnings: number; };
     driver: Driver;
 }
 
@@ -14,9 +14,10 @@ const EarningsContent: React.FC<EarningsContentProps> = ({ stats, driver }) => {
     return (
         <div className="space-y-6 pb-20 lg:pb-0">
             <h2 className="text-2xl font-bold text-gray-800">الأرباح والإحصائيات</h2>
-            <div className="grid grid-cols-2 gap-4">
-                <DriverStatCard title="إجمالي الأرباح" value={`${stats.totalEarnings.toFixed(2)} ${t('currency')}`} icon="cash" />
-                <DriverStatCard title="إجمالي التوصيلات" value={driver.totalDeliveries.toString()} icon="check" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <DriverStatCard title={t('totalOrdersValue')} value={`${stats.totalOrderValue.toFixed(2)} ${t('currency')}`} icon="cash" />
+                <DriverStatCard title={t('myEarnings')} value={`${stats.myTotalEarnings.toFixed(2)} ${t('currency')}`} icon="thumbUp" />
+                <DriverStatCard title={t('totalDeliveries')} value={driver.totalDeliveries.toString()} icon="check" />
             </div>
             <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
                 <h3 className="font-bold text-lg text-gray-800 mb-4">الأرباح الأسبوعية</h3>
