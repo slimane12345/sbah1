@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "vite",
     "build": "vite build",
-    "build:driver": "vite build --outDir dist-driver -c vite.config.ts",
+    "build:driver": "vite build --outDir dist-driver",
     "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
