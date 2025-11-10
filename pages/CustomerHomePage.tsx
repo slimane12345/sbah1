@@ -171,7 +171,7 @@ const CustomerHomePage: React.FC<CustomerHomePageProps> = ({
                     onOpenModal={onOpenLocationModal}
                     isLoading={isLocationConfirming}
                 />
-                <div className="space-y-12">
+                <div className="space-y-8">
                    {layout.map(section => {
                        if ((section.id.includes('restaurant') || section.id.includes('products')) && isLoadingRestaurants) {
                            return <div key={section.id}><LoadingSpinner /></div>;

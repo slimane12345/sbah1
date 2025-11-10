@@ -48,7 +48,7 @@ const Categories: React.FC<CategoriesProps> = ({ title, onNavigateToCategory }) 
     }
 
     return (
-        <div className="mb-12">
+        <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">{title}</h2>
             {categories.length > 0 ? (
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">

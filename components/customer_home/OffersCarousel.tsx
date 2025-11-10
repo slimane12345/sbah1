@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import type { Banner } from '../../types';
 
@@ -13,7 +14,7 @@ const OffersCarousel: React.FC<OffersCarouselProps> = ({ banners, onBannerClick 
     }
 
     return (
-        <div className="mb-12">
+        <div>
             <div className="grid grid-flow-col auto-cols-[90%] sm:auto-cols-[45%] md:auto-cols-[30%] gap-4 overflow-x-auto pb-4 scrollbar-hide" style={{ scrollSnapType: 'x mandatory' }}>
                 {banners.map(banner => (
                     <button
