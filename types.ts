@@ -1,3 +1,5 @@
+// Fix: Import React to provide types for React.Dispatch and React.SetStateAction.
+import React from 'react';
 import type { Timestamp } from 'firebase/firestore';
 
 // ========= GENERAL & APP SHELL =========
@@ -29,6 +31,17 @@ export type CustomerPage = 'home' | 'restaurant' | 'category-products' | 'produc
 export type ViewMode = 'admin' | 'customer' | 'driver';
 
 export type DriverView = 'overview' | 'orders' | 'active_orders' | 'earnings' | 'profile';
+
+export type Language = 'ar' | 'fr';
+
+export interface LanguageContextType {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: string, replacements?: Record<string, string | number>) => string;
+  dbTranslations: Record<string, Record<string, string>>;
+  setDbTranslations: React.Dispatch<React.SetStateAction<Record<string, Record<string, string>>>>;
+  isLoadingTranslations: boolean;
+}
 
 
 // ========= MODELS & DATA STRUCTURES =========

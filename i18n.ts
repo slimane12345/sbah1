@@ -207,6 +207,17 @@ export const translations: Record<string, Record<string, string>> = {
     confirmPaymentMessage: 'هل أنت متأكد من دفع مستحقات {{driverName}}؟ سيتم تصفير رصيد أرباحه البالغ {{amount}} {{currency}}.',
     confirm: 'تأكيد',
     paying: 'جاري الدفع...',
+
+    // ======== SETTINGS - LANGUAGE MANAGEMENT ========
+    languageAndTranslations: 'اللغات والترجمة',
+    manageAppLanguages: 'إدارة لغات التطبيق والترجمات المخصصة.',
+    availableLanguages: 'اللغات المتاحة',
+    editTranslations: 'تعديل الترجمات',
+    addNewLanguage: 'إضافة لغة جديدة',
+    editTranslationsFor: 'تعديل ترجمات لغة "{{lang}}"',
+    translationKey: 'مفتاح الترجمة',
+    defaultValue: 'القيمة الافتراضية (العربية)',
+    translationValue: 'قيمة الترجمة',
   },
   fr: {
     // ======== GLOBAL ========
@@ -416,5 +427,16 @@ export const translations: Record<string, Record<string, string>> = {
     confirmPaymentMessage: 'Êtes-vous sûr de vouloir payer les dus de {{driverName}} ? Son solde de gains de {{amount}} {{currency}} sera remis à zéro.',
     confirm: 'Confirmer',
     paying: 'Paiement en cours...',
+
+    // ======== SETTINGS - LANGUAGE MANAGEMENT ========
+    languageAndTranslations: 'Langues et traductions',
+    manageAppLanguages: 'Gérez les langues de l\'application et les traductions personnalisées.',
+    availableLanguages: 'Langues disponibles',
+    editTranslations: 'Modifier les traductions',
+    addNewLanguage: 'Ajouter une nouvelle langue',
+    editTranslationsFor: 'Modifier les traductions pour "{{lang}}"',
+    translationKey: 'Clé de traduction',
+    defaultValue: 'Valeur par défaut (Arabe)',
+    translationValue: 'Valeur de la traduction',
   }
 };

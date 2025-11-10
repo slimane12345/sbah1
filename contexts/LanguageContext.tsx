@@ -1,24 +1,52 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { translations } from '../i18n';
+import { db } from '../scripts/firebase/firebaseConfig.js';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import type { Language, LanguageContextType } from '../types';
 
-export type Language = 'ar' | 'fr';
-
-interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
-  t: (key: string, replacements?: Record<string, string | number>) => string;
-}
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('ar');
+  const [dbTranslations, setDbTranslations] = useState<Record<string, Record<string, string>>>({});
+  const [isLoadingTranslations, setIsLoadingTranslations] = useState(true);
 
   useEffect(() => {
     const savedLang = localStorage.getItem('appLanguage') as Language;
     if (savedLang && (savedLang === 'ar' || savedLang === 'fr')) {
       setLanguage(savedLang);
     }
+
+    const fetchTranslations = async () => {
+      setIsLoadingTranslations(true);
+      try {
+        const translationsCollection = collection(db, 'translations');
+        const snapshot = await getDocs(translationsCollection);
+        
+        if (snapshot.empty) {
+          console.log("Seeding translations to Firestore...");
+          await Promise.all([
+            setDoc(doc(db, 'translations', 'ar'), translations.ar),
+            setDoc(doc(db, 'translations', 'fr'), translations.fr)
+          ]);
+          setDbTranslations(translations);
+        } else {
+          const fetchedTranslations: Record<string, Record<string, string>> = {};
+          snapshot.forEach(doc => {
+            fetchedTranslations[doc.id] = doc.data();
+          });
+          setDbTranslations(fetchedTranslations);
+        }
+      } catch (error) {
+        console.error("Error fetching translations, falling back to local.", error);
+        setDbTranslations(translations); // Fallback to local on error
+      } finally {
+        setIsLoadingTranslations(false);
+      }
+    };
+
+    fetchTranslations();
   }, []);
 
   const handleSetLanguage = (lang: Language) => {
@@ -27,7 +55,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const t = (key: string, replacements?: Record<string, string | number>): string => {
-    let translation = translations[language]?.[key] || key;
+    let translation = dbTranslations[language]?.[key] || translations[language]?.[key] || key;
     if (replacements) {
         Object.keys(replacements).forEach(rKey => {
             const regex = new RegExp(`{{${rKey}}}`, 'g');
@@ -38,7 +66,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t, dbTranslations, setDbTranslations, isLoadingTranslations }}>
       {children}
     </LanguageContext.Provider>
   );
