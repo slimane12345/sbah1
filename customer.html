@@ -22,6 +22,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
     body {
       font-family: 'Cairo', sans-serif;
+      background-color: #FFF9E6; /* Warm beige background for a morning vibe */
     }
     /* Add to cart notification animation */
     @keyframes fadeInDown {
@@ -37,34 +38,63 @@
     .animate-fade-in-down {
       animation: fadeInDown 0.5s ease-out forwards;
     }
-    /* Customer View Button Styles */
+    /* Customer View Button Styles - NEW PROFESSIONAL MORNING THEME */
     .btn-customer-primary {
-      background-color: #D9982C;
-      color: #3E2F1C;
+      background-color: #FC883A; /* Vibrant morning orange */
+      color: #FFFFFF;
       font-family: 'Cairo', sans-serif;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 16px;
       border: none;
-      border-radius: 30px;
+      border-radius: 12px;
       padding: 14px 32px;
       cursor: pointer;
       text-align: center;
-      transition: background-color 0.3s ease, transform 0.2s ease;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 14px 0 rgba(252, 136, 58, 0.3);
     }
     .btn-customer-primary:hover {
-      background-color: #C6891D;
-      transform: scale(1.03);
+      background-color: #F07C2A;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px 0 rgba(252, 136, 58, 0.35);
     }
     .btn-customer-primary:active {
-      background-color: #B77D1A;
-      transform: scale(1);
+      transform: translateY(0);
+      box-shadow: 0 4px 14px 0 rgba(252, 136, 58, 0.3);
     }
     .btn-customer-primary:disabled {
-      background-color: #D1D5DB; /* Tailwind gray-300 */
-      color: #6B7280; /* Tailwind gray-500 */
+      background-color: #D1D5DB;
+      color: #6B7280;
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
+    }
+    .btn-customer-secondary {
+        background-color: #FFF;
+        color: #3E2F1C; /* Coffee brown text */
+        font-family: 'Cairo', sans-serif;
+        font-weight: 600;
+        font-size: 16px;
+        border: 1px solid #E5E7EB; /* Light border */
+        border-radius: 12px;
+        padding: 14px 32px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px 0 rgba(0,0,0,0.05);
+    }
+    .btn-customer-secondary:hover {
+        background-color: #F9FAFB;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px 0 rgba(0,0,0,0.08);
+    }
+    .btn-customer-secondary:disabled {
+      background-color: #F3F4F6;
+      color: #9CA3AF;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      border-color: #E5E7EB;
     }
     /* Custom Leaflet Marker Styles */
     .leaflet-div-icon-custom {

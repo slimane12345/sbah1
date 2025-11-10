@@ -475,7 +475,7 @@ const MainApp: React.FC = () => {
 
     // Customer View
     return (
-        <div className="bg-gray-50 min-h-screen">
+        <div className="min-h-screen">
             <CustomerHeader 
               setCustomerPage={setCustomerPage} 
               cartItems={cartItems}
