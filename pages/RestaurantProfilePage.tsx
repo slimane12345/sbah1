@@ -9,10 +9,7 @@ import { db } from '../scripts/firebase/firebaseConfig.js';
 import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
 
 
-const mockReviews: Review[] = [
-    { id: 1, author: 'نورة خالد', avatar: 'https://i.pravatar.cc/150?img=16', rating: 5, date: '2023-10-27', comment: 'الأكل كان لذيذ جداً والتوصيل سريع! الكبسة ممتازة.' },
-    { id: 2, author: 'يوسف أحمد', avatar: 'https://i.pravatar.cc/150?img=15', rating: 4, date: '2023-10-26', comment: 'تجربة جيدة، ورق العنب كان حامض ولذيذ.' },
-];
+const mockReviews: Review[] = [];
 
 interface RestaurantProfilePageProps {
     restaurantId: string;
