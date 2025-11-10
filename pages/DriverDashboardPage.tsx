@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { db } from '../scripts/firebase/firebaseConfig.js';
-import { doc, onSnapshot, updateDoc, collection, query, where, getDocs, Timestamp, runTransaction, increment } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, PaymentStatus } from '../types.ts';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ErrorDisplay from '../components/ErrorDisplay.tsx';
@@ -94,25 +94,41 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
 
     useEffect(() => {
         if (!driverId || !driver) return;
-    
-        // Use a real-time listener for today's earnings document for efficiency and accuracy
-        const today = new Date();
-        const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD
-        const dailyEarningRef = doc(db, 'drivers', driverId, 'daily_earnings', dateString);
-    
-        const unsubscribe = onSnapshot(dailyEarningRef, (docSnap) => {
+
+        const fetchDailyStats = async () => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayTimestamp = Timestamp.fromDate(today);
+
+            const q = query(
+                collection(db, 'orders'), 
+                where('driverId', '==', driverId), 
+                where('status', '==', 'delivered'),
+                where('createdAt', '>=', todayTimestamp)
+            );
+            
+            const querySnapshot = await getDocs(q);
+            
             let dailyOrderValue = 0;
             let myDailyEarnings = 0;
-            let completedToday = 0;
-    
-            if (docSnap.exists()) {
-                const dailyData = docSnap.data();
-                dailyOrderValue = dailyData.orderValue || 0;
-                myDailyEarnings = dailyData.earnings || 0;
-                completedToday = dailyData.deliveriesCount || 0;
-            }
-    
-            // Set all stats. Total stats still come from the main driver object.
+            let completedToday = querySnapshot.size;
+
+            querySnapshot.forEach(doc => {
+                const order = doc.data();
+                dailyOrderValue += order.finalAmount || 0;
+
+                const restaurantLoc = order.restaurantLocation;
+                const customerLoc = order.deliveryAddress;
+                
+                if (restaurantLoc?.lat && restaurantLoc?.lng && customerLoc?.latitude && customerLoc?.longitude) {
+                    const distance = calculateDistance(
+                        { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
+                        { lat: customerLoc.latitude, lng: customerLoc.longitude }
+                    );
+                    myDailyEarnings += distance * (driver.ratePerKm ?? 2);
+                }
+            });
+
             setStats({
                 totalOrderValue: driver.totalOrderValue ?? 0,
                 myTotalEarnings: driver.totalEarnings ?? 0,
@@ -120,10 +136,14 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
                 myDailyEarnings,
                 completedToday
             });
-        });
-    
-        return () => unsubscribe(); // Cleanup the listener
-    
+             // Sync total deliveries count if it's different
+            if (driver && driver.totalDeliveries !== completedToday) { // Just for today's example, a full sync is better
+                // In a real app, you would fetch ALL completed orders once to get totalDeliveries
+                // or have a cloud function update it. For this scope, daily count is representative.
+            }
+        };
+
+        fetchDailyStats();
     }, [driverId, driver]);
 
     useEffect(() => {
@@ -202,7 +222,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
             if (newStatus === 'delivered' && driver) {
                 const orderToComplete = myActiveOrders.find(o => o.id === orderId);
                 if (!orderToComplete) {
-                    console.error("Completed order not found for earnings calculation.");
+                    console.error("Completed order not found in active list for earnings calculation.");
                     return;
                 }
     
@@ -218,38 +238,16 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
                     earningForThisOrder = distance * (driver.ratePerKm ?? 2);
                 }
     
-                const today = new Date();
-                const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD
-    
                 const driverRef = doc(db, 'drivers', driverId);
-                const dailyEarningRef = doc(db, 'drivers', driverId, 'daily_earnings', dateString);
+                const updatePayload = {
+                    totalOrderValue: (driver.totalOrderValue ?? 0) + orderToComplete.total,
+                    totalEarnings: (driver.totalEarnings ?? 0) + earningForThisOrder,
+                    totalDeliveries: (driver.totalDeliveries ?? 0) + 1,
+                };
     
-                await runTransaction(db, async (transaction) => {
-                    // 1. Update main driver document totals atomically
-                    transaction.update(driverRef, {
-                        totalOrderValue: increment(orderToComplete.total),
-                        totalEarnings: increment(earningForThisOrder),
-                        totalDeliveries: increment(1),
-                    });
+                await updateDoc(driverRef, updatePayload);
     
-                    // 2. Update (or create) the daily earnings document
-                    const dailyDoc = await transaction.get(dailyEarningRef);
-                    if (!dailyDoc.exists()) {
-                        transaction.set(dailyEarningRef, {
-                            date: Timestamp.fromDate(today),
-                            earnings: earningForThisOrder,
-                            deliveriesCount: 1,
-                            orderValue: orderToComplete.total
-                        });
-                    } else {
-                        transaction.update(dailyEarningRef, {
-                            earnings: increment(earningForThisOrder),
-                            deliveriesCount: increment(1),
-                            orderValue: increment(orderToComplete.total)
-                        });
-                    }
-                });
-    
+                // Update driver status based on remaining orders
                 const remainingOrders = myActiveOrders.filter(o => o.id !== orderId);
                 const newDriverStatus = remainingOrders.length > 0 ? 'مشغول' : 'متاح';
                 await updateDoc(driverRef, { status: newDriverStatus });
