@@ -15,6 +15,8 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, driv
     const [vehicle, setVehicle] = useState('');
     const [licensePlate, setLicensePlate] = useState('');
     const [ratePerKm, setRatePerKm] = useState(2);
+    const [totalOrderValue, setTotalOrderValue] = useState(0);
+    const [totalEarnings, setTotalEarnings] = useState(0);
 
     useEffect(() => {
         if (driver) {
@@ -23,12 +25,16 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, driv
             setVehicle(driver.vehicle);
             setLicensePlate(driver.licensePlate);
             setRatePerKm(driver.ratePerKm ?? 2);
+            setTotalOrderValue(driver.totalOrderValue ?? 0);
+            setTotalEarnings(driver.totalEarnings ?? 0);
         } else {
             setName('');
             setPhone('');
             setVehicle('');
             setLicensePlate('');
             setRatePerKm(2);
+            setTotalOrderValue(0);
+            setTotalEarnings(0);
         }
     }, [driver, isOpen]);
 
@@ -36,7 +42,7 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, driv
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ name, phone, vehicle, licensePlate, ratePerKm }, driver ? driver.id : null);
+        onSave({ name, phone, vehicle, licensePlate, ratePerKm, totalOrderValue, totalEarnings }, driver ? driver.id : null);
     };
 
     return (
@@ -73,6 +79,28 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, driv
                                 className="mt-1 w-full border-gray-300 rounded-md" 
                                 required 
                             />
+                        </div>
+                        <div className="border-t pt-4 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">إجمالي قيمة الطلبات (د.م.)</label>
+                                <input 
+                                    type="number" 
+                                    step="0.01"
+                                    value={totalOrderValue} 
+                                    onChange={e => setTotalOrderValue(parseFloat(e.target.value) || 0)} 
+                                    className="mt-1 w-full border-gray-300 rounded-md" 
+                                />
+                            </div>
+                             <div>
+                                <label className="block text-sm font-medium text-gray-700">أرباحي (د.م.)</label>
+                                <input 
+                                    type="number" 
+                                    step="0.01"
+                                    value={totalEarnings} 
+                                    onChange={e => setTotalEarnings(parseFloat(e.target.value) || 0)} 
+                                    className="mt-1 w-full border-gray-300 rounded-md" 
+                                />
+                            </div>
                         </div>
                     </div>
                     <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">

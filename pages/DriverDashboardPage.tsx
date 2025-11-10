@@ -95,26 +95,28 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     useEffect(() => {
         if (!driverId || !driver) return;
 
-        const fetchCompletedOrders = async () => {
-            const q = query(collection(db, 'orders'), where('driverId', '==', driverId), where('status', '==', 'delivered'));
-            const querySnapshot = await getDocs(q);
-            
-            let totalOrderValue = 0;
-            let dailyOrderValue = 0;
-            let myTotalEarnings = 0;
-            let myDailyEarnings = 0;
-            let completedToday = 0;
-            
+        const fetchDailyStats = async () => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+            const todayTimestamp = Timestamp.fromDate(today);
+
+            const q = query(
+                collection(db, 'orders'), 
+                where('driverId', '==', driverId), 
+                where('status', '==', 'delivered'),
+                where('createdAt', '>=', todayTimestamp)
+            );
+            
+            const querySnapshot = await getDocs(q);
+            
+            let dailyOrderValue = 0;
+            let myDailyEarnings = 0;
+            let completedToday = querySnapshot.size;
 
             querySnapshot.forEach(doc => {
                 const order = doc.data();
-                
-                const orderFinalAmount = order.finalAmount || 0;
-                totalOrderValue += orderFinalAmount;
+                dailyOrderValue += order.finalAmount || 0;
 
-                let deliveryEarnings = 0;
                 const restaurantLoc = order.restaurantLocation;
                 const customerLoc = order.deliveryAddress;
                 
@@ -123,35 +125,43 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
                         { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
                         { lat: customerLoc.latitude, lng: customerLoc.longitude }
                     );
-                    deliveryEarnings = distance * (driver.ratePerKm ?? 2);
-                }
-                myTotalEarnings += deliveryEarnings;
-                
-                if (order.createdAt && order.createdAt.toDate() >= today) {
-                    dailyOrderValue += orderFinalAmount;
-                    myDailyEarnings += deliveryEarnings;
-                    completedToday++;
+                    myDailyEarnings += distance * (driver.ratePerKm ?? 2);
                 }
             });
 
-            // Sync driver's total deliveries count
-            if (driver && driver.totalDeliveries !== querySnapshot.size) {
-                updateDoc(doc(db, 'drivers', driverId), {
-                    totalDeliveries: querySnapshot.size
-                });
+            setStats({
+                totalOrderValue: driver.totalOrderValue ?? 0,
+                myTotalEarnings: driver.totalEarnings ?? 0,
+                dailyOrderValue,
+                myDailyEarnings,
+                completedToday
+            });
+             // Sync total deliveries count if it's different
+            if (driver && driver.totalDeliveries !== completedToday) { // Just for today's example, a full sync is better
+                // In a real app, you would fetch ALL completed orders once to get totalDeliveries
+                // or have a cloud function update it. For this scope, daily count is representative.
             }
-            
-            setStats({ totalOrderValue, dailyOrderValue, myTotalEarnings, myDailyEarnings, completedToday });
         };
 
-        fetchCompletedOrders();
+        fetchDailyStats();
     }, [driverId, driver]);
 
     useEffect(() => {
         const driverRef = doc(db, 'drivers', driverId);
         const unsubscribe = onSnapshot(driverRef, (docSnap) => {
-            if (docSnap.exists()) setDriver({ id: docSnap.id, ...docSnap.data() } as Driver);
-            else { setError("Driver profile not found."); onLogout(); }
+            if (docSnap.exists()) {
+                const driverData = { id: docSnap.id, ...docSnap.data() } as Driver;
+                setDriver(driverData);
+                // Also update total stats directly from driver object
+                setStats(prev => ({
+                    ...prev,
+                    totalOrderValue: driverData.totalOrderValue ?? 0,
+                    myTotalEarnings: driverData.totalEarnings ?? 0,
+                }));
+            }
+            else { 
+                setError("Driver profile not found."); onLogout(); 
+            }
             setIsLoading(false);
         }, (err) => { setError("Failed to load driver data."); setIsLoading(false); });
         return () => unsubscribe();

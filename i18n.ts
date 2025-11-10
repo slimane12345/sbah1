@@ -198,6 +198,11 @@ export const translations: Record<string, Record<string, string>> = {
     codWithAmount: 'نقداً عند الاستلام ({{amount}} {{currency}})',
     paidElectronically: 'تم الدفع إلكترونياً',
     confirmAcceptance: 'تأكيد القبول',
+    payDues: 'دفع المستحقات',
+    confirmPaymentTitle: 'تأكيد دفع المستحقات',
+    confirmPaymentMessage: 'هل أنت متأكد من دفع مستحقات {{driverName}}؟ سيتم تصفير رصيد أرباحه البالغ {{amount}} {{currency}}.',
+    confirm: 'تأكيد',
+    paying: 'جاري الدفع...',
   },
   fr: {
     // ======== GLOBAL ========
@@ -398,5 +403,10 @@ export const translations: Record<string, Record<string, string>> = {
     codWithAmount: 'Paiement à la livraison ({{amount}} {{currency}})',
     paidElectronically: 'Payé électroniquement',
     confirmAcceptance: 'Confirmer l\'acceptation',
+    payDues: 'Payer les dus',
+    confirmPaymentTitle: 'Confirmer le paiement des dus',
+    confirmPaymentMessage: 'Êtes-vous sûr de vouloir payer les dus de {{driverName}} ? Son solde de gains de {{amount}} {{currency}} sera remis à zéro.',
+    confirm: 'Confirmer',
+    paying: 'Paiement en cours...',
   }
 };

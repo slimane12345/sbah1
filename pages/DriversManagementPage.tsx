@@ -5,6 +5,7 @@ import Pagination from '../components/Pagination';
 import DriverModal from '../components/DriverModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
+import PayDuesModal from '../components/PayDuesModal';
 import { db } from '../scripts/firebase/firebaseConfig.js';
 import { collection, query, onSnapshot, doc, updateDoc, orderBy, Timestamp, addDoc, deleteDoc } from 'firebase/firestore';
 
@@ -23,6 +24,9 @@ const DriversManagementPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const [payingDriver, setPayingDriver] = useState<Driver | null>(null);
+    const [isPayModalOpen, setIsPayModalOpen] = useState(false);
 
     useEffect(() => {
         setIsLoading(true);
@@ -43,6 +47,8 @@ const DriversManagementPage: React.FC = () => {
                     totalDeliveries: data.totalDeliveries || 0,
                     lastSeen: data.lastSeen ? new Date(data.lastSeen).toLocaleString('ar-SA') : 'N/A',
                     ratePerKm: data.ratePerKm ?? 2,
+                    totalOrderValue: data.totalOrderValue || 0,
+                    totalEarnings: data.totalEarnings || 0,
                 };
             });
             setDrivers(fetchedDrivers);
@@ -80,13 +86,22 @@ const DriversManagementPage: React.FC = () => {
     const handleSave = async (driverData: Omit<Driver, 'id' | 'status' | 'rating' | 'totalDeliveries' | 'lastSeen' | 'avatar'>, id: string | null) => {
         setIsSubmitting(true);
         try {
+            const dataToSave = {
+                name: driverData.name,
+                phone: driverData.phone,
+                vehicle: driverData.vehicle,
+                licensePlate: driverData.licensePlate,
+                ratePerKm: driverData.ratePerKm,
+                totalOrderValue: driverData.totalOrderValue || 0,
+                totalEarnings: driverData.totalEarnings || 0,
+            };
+
             if (id) {
                 const driverRef = doc(db, 'drivers', id);
-                await updateDoc(driverRef, driverData as any);
+                await updateDoc(driverRef, dataToSave);
             } else {
                 await addDoc(collection(db, 'drivers'), {
-                    ...driverData,
-                    ratePerKm: driverData.ratePerKm ?? 2,
+                    ...dataToSave,
                     status: 'غير متصل',
                     rating: 5,
                     totalDeliveries: 0,
@@ -101,6 +116,31 @@ const DriversManagementPage: React.FC = () => {
             setIsSubmitting(false);
         }
     };
+    
+    const handleOpenPayModal = (driver: Driver) => {
+        setPayingDriver(driver);
+        setIsPayModalOpen(true);
+    };
+    
+    const handleConfirmPayment = async () => {
+        if (!payingDriver) return;
+        setIsSubmitting(true);
+        try {
+            const driverRef = doc(db, 'drivers', payingDriver.id);
+            await updateDoc(driverRef, {
+                totalOrderValue: 0,
+                totalEarnings: 0
+            });
+            setIsPayModalOpen(false);
+            setPayingDriver(null);
+        } catch (err) {
+            console.error("Error paying dues:", err);
+            setError("فشل في تصفير مستحقات السائق.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
 
     const filteredDrivers = useMemo(() => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -142,7 +182,7 @@ const DriversManagementPage: React.FC = () => {
 
                 {isLoading ? <LoadingSpinner /> : error ? <ErrorDisplay message={error} /> : (
                     <>
-                        <DriversManagementTable drivers={paginatedDrivers} onEdit={handleEdit} onDelete={handleDelete} />
+                        <DriversManagementTable drivers={paginatedDrivers} onEdit={handleEdit} onDelete={handleDelete} onPayDues={handleOpenPayModal} />
                         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                     </>
                 )}
@@ -153,6 +193,15 @@ const DriversManagementPage: React.FC = () => {
                     onClose={() => setIsModalOpen(false)}
                     onSave={handleSave}
                     driver={editingDriver}
+                    isSubmitting={isSubmitting}
+                />
+            )}
+            {isPayModalOpen && (
+                <PayDuesModal
+                    isOpen={isPayModalOpen}
+                    onClose={() => setIsPayModalOpen(false)}
+                    onConfirm={handleConfirmPayment}
+                    driver={payingDriver}
                     isSubmitting={isSubmitting}
                 />
             )}
