@@ -120,6 +120,8 @@ const MainApp: React.FC = () => {
     // New order notification state for admin
     const [newOrderNotification, setNewOrderNotification] = useState<{ orderNumber: string, customerName: string } | null>(null);
     const isFirstLoad = useRef(true);
+    const [isAudioEnabled, setIsAudioEnabled] = useState(() => localStorage.getItem('isAudioEnabled') === 'true');
+    const audioRef = useRef<HTMLAudioElement | null>(null);
     
     const { t, translateField } = useLanguage();
 
@@ -137,6 +139,30 @@ const MainApp: React.FC = () => {
         window.location.href = '/driver.html';
     };
 
+    // Create a single audio element to be reused and handle loading errors
+    useEffect(() => {
+        if (viewMode === 'admin' && !audioRef.current) {
+            audioRef.current = new Audio('/sounds/notification.mp3');
+            audioRef.current.onerror = () => {
+                console.error("Failed to load notification sound. Ensure '/sounds/notification.mp3' exists in the public directory.");
+            };
+        }
+    }, [viewMode]);
+
+    const toggleAudio = () => {
+        const newIsEnabled = !isAudioEnabled;
+        setIsAudioEnabled(newIsEnabled);
+        localStorage.setItem('isAudioEnabled', String(newIsEnabled));
+        if (newIsEnabled && audioRef.current) {
+            // Play a sound on first activation to unlock audio playback in the browser
+            audioRef.current.volume = 0.5;
+            audioRef.current.play().catch(e => {
+                console.error("Test audio play failed. User needs to interact with the page.", e);
+            });
+        }
+    };
+
+
     // Listener for new orders (admin view only)
     useEffect(() => {
         if (viewMode !== 'admin') return;
@@ -153,13 +179,11 @@ const MainApp: React.FC = () => {
                 if (change.type === "added") {
                     const orderData = change.doc.data();
                     if (orderData.status === 'pending') {
-                        try {
-                            const audio = new Audio('/sounds/notification.mp3');
-                            audio.play().catch(error => {
-                                console.error("Audio playback failed. User interaction might be required.", error);
+                        if (isAudioEnabled && audioRef.current) {
+                            audioRef.current.currentTime = 0;
+                            audioRef.current.play().catch(error => {
+                                console.error("Audio playback failed. The browser might have blocked it.", error);
                             });
-                        } catch (e) {
-                            console.error("Could not create or play audio.", e)
                         }
                         
                         setNewOrderNotification({
@@ -172,7 +196,7 @@ const MainApp: React.FC = () => {
         });
 
         return () => unsubscribe();
-    }, [viewMode]);
+    }, [viewMode, isAudioEnabled]);
 
     useEffect(() => {
         const fetchAppSettings = async () => {
@@ -507,7 +531,11 @@ const MainApp: React.FC = () => {
             <div className="flex h-screen bg-gray-100" dir="rtl">
                 <Sidebar activePage={activePage} setActivePage={setActivePage} />
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <Header title={pageTitles[activePage] || 'لوحة التحكم'} />
+                    <Header
+                        title={pageTitles[activePage] || 'لوحة التحكم'}
+                        isAudioEnabled={isAudioEnabled}
+                        onToggleAudio={toggleAudio}
+                    />
                     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-8">
                         {renderAdminPage()}
                     </main>

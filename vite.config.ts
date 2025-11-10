@@ -8,24 +8,32 @@ import { fileURLToPath } from 'url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  build: {
-    outDir: 'dist',
-    rollupOptions: {
-      input: {
-        // Fix: Replaced `process.cwd()`, which caused a TypeScript error, with `__dirname`.
-        // This is a robust way to resolve paths relative to the config file's location.
-        main: resolve(__dirname, 'index.html'),
-        customer: resolve(__dirname, 'customer.html'),
-        driver: resolve(__dirname, 'driver.html'),
-      }
-    }
-  },
-  server: {
-    // Proxy API requests to the Node server during local development
-    proxy: {
-      '/api': 'http://localhost:3000'
-    }
-  }
+export default defineConfig(({ command, mode }) => {
+  // FIX: Cast `process` to `any` to resolve TypeScript error about missing `argv` property.
+  // This is a workaround for an environment where Node.js types might not be fully available.
+  const isDriverBuild = (process as any).argv.includes('--outDir') && (process as any).argv.includes('dist-driver');
+
+  return {
+    plugins: [react()],
+    build: {
+      outDir: isDriverBuild ? 'dist-driver' : 'dist',
+      rollupOptions: {
+        input: isDriverBuild
+          ? {
+              driver: resolve(__dirname, 'driver.html'),
+            }
+          : {
+              main: resolve(__dirname, 'index.html'),
+              customer: resolve(__dirname, 'customer.html'),
+              driver: resolve(__dirname, 'driver.html'),
+            },
+      },
+    },
+    server: {
+      // Proxy API requests to the Node server during local development
+      proxy: {
+        '/api': 'http://localhost:3000',
+      },
+    },
+  };
 });
