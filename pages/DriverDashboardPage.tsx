@@ -93,7 +93,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     const isOnline = driver?.status === 'متاح' || driver?.status === 'مشغول';
 
     useEffect(() => {
-        if (!driverId) return;
+        if (!driverId || !driver) return;
 
         const fetchCompletedOrders = async () => {
             const q = query(collection(db, 'orders'), where('driverId', '==', driverId), where('status', '==', 'delivered'));
@@ -123,7 +123,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
                         { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
                         { lat: customerLoc.latitude, lng: customerLoc.longitude }
                     );
-                    deliveryEarnings = distance * 2; // 2 per km
+                    deliveryEarnings = distance * (driver.ratePerKm ?? 2);
                 }
                 myTotalEarnings += deliveryEarnings;
                 

@@ -260,6 +260,7 @@ export interface Driver {
   rating: number;
   totalDeliveries: number;
   lastSeen: string;
+  ratePerKm: number;
 }
 
 export type PaymentStatus = 'معلق' | 'مدفوع' | 'غير مدفوع' | 'مسترجع';

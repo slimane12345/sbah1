@@ -14,6 +14,7 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, driv
     const [phone, setPhone] = useState('');
     const [vehicle, setVehicle] = useState('');
     const [licensePlate, setLicensePlate] = useState('');
+    const [ratePerKm, setRatePerKm] = useState(2);
 
     useEffect(() => {
         if (driver) {
@@ -21,11 +22,13 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, driv
             setPhone(driver.phone || '');
             setVehicle(driver.vehicle);
             setLicensePlate(driver.licensePlate);
+            setRatePerKm(driver.ratePerKm ?? 2);
         } else {
             setName('');
             setPhone('');
             setVehicle('');
             setLicensePlate('');
+            setRatePerKm(2);
         }
     }, [driver, isOpen]);
 
@@ -33,7 +36,7 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, driv
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ name, phone, vehicle, licensePlate }, driver ? driver.id : null);
+        onSave({ name, phone, vehicle, licensePlate, ratePerKm }, driver ? driver.id : null);
     };
 
     return (
@@ -43,7 +46,7 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, driv
                     <div className="p-6 border-b">
                         <h2 className="text-xl font-bold text-gray-900">{driver ? 'تعديل بيانات السائق' : 'إضافة سائق جديد'}</h2>
                     </div>
-                    <div className="p-6 space-y-4">
+                    <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                         <div>
                             <label className="block text-sm font-medium text-gray-700">الاسم الكامل</label>
                             <input type="text" value={name} onChange={e => setName(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" required />
@@ -59,6 +62,17 @@ const DriverModal: React.FC<DriverModalProps> = ({ isOpen, onClose, onSave, driv
                         <div>
                             <label className="block text-sm font-medium text-gray-700">رقم لوحة المركبة</label>
                             <input type="text" value={licensePlate} onChange={e => setLicensePlate(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" required />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">أرباح الكيلومتر (د.م.)</label>
+                            <input 
+                                type="number" 
+                                step="0.1"
+                                value={ratePerKm} 
+                                onChange={e => setRatePerKm(parseFloat(e.target.value) || 0)} 
+                                className="mt-1 w-full border-gray-300 rounded-md" 
+                                required 
+                            />
                         </div>
                     </div>
                     <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">

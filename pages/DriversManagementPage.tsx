@@ -42,6 +42,7 @@ const DriversManagementPage: React.FC = () => {
                     rating: data.rating || 0,
                     totalDeliveries: data.totalDeliveries || 0,
                     lastSeen: data.lastSeen ? new Date(data.lastSeen).toLocaleString('ar-SA') : 'N/A',
+                    ratePerKm: data.ratePerKm ?? 2,
                 };
             });
             setDrivers(fetchedDrivers);
@@ -85,6 +86,7 @@ const DriversManagementPage: React.FC = () => {
             } else {
                 await addDoc(collection(db, 'drivers'), {
                     ...driverData,
+                    ratePerKm: driverData.ratePerKm ?? 2,
                     status: 'غير متصل',
                     rating: 5,
                     totalDeliveries: 0,

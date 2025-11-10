@@ -19,6 +19,7 @@ const DriversManagementTable: React.FC<DriversManagementTableProps> = ({ drivers
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المركبة</th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التقييم</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">معدل الربح</th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">إجمالي التوصيلات</th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">إجراءات</th>
           </tr>
@@ -50,6 +51,7 @@ const DriversManagementTable: React.FC<DriversManagementTableProps> = ({ drivers
                   {driver.rating.toFixed(1)}
                 </div>
               </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-semibold">{driver.ratePerKm} د.م./كم</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{driver.totalDeliveries}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                  <button onClick={() => onEdit(driver)} className="text-indigo-600 hover:text-indigo-900 ml-4">تعديل</button>
