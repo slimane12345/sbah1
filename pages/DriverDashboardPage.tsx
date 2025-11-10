@@ -95,56 +95,57 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     useEffect(() => {
         if (!driverId || !driver) return;
 
-        const fetchCompletedOrders = async () => {
-            const q = query(collection(db, 'orders'), where('driverId', '==', driverId), where('status', '==', 'delivered'));
-            const querySnapshot = await getDocs(q);
-            
-            let totalOrderValue = 0;
+        const fetchStats = async () => {
+            // Fetch all completed orders for total delivery count
+            const allCompletedQuery = query(collection(db, 'orders'), where('driverId', '==', driverId), where('status', '==', 'delivered'));
+            const allCompletedSnapshot = await getDocs(allCompletedQuery);
+
+            // Sync driver's total deliveries count
+            if (driver.totalDeliveries !== allCompletedSnapshot.size) {
+                updateDoc(doc(db, 'drivers', driverId), {
+                    totalDeliveries: allCompletedSnapshot.size
+                });
+            }
+
+            // Calculate daily stats
             let dailyOrderValue = 0;
-            let myTotalEarnings = 0;
             let myDailyEarnings = 0;
             let completedToday = 0;
             
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            querySnapshot.forEach(doc => {
+            allCompletedSnapshot.forEach(doc => {
                 const order = doc.data();
-                
-                const orderFinalAmount = order.finalAmount || 0;
-                totalOrderValue += orderFinalAmount;
-
-                let deliveryEarnings = 0;
-                const restaurantLoc = order.restaurantLocation;
-                const customerLoc = order.deliveryAddress;
-                
-                if (restaurantLoc?.lat && restaurantLoc?.lng && customerLoc?.latitude && customerLoc?.longitude) {
-                    const distance = calculateDistance(
-                        { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
-                        { lat: customerLoc.latitude, lng: customerLoc.longitude }
-                    );
-                    deliveryEarnings = distance * (driver.ratePerKm ?? 2);
-                }
-                myTotalEarnings += deliveryEarnings;
-                
                 if (order.createdAt && order.createdAt.toDate() >= today) {
-                    dailyOrderValue += orderFinalAmount;
+                    dailyOrderValue += order.finalAmount || 0;
+
+                    let deliveryEarnings = 0;
+                    const restaurantLoc = order.restaurantLocation;
+                    const customerLoc = order.deliveryAddress;
+                    
+                    if (restaurantLoc?.lat && restaurantLoc?.lng && customerLoc?.latitude && customerLoc?.longitude) {
+                        const distance = calculateDistance(
+                            { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
+                            { lat: customerLoc.latitude, lng: customerLoc.longitude }
+                        );
+                        deliveryEarnings = distance * (driver.ratePerKm ?? 2);
+                    }
                     myDailyEarnings += deliveryEarnings;
                     completedToday++;
                 }
             });
-
-            // Sync driver's total deliveries count
-            if (driver && driver.totalDeliveries !== querySnapshot.size) {
-                updateDoc(doc(db, 'drivers', driverId), {
-                    totalDeliveries: querySnapshot.size
-                });
-            }
             
-            setStats({ totalOrderValue, dailyOrderValue, myTotalEarnings, myDailyEarnings, completedToday });
+            setStats({ 
+                totalOrderValue: driver.totalOrderValue ?? 0, 
+                myTotalEarnings: driver.totalEarnings ?? 0,
+                dailyOrderValue, 
+                myDailyEarnings, 
+                completedToday 
+            });
         };
 
-        fetchCompletedOrders();
+        fetchStats();
     }, [driverId, driver]);
 
     useEffect(() => {

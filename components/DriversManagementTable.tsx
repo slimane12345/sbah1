@@ -21,6 +21,8 @@ const DriversManagementTable: React.FC<DriversManagementTableProps> = ({ drivers
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التقييم</th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">معدل الربح</th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">إجمالي التوصيلات</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">إجمالي قيمة الطلبات</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الأرباح</th>
             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">إجراءات</th>
           </tr>
         </thead>
@@ -53,6 +55,8 @@ const DriversManagementTable: React.FC<DriversManagementTableProps> = ({ drivers
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-semibold">{driver.ratePerKm} د.م./كم</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{driver.totalDeliveries}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-semibold">{(driver.totalOrderValue ?? 0).toLocaleString('ar-MA')} د.م.</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-green-800 font-bold">{(driver.totalEarnings ?? 0).toLocaleString('ar-MA')} د.م.</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                  <button onClick={() => onEdit(driver)} className="text-indigo-600 hover:text-indigo-900 ml-4">تعديل</button>
                  <button onClick={() => onDelete(driver)} className="text-red-600 hover:text-red-900">حذف</button>
