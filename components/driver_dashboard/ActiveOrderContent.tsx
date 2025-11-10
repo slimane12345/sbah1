@@ -1,54 +1,106 @@
 import React from 'react';
 import type { OrderManagementData, Driver } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext.tsx';
-import OrderTrackingMap from '../OrderTrackingMap.tsx';
 import DriverHeader from './DriverHeader.tsx';
 
 interface ActiveOrderContentProps {
     order: OrderManagementData;
     driver: Driver;
-    driverLocation: { lat: number; lng: number } | null;
     onUpdateStatus: (orderId: string, newStatus: 'picked_up' | 'delivered') => void;
     onLogout: () => void;
 }
 
-const ActiveOrderContent: React.FC<ActiveOrderContentProps> = ({ order, driver, driverLocation, onUpdateStatus, onLogout }) => {
+const InfoCard: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
+    <div className="bg-white p-4 rounded-lg shadow">
+        <div className="flex items-start gap-4">
+            <div className="bg-gray-100 p-3 rounded-full text-gray-600">
+                {icon}
+            </div>
+            <div>
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{title}</h3>
+                <div className="text-gray-800 mt-1">{children}</div>
+            </div>
+        </div>
+    </div>
+);
+
+
+const ActiveOrderContent: React.FC<ActiveOrderContentProps> = ({ order, driver, onUpdateStatus, onLogout }) => {
     const { t } = useLanguage();
 
-    // Fix: Corrected the order status check to use the frontend status 'مؤكد' instead of the backend status 'confirmed'.
+    // The order status is 'confirmed' before pickup. After pickup, it's 'picked_up'.
     const isPickupPhase = order.status === 'مؤكد';
-    const destinationAddress = isPickupPhase ? order.restaurant : order.deliveryAddress.addressText;
+    
     const buttonText = isPickupPhase ? t('orderPickedUp') : t('orderDelivered');
     const buttonAction = () => onUpdateStatus(order.id, isPickupPhase ? 'picked_up' : 'delivered');
+
+    const handleTrackClick = () => {
+        if (!order.restaurantLocation || !order.deliveryAddress) {
+            alert("بيانات الموقع غير متوفرة لهذا الطلب.");
+            return;
+        }
+
+        const originLat = order.restaurantLocation.lat;
+        const originLng = order.restaurantLocation.lng;
+        const destLat = order.deliveryAddress.latitude;
+        const destLng = order.deliveryAddress.longitude;
+
+        const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${destLat},${destLng}&travelmode=driving`;
+
+        window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
+    };
 
     return (
         <div className="flex flex-col h-screen bg-gray-100">
             <DriverHeader driver={driver} isOnline={true} onToggleOnline={() => {}} onLogout={onLogout} />
-            <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Map takes up the top part */}
-                <div className="h-1/2 md:h-2/3 relative">
-                    {order.restaurantLocation && order.deliveryAddress && driverLocation ? (
-                         <OrderTrackingMap 
-                            driverLocation={driverLocation}
-                            restaurantLocation={{ lat: order.restaurantLocation.lat, lng: order.restaurantLocation.lng }}
-                            customerLocation={{ lat: order.deliveryAddress.latitude, lng: order.deliveryAddress.longitude }}
-                         />
-                    ) : (
-                        <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                            <p>Loading map...</p>
-                        </div>
-                    )}
-                </div>
-                {/* Details and Actions take the bottom part */}
-                <div className="bg-white p-4 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] flex-1 flex flex-col justify-between">
-                    <div>
-                        <h2 className="font-bold text-xl">{isPickupPhase ? t('pickupFrom') : t('deliverTo')}</h2>
-                        <p className="text-gray-700 text-lg">{destinationAddress}</p>
-                        <div className="text-sm text-gray-500 mt-2">
-                             <p>{t('payment')}: <span className="font-semibold">{order.paymentMethod === 'COD' ? t('codWithAmount', { amount: order.total.toFixed(2), currency: t('currency') }) : t('paidElectronically')}</span></p>
-                        </div>
+            <main className="flex-1 overflow-y-auto">
+                <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-6 pb-28">
+                    <h2 className="text-2xl font-bold text-gray-800">{t('activeOrder')} - <span className="text-blue-600">{order.orderNumber}</span></h2>
+
+                    <InfoCard title={t('pickupFrom')} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}>
+                        <p className="font-bold text-lg">{order.restaurant}</p>
+                    </InfoCard>
+
+                    <InfoCard title={t('deliverTo')} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}>
+                        <p className="font-bold text-lg">{order.customer.name}</p>
+                        <p className="text-sm text-gray-600">{order.deliveryAddress.addressText}</p>
+                    </InfoCard>
+
+                    <div className="bg-white p-4 rounded-lg shadow">
+                         <h3 className="font-bold text-gray-800 mb-2">{t('products')}</h3>
+                         <ul className="divide-y divide-gray-100 text-sm">
+                            {order.items.map((item, index) => (
+                                <li key={index} className="py-2 flex justify-between">
+                                    <span className="text-gray-700">{item.quantity} x {item.name}</span>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
-                    <button onClick={buttonAction} className="w-full bg-green-600 text-white font-bold py-4 rounded-lg text-lg hover:bg-green-700">
+
+                    <div className="bg-white p-4 rounded-lg shadow">
+                        <h3 className="font-bold text-gray-800 mb-2">{t('payment')}</h3>
+                        <p className="font-semibold text-lg">
+                            {order.paymentMethod === 'COD' 
+                                ? t('codWithAmount', { amount: order.total.toFixed(2), currency: t('currency') }) 
+                                : t('paidElectronically')}
+                        </p>
+                    </div>
+                </div>
+            </main>
+
+            <div className="fixed bottom-0 left-0 right-0 bg-white p-4 border-t shadow-[0_-2px_10px_rgba(0,0,0,0.05)] lg:relative lg:shadow-none">
+                <div className="max-w-3xl mx-auto flex gap-4">
+                    <button 
+                        onClick={handleTrackClick} 
+                        className="w-full text-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm font-semibold text-gray-800 bg-white hover:bg-gray-50 flex items-center justify-center gap-2"
+                    >
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m0 10V7m0 10l-6-3" /></svg>
+                         {t('trackOrder')}
+                    </button>
+                    <button 
+                        onClick={buttonAction} 
+                        className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-semibold text-white ${isPickupPhase ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'}`}
+                    >
                         {buttonText}
                     </button>
                 </div>

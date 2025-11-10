@@ -1,4 +1,5 @@
 
+
 export const translations: Record<string, Record<string, string>> = {
   ar: {
     // ======== GLOBAL ========
@@ -162,7 +163,7 @@ export const translations: Record<string, Record<string, string>> = {
     pickupFrom: 'استلام من',
     deliverTo: 'توصيل إلى',
     orderPickedUp: 'تم استلام الطلب',
-    orderDelivered: 'تم توصيل الطلب بنجاح',
+    orderDelivered: 'اكتمال الطلب',
     distance: 'المسافة',
     earnings: 'الأرباح',
     km: 'كم',
@@ -356,7 +357,7 @@ export const translations: Record<string, Record<string, string>> = {
     pickupFrom: 'Récupérer chez',
     deliverTo: 'Livrer à',
     orderPickedUp: 'Commande récupérée',
-    orderDelivered: 'Commande livrée avec succès',
+    orderDelivered: 'Terminer la livraison',
     distance: 'Distance',
     earnings: 'Gains',
     km: 'km',
