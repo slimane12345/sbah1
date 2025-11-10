@@ -265,6 +265,14 @@ export interface Driver {
   totalEarnings?: number;
 }
 
+export interface DailyEarning {
+  id: string;
+  date: Timestamp;
+  earnings: number;
+  deliveries: number;
+  totalValue: number;
+}
+
 export type PaymentStatus = 'معلق' | 'مدفوع' | 'غير مدفوع' | 'مسترجع';
 
 export interface OrderManagementData {

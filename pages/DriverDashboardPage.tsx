@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { db } from '../scripts/firebase/firebaseConfig.js';
-import { doc, onSnapshot, updateDoc, collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
-import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, PaymentStatus } from '../types.ts';
+// FIX: import 'orderBy' to resolve 'Cannot find name 'orderBy'' error.
+import { doc, onSnapshot, updateDoc, collection, query, where, getDocs, Timestamp, runTransaction, increment, orderBy } from 'firebase/firestore';
+import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, PaymentStatus, DailyEarning } from '../types.ts';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ErrorDisplay from '../components/ErrorDisplay.tsx';
 import { useLanguage } from '../contexts/LanguageContext.tsx';
@@ -74,90 +75,27 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     const [driverLocation, setDriverLocation] = useState<{ lat: number, lng: number } | null>(null);
     const [orderToAccept, setOrderToAccept] = useState<OrderManagementData | null>(null);
     const [stats, setStats] = useState<{ 
-        totalOrderValue: number;
-        dailyOrderValue: number;
-        myTotalEarnings: number;
         myDailyEarnings: number;
         completedToday: number;
     }>({ 
-        totalOrderValue: 0,
-        dailyOrderValue: 0,
-        myTotalEarnings: 0,
         myDailyEarnings: 0,
         completedToday: 0
     });
+    const [dailyEarnings, setDailyEarnings] = useState<DailyEarning[]>([]);
+    const [isEarningsLoading, setIsEarningsLoading] = useState(false);
     const [activeView, setActiveView] = useState<DriverView>('overview');
 
     const { t } = useLanguage();
     const watchId = useRef<number | null>(null);
     const isOnline = driver?.status === 'متاح' || driver?.status === 'مشغول';
 
-    useEffect(() => {
-        if (!driverId || !driver) return;
-
-        const fetchDailyStats = async () => {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const todayTimestamp = Timestamp.fromDate(today);
-
-            const q = query(
-                collection(db, 'orders'), 
-                where('driverId', '==', driverId), 
-                where('status', '==', 'delivered'),
-                where('createdAt', '>=', todayTimestamp)
-            );
-            
-            const querySnapshot = await getDocs(q);
-            
-            let dailyOrderValue = 0;
-            let myDailyEarnings = 0;
-            let completedToday = querySnapshot.size;
-
-            querySnapshot.forEach(doc => {
-                const order = doc.data();
-                dailyOrderValue += order.finalAmount || 0;
-
-                const restaurantLoc = order.restaurantLocation;
-                const customerLoc = order.deliveryAddress;
-                
-                if (restaurantLoc?.lat && restaurantLoc?.lng && customerLoc?.latitude && customerLoc?.longitude) {
-                    const distance = calculateDistance(
-                        { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
-                        { lat: customerLoc.latitude, lng: customerLoc.longitude }
-                    );
-                    myDailyEarnings += distance * (driver.ratePerKm ?? 2);
-                }
-            });
-
-            setStats({
-                totalOrderValue: driver.totalOrderValue ?? 0,
-                myTotalEarnings: driver.totalEarnings ?? 0,
-                dailyOrderValue,
-                myDailyEarnings,
-                completedToday
-            });
-             // Sync total deliveries count if it's different
-            if (driver && driver.totalDeliveries !== completedToday) { // Just for today's example, a full sync is better
-                // In a real app, you would fetch ALL completed orders once to get totalDeliveries
-                // or have a cloud function update it. For this scope, daily count is representative.
-            }
-        };
-
-        fetchDailyStats();
-    }, [driverId, driver]);
-
+    // Fetch driver profile
     useEffect(() => {
         const driverRef = doc(db, 'drivers', driverId);
         const unsubscribe = onSnapshot(driverRef, (docSnap) => {
             if (docSnap.exists()) {
                 const driverData = { id: docSnap.id, ...docSnap.data() } as Driver;
                 setDriver(driverData);
-                // Also update total stats directly from driver object
-                setStats(prev => ({
-                    ...prev,
-                    totalOrderValue: driverData.totalOrderValue ?? 0,
-                    myTotalEarnings: driverData.totalEarnings ?? 0,
-                }));
             }
             else { 
                 setError("Driver profile not found."); onLogout(); 
@@ -167,6 +105,29 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         return () => unsubscribe();
     }, [driverId, onLogout]);
 
+    // Fetch today's stats for overview
+    useEffect(() => {
+        if (!driverId) return;
+        
+        const todayString = new Date().toISOString().split('T')[0];
+        const todayDocRef = doc(db, 'drivers', driverId, 'daily_earnings', todayString);
+
+        const unsubscribe = onSnapshot(todayDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const todayData = docSnap.data();
+                setStats({
+                    myDailyEarnings: todayData.earnings || 0,
+                    completedToday: todayData.deliveries || 0,
+                });
+            } else {
+                setStats({ myDailyEarnings: 0, completedToday: 0 });
+            }
+        });
+        
+        return () => unsubscribe();
+    }, [driverId]);
+
+    // Track driver's GPS location
     useEffect(() => {
         if (isOnline) {
             if (watchId.current) navigator.geolocation.clearWatch(watchId.current);
@@ -182,8 +143,9 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         return () => { if (watchId.current) navigator.geolocation.clearWatch(watchId.current); };
     }, [isOnline]);
 
+    // Fetch orders (new & active)
     useEffect(() => {
-        if (!driver) return;
+        if (!driverId) return;
         const newOrdersQuery = query(collection(db, 'orders'), where('status', '==', 'confirmed'), where('driverId', '==', null));
         const unsubscribeNew = onSnapshot(newOrdersQuery, (snapshot) => {
             setAllNewOrders(snapshot.docs.map(mapFirestoreDocToOrder));
@@ -199,7 +161,33 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         });
 
         return () => { unsubscribeNew(); unsubscribeActive(); };
-    }, [driver, driverId, selectedOrder]);
+    }, [driverId, selectedOrder]);
+    
+    // Fetch daily earnings history for the earnings page
+    useEffect(() => {
+        if (activeView !== 'earnings' || !driverId) return;
+
+        setIsEarningsLoading(true);
+        const dailyEarningsQuery = query(
+            collection(db, 'drivers', driverId, 'daily_earnings'), 
+            orderBy('date', 'desc')
+        );
+
+        const unsubscribe = onSnapshot(dailyEarningsQuery, (snapshot) => {
+            const earningsData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...(doc.data() as Omit<DailyEarning, 'id'>)
+            }));
+            setDailyEarnings(earningsData);
+            setIsEarningsLoading(false);
+        }, (err) => {
+            console.error("Error fetching daily earnings:", err);
+            setError("فشل في تحميل سجل الأرباح.");
+            setIsEarningsLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [activeView, driverId]);
 
     const nearbyOrders = useMemo(() => {
         if (!driverLocation || !allNewOrders.length) return [];
@@ -215,43 +203,65 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     };
 
     const handleUpdateOrderStatus = async (orderId: string, newStatus: 'picked_up' | 'delivered') => {
+        const orderRef = doc(db, 'orders', orderId);
+
         try {
-            const orderRef = doc(db, 'orders', orderId);
-            await updateDoc(orderRef, { status: newStatus });
-    
+            if (newStatus === 'picked_up') {
+                await updateDoc(orderRef, { status: newStatus });
+                return;
+            }
+
             if (newStatus === 'delivered' && driver) {
                 const orderToComplete = myActiveOrders.find(o => o.id === orderId);
                 if (!orderToComplete) {
-                    console.error("Completed order not found in active list for earnings calculation.");
-                    return;
+                    throw new Error("Order to complete not found in active list.");
                 }
-    
+
                 let earningForThisOrder = 0;
                 const restaurantLoc = orderToComplete.restaurantLocation;
                 const customerLoc = orderToComplete.deliveryAddress;
-    
                 if (restaurantLoc?.lat && restaurantLoc?.lng && customerLoc?.latitude && customerLoc?.longitude) {
-                    const distance = calculateDistance(
-                        { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
-                        { lat: customerLoc.latitude, lng: customerLoc.longitude }
-                    );
+                    const distance = calculateDistance({ lat: restaurantLoc.lat, lng: restaurantLoc.lng }, { lat: customerLoc.latitude, lng: customerLoc.longitude });
                     earningForThisOrder = distance * (driver.ratePerKm ?? 2);
                 }
-    
+
                 const driverRef = doc(db, 'drivers', driverId);
-                const updatePayload = {
-                    totalOrderValue: (driver.totalOrderValue ?? 0) + orderToComplete.total,
-                    totalEarnings: (driver.totalEarnings ?? 0) + earningForThisOrder,
-                    totalDeliveries: (driver.totalDeliveries ?? 0) + 1,
-                };
-    
-                await updateDoc(driverRef, updatePayload);
-    
-                // Update driver status based on remaining orders
+                const dateString = new Date().toISOString().split('T')[0];
+                const dailyEarningRef = doc(db, 'drivers', driverId, 'daily_earnings', dateString);
+                
+                await runTransaction(db, async (transaction) => {
+                    const dailyDoc = await transaction.get(dailyEarningRef);
+
+                    if (dailyDoc.exists()) {
+                        transaction.update(dailyEarningRef, {
+                            earnings: increment(earningForThisOrder),
+                            deliveries: increment(1),
+                            totalValue: increment(orderToComplete.total),
+                        });
+                    } else {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        transaction.set(dailyEarningRef, {
+                            date: Timestamp.fromDate(today),
+                            earnings: earningForThisOrder,
+                            deliveries: 1,
+                            totalValue: orderToComplete.total,
+                        });
+                    }
+
+                    transaction.update(driverRef, {
+                        totalOrderValue: increment(orderToComplete.total),
+                        totalEarnings: increment(earningForThisOrder),
+                        totalDeliveries: increment(1),
+                    });
+                });
+                
+                await updateDoc(orderRef, { status: newStatus });
+                
                 const remainingOrders = myActiveOrders.filter(o => o.id !== orderId);
                 const newDriverStatus = remainingOrders.length > 0 ? 'مشغول' : 'متاح';
                 await updateDoc(driverRef, { status: newDriverStatus });
-    
+
                 setSelectedOrder(null);
                 setActiveView('active_orders');
             }
@@ -266,9 +276,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         const driverRef = doc(db, 'drivers', driverId);
         try {
             const newStatus = isOnline ? 'غير متصل' : 'متاح';
-            await updateDoc(driverRef, {
-                status: newStatus
-            });
+            await updateDoc(driverRef, { status: newStatus });
         } catch (err) {
             console.error("Error toggling online status:", err);
             setError("Failed to update online status.");
@@ -292,11 +300,11 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         switch (activeView) {
             case 'orders': return <AvailableOrdersContent orders={nearbyOrders} onAccept={setOrderToAccept} />;
             case 'active_orders': return <ActiveOrdersContent orders={myActiveOrders} onSelectOrder={setSelectedOrder} />;
-            case 'earnings': return <EarningsContent stats={{ totalOrderValue: stats.totalOrderValue, myTotalEarnings: stats.myTotalEarnings }} driver={driver} />;
+            case 'earnings': return <EarningsContent stats={{ totalOrderValue: driver.totalOrderValue || 0, myTotalEarnings: driver.totalEarnings || 0 }} driver={driver} dailyEarnings={dailyEarnings} isLoading={isEarningsLoading} />;
             case 'profile': return <div className="bg-white p-6 rounded-lg shadow-md">{t('profileSettings')} (coming soon)</div>;
             case 'overview':
             default:
-                return <OverviewContent driver={driver} stats={{ myDailyEarnings: stats.myDailyEarnings, completedToday: stats.completedToday }} nearbyOrders={nearbyOrders.slice(0, 3)} setActiveView={setActiveView} onAcceptOrder={setOrderToAccept} />;
+                return <OverviewContent driver={driver} stats={stats} nearbyOrders={nearbyOrders.slice(0, 3)} setActiveView={setActiveView} onAcceptOrder={setOrderToAccept} />;
         }
     };
 
