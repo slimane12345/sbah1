@@ -50,14 +50,14 @@ const RestaurantsManagementTable: React.FC<RestaurantsManagementTableProps> = ({
             const isEditing = inlineEditingId === req.id;
             return (
               <tr key={req.id} className={isEditing ? 'bg-blue-50' : 'hover:bg-gray-50'}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ${isEditing ? 'align-top' : ''}`}>
                   {isEditing ? (
                     <input type="text" value={editedData.name || ''} onChange={(e) => onInlineInputChange('name', e.target.value)} className="w-full border-gray-300 rounded-md text-sm" />
                   ) : (
                     req.name
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${isEditing ? 'align-top' : ''}`}>
                   {isEditing ? (
                     <div className="space-y-1">
                       <input type="text" value={editedData.ownerName || ''} onChange={(e) => onInlineInputChange('ownerName', e.target.value)} className="w-full border-gray-300 rounded-md text-sm" placeholder="اسم المالك" />
@@ -70,18 +70,18 @@ const RestaurantsManagementTable: React.FC<RestaurantsManagementTableProps> = ({
                     </div>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{req.joinDate}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-500 ${isEditing ? 'align-top' : ''}`}>{req.joinDate}</td>
+                <td className={`px-6 py-4 whitespace-nowrap text-sm ${isEditing ? 'align-top' : ''}`}>
                   <ApprovalStatusBadge status={req.approvalStatus} />
                 </td>
-                 <td className="px-6 py-4 whitespace-nowrap text-sm">
+                 <td className={`px-6 py-4 whitespace-nowrap text-sm ${isEditing ? 'align-top' : ''}`}>
                    <StatusToggle 
                       enabled={req.isActive}
                       onChange={() => onToggleActive(req)}
                       disabled={req.approvalStatus !== 'Approved'}
                    />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4 space-x-reverse">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium space-x-4 space-x-reverse ${isEditing ? 'align-top' : ''}`}>
                    {isEditing ? (
                       <>
                           <button onClick={() => onSaveInlineEdit(req.id)} disabled={isSubmitting} className="text-green-600 hover:text-green-900 disabled:opacity-50">
