@@ -100,8 +100,8 @@ export const translations: Record<string, Record<string, string>> = {
     trackOrderTitle: 'تتبع الطلب',
     deliveryDetails: 'تفاصيل التوصيل',
     currentOrderStatus: 'حالة الطلب الحالية',
-    etaCustomer: 'الوقت المتوقع للوصول',
-    etaCustomerValue: '~{{start}}-{{end}} دقائق',
+    etaCustomer: 'Heure d\'arrivée estimée',
+    etaCustomerValue: '~{{start}}-{{end}} minutes',
     restaurant: 'المطعم',
     noLocationDataForTracking: "لا توجد بيانات موقع متاحة لتتبع هذا الطلب.",
 
