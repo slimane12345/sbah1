@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { RestaurantManagementData } from '../types';
+import type { RestaurantManagementData, TranslatableString } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 declare const L: any; // Make Leaflet globally available for TypeScript
 
@@ -12,7 +13,9 @@ interface RestaurantModalProps {
 }
 
 const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSave, isSubmitting, restaurant }) => {
-    const [name, setName] = useState('');
+    const { t } = useLanguage();
+    const [name, setName] = useState<TranslatableString>({ ar: '', fr: '' });
+    const [cuisine, setCuisine] = useState<TranslatableString>({ ar: '', fr: '' });
     const [ownerName, setOwnerName] = useState('');
     const [ownerEmail, setOwnerEmail] = useState('');
     const [ownerPhone, setOwnerPhone] = useState('');
@@ -22,18 +25,26 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapInstance = useRef<any>(null);
     const markerInstance = useRef<any>(null);
+    
+    const normalizeTranslatable = (field: TranslatableString | string | undefined): TranslatableString => {
+        if (!field) return { ar: '', fr: '' };
+        if (typeof field === 'string') return { ar: field, fr: '' };
+        return { ar: field.ar || '', fr: field.fr || '' };
+    };
 
     useEffect(() => {
         if (isOpen) {
             if (restaurant) {
-                setName(restaurant.name);
+                setName(normalizeTranslatable(restaurant.name));
+                setCuisine(normalizeTranslatable(restaurant.cuisine));
                 setOwnerName(restaurant.ownerName);
                 setOwnerEmail(restaurant.ownerEmail);
                 setOwnerPhone(restaurant.ownerPhone || '');
                 setLocation(restaurant.location || null);
                 setCoverPhotoUrl(restaurant.coverPhotoUrl || '');
             } else {
-                setName('');
+                setName({ ar: '', fr: '' });
+                setCuisine({ ar: '', fr: '' });
                 setOwnerName('');
                 setOwnerEmail('');
                 setOwnerPhone('');
@@ -105,7 +116,7 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         onSave(
-            { name, ownerName, ownerEmail, ownerPhone, coverPhotoUrl, location: location || undefined },
+            { name, ownerName, ownerEmail, ownerPhone, coverPhotoUrl, location: location || undefined, cuisine },
             restaurant ? restaurant.id : null
         );
     };
@@ -121,9 +132,25 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
                     </div>
 
                     <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                        <div>
-                            <label htmlFor="restaurantName" className="block text-sm font-medium text-gray-700">اسم المطعم</label>
-                            <input type="text" id="restaurantName" value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" required />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">{t('nameInArabic')}</label>
+                                <input type="text" value={name.ar} onChange={(e) => setName(p => ({...p, ar: e.target.value}))} className="mt-1 w-full border-gray-300 rounded-md" required />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">{t('nameInFrench')}</label>
+                                <input type="text" value={name.fr} onChange={(e) => setName(p => ({...p, fr: e.target.value}))} className="mt-1 w-full border-gray-300 rounded-md" />
+                            </div>
+                        </div>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">{t('cuisineInArabic')}</label>
+                                <input type="text" value={cuisine.ar} onChange={(e) => setCuisine(p => ({...p, ar: e.target.value}))} className="mt-1 w-full border-gray-300 rounded-md" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">{t('cuisineInFrench')}</label>
+                                <input type="text" value={cuisine.fr} onChange={(e) => setCuisine(p => ({...p, fr: e.target.value}))} className="mt-1 w-full border-gray-300 rounded-md" />
+                            </div>
                         </div>
                         <div>
                             <label htmlFor="coverPhotoUrl" className="block text-sm font-medium text-gray-700">رابط الصورة الأساسية</label>
@@ -135,13 +162,8 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
                                 className="mt-1 w-full border-gray-300 rounded-md"
                                 placeholder="https://example.com/image.jpg"
                             />
-                            {coverPhotoUrl && (
-                                <div className="mt-2">
-                                    <img src={coverPhotoUrl} alt="معاينة الصورة" className="h-40 w-full object-cover rounded-md border" />
-                                </div>
-                            )}
                         </div>
-                        <div>
+                        <div className="border-t pt-4">
                             <label htmlFor="ownerName" className="block text-sm font-medium text-gray-700">اسم المالك</label>
                             <input type="text" id="ownerName" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" required />
                         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { RestaurantManagementData, ApprovalStatus, AiAnalysis } from '../types';
+import type { RestaurantManagementData, ApprovalStatus, AiAnalysis, TranslatableString } from '../types';
 import RestaurantsManagementTable from '../components/RestaurantsManagementTable';
 import Pagination from '../components/Pagination';
 import AiAnalysisModal from '../components/AiAnalysisModal';
@@ -57,6 +57,7 @@ const RestaurantsManagementPage: React.FC = () => {
                     isActive: data.isActive === true,
                     location: data.location || undefined,
                     coverPhotoUrl: data.coverPhotoUrl || '',
+                    cuisine: data.cuisineType || '',
                 };
             });
             setRestaurants(fetchedRestaurants);
@@ -119,12 +120,22 @@ const RestaurantsManagementPage: React.FC = () => {
     ) => {
         setIsSubmitting(true);
         try {
+            const dataToSave = {
+                name: newData.name,
+                ownerName: newData.ownerName,
+                ownerEmail: newData.ownerEmail,
+                ownerPhone: newData.ownerPhone,
+                coverPhotoUrl: newData.coverPhotoUrl,
+                location: newData.location,
+                cuisineType: newData.cuisine,
+            };
+
             if (id) {
                 const restaurantRef = doc(db, 'restaurants', id);
-                await updateDoc(restaurantRef, newData);
+                await updateDoc(restaurantRef, dataToSave);
             } else {
                 await addDoc(collection(db, 'restaurants'), {
-                    ...newData,
+                    ...dataToSave,
                     approvalStatus: 'Approved',
                     isActive: true,
                     createdAt: Timestamp.now(),
@@ -158,8 +169,11 @@ const RestaurantsManagementPage: React.FC = () => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         return restaurants.filter(req => {
             const matchesTab = activeTab === 'الكل' || req.approvalStatus === activeTab;
+            
+            const name = typeof req.name === 'string' ? req.name : req.name.ar || req.name.fr || '';
+
             const matchesSearch =
-                (req.name || '').toLowerCase().includes(lowerCaseSearchTerm) ||
+                (name || '').toLowerCase().includes(lowerCaseSearchTerm) ||
                 (req.ownerName || '').toLowerCase().includes(lowerCaseSearchTerm) ||
                 (req.ownerEmail || '').toLowerCase().includes(lowerCaseSearchTerm);
             return matchesTab && matchesSearch;

@@ -10,7 +10,7 @@ interface OrderSummaryProps {
 }
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ onPlaceOrder, cartItems, isPlacingOrder, deliveryFee }) => {
-  const { t } = useLanguage();
+  const { t, translateField } = useLanguage();
   const subtotal = cartItems.reduce((acc, item) => acc + item.totalPrice, 0);
   const total = subtotal + deliveryFee;
 
@@ -21,7 +21,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ onPlaceOrder, cartItems, is
         {cartItems.length > 0 ? (
           cartItems.map(item => (
             <div key={item.product.id} className="flex justify-between items-center">
-              <span className="text-gray-800">{item.quantity} x {item.product.name}</span>
+              <span className="text-gray-800">{item.quantity} x {translateField(item.product.name)}</span>
               <span className="font-semibold text-gray-900">{item.totalPrice.toFixed(2)} {t('currency')}</span>
             </div>
           ))

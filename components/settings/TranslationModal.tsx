@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { translations } from '../../i18n';
-import type { TranslatableString } from '../../types';
 
 interface TranslationModalProps {
     isOpen: boolean;
@@ -34,25 +33,9 @@ const TranslationModal: React.FC<TranslationModalProps> = ({ isOpen, onClose, on
 
     const defaultKeys = Object.keys(translations.ar).sort();
     
-    // Fix: Handle the possibility of a translation value being a `TranslatableString` object
-    // by checking its type before calling `toLowerCase`, and also ensure it can be rendered.
-    const allTranslations = defaultKeys.map(key => {
-        const defaultValue = translations.ar[key];
-        let defaultValueText = '';
-        if (typeof defaultValue === 'string') {
-            defaultValueText = defaultValue;
-        } else if (defaultValue) { // This handles `undefined` and narrows the type to `TranslatableString`.
-            defaultValueText = (defaultValue as TranslatableString).ar || '';
-        }
-        return {
-            key,
-            defaultValue: defaultValueText
-        };
-    });
-
-    const filteredTranslations = allTranslations.filter(({ key, defaultValue }) => 
+    const filteredKeys = defaultKeys.filter(key => 
         key.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (defaultValue || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (translations.ar[key] || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (localTranslations[key] || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -80,10 +63,10 @@ const TranslationModal: React.FC<TranslationModalProps> = ({ isOpen, onClose, on
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {filteredTranslations.map(({ key, defaultValue }) => (
+                                {filteredKeys.map(key => (
                                     <tr key={key}>
                                         <td className="px-4 py-2 font-mono text-xs text-gray-600 align-top">{key}</td>
-                                        <td className="px-4 py-2 text-gray-500 align-top">{defaultValue}</td>
+                                        <td className="px-4 py-2 text-gray-500 align-top">{translations.ar[key]}</td>
                                         <td className="px-4 py-2 align-top">
                                             <textarea
                                                 value={localTranslations[key] || ''}

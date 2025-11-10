@@ -24,7 +24,7 @@ const InfoCard: React.FC<{ title: string; icon: React.ReactNode; children: React
 );
 
 const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateStatus, onBack }) => {
-    const { t } = useLanguage();
+    const { t, translateField } = useLanguage();
 
     const isPickupPhase = order.status !== 'بالتوصيل';
     const buttonText = isPickupPhase ? t('orderPickedUp') : t('orderDelivered');
@@ -54,7 +54,7 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InfoCard title={t('pickupFrom')} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}>
-                    <p className="font-bold text-lg">{order.restaurant}</p>
+                    <p className="font-bold text-lg">{translateField(order.restaurant)}</p>
                 </InfoCard>
 
                 <InfoCard title={t('deliverTo')} icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}>
@@ -69,7 +69,7 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
                     <ul className="space-y-2">
                         {order.items.map((item, index) => (
                             <li key={index}>
-                                <div className="font-semibold text-gray-800">{item.quantity} x {item.name}</div>
+                                <div className="font-semibold text-gray-800">{item.quantity} x {translateField(item.name)}</div>
                                 {item.options && item.options.length > 0 && (
                                     <ul className="mr-4 mt-1 text-xs text-gray-500 list-disc list-inside">
                                         {item.options.map((option, optIndex) => (

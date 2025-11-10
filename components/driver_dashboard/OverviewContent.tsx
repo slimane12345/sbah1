@@ -13,7 +13,7 @@ interface OverviewContentProps {
 }
 
 const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearbyOrders, setActiveView, onAcceptOrder }) => {
-    const { t } = useLanguage();
+    const { t, translateField } = useLanguage();
     const isOnline = driver.status === 'متاح' || driver.status === 'مشغول';
 
     return (
@@ -46,7 +46,7 @@ const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearby
                                 return (
                                 <div key={order.id} className="border p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div className="flex-1">
-                                        <p className="font-bold">{order.restaurant}</p>
+                                        <p className="font-bold">{translateField(order.restaurant)}</p>
                                         <p className="text-sm text-gray-600">{order.deliveryAddress.addressText}</p>
                                         <div className="text-xs text-gray-500 mt-1">
                                             <span>{t('distance')}: ~{

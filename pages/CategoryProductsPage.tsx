@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { db } from '../scripts/firebase/firebaseConfig.js';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
@@ -17,25 +18,35 @@ const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({ categoryNam
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { t } = useLanguage();
+    // Fix: Destructure translateField to handle translatable strings.
+    const { t, translateField } = useLanguage();
 
     useEffect(() => {
         setIsLoading(true);
-        const productsQuery = query(collection(db, "products"), where("category", "==", categoryName));
+        // This query is tricky because category name is now an object.
+        // Firestore doesn't support querying nested object keys directly like `where("category.ar", "==", categoryName)`.
+        // A better data model would use a category ID.
+        // For now, we fetch all products and filter client-side, which is inefficient but works for this structure.
+        const productsQuery = query(collection(db, "products"));
 
         const unsubscribe = onSnapshot(productsQuery, (querySnapshot) => {
-            const fetchedProducts: Product[] = querySnapshot.docs.map(doc => {
+            const fetchedProducts: Product[] = [];
+            querySnapshot.forEach(doc => {
                 const data = doc.data();
-                return {
-                    id: doc.id,
-                    name: data.name,
-                    price: data.price,
-                    description: data.description,
-                    image: data.imageUrl,
-                    category: data.category,
-                    options: data.options || [],
-                    restaurant: data.restaurantName || 'مطعم غير معروف',
-                };
+                // Fix: Use translateField to correctly get the category name string for comparison.
+                const productCategory = translateField(data.category); // Check object then string
+                if (productCategory === categoryName) {
+                     fetchedProducts.push({
+                        id: doc.id,
+                        name: data.name,
+                        price: data.price,
+                        description: data.description,
+                        image: data.imageUrl,
+                        category: data.category,
+                        options: data.options || [],
+                        restaurant: data.restaurantName || 'مطعم غير معروف',
+                    });
+                }
             });
             setProducts(fetchedProducts);
             setIsLoading(false);
@@ -46,7 +57,8 @@ const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({ categoryNam
         });
 
         return () => unsubscribe();
-    }, [categoryName]);
+    // Fix: Add translateField to the dependency array.
+    }, [categoryName, translateField]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">

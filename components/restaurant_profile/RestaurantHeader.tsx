@@ -2,8 +2,8 @@ import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext.tsx';
 
 interface RestaurantHeaderProps {
-    name: string;
-    cuisine: string;
+    name: any;
+    cuisine: any;
     rating: number;
     reviewsCount: number;
     coverImage: string;
@@ -12,7 +12,7 @@ interface RestaurantHeaderProps {
 }
 
 const RestaurantHeader: React.FC<RestaurantHeaderProps> = (props) => {
-  const { t } = useLanguage();
+  const { t, translateField } = useLanguage();
   return (
     <div className="relative mb-8">
       {/* Back Button */}
@@ -29,12 +29,12 @@ const RestaurantHeader: React.FC<RestaurantHeaderProps> = (props) => {
       <div className="max-w-4xl mx-auto px-4">
           <div className="flex justify-start -mt-16">
             <div className="relative">
-              <img src={props.logo} alt={props.name} className="h-28 w-28 rounded-full border-4 border-white object-cover shadow-lg" />
+              <img src={props.logo} alt={translateField(props.name)} className="h-28 w-28 rounded-full border-4 border-white object-cover shadow-lg" />
             </div>
           </div>
           <div className="mt-4">
-            <h1 className="text-3xl font-extrabold text-gray-900">{props.name}</h1>
-            <p className="text-gray-600 mt-1">{props.cuisine}</p>
+            <h1 className="text-3xl font-extrabold text-gray-900">{translateField(props.name)}</h1>
+            <p className="text-gray-600 mt-1">{translateField(props.cuisine)}</p>
             <div className="flex items-center mt-2 text-sm text-gray-600">
               <span className="flex items-center font-semibold ml-4">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-400 ml-1" viewBox="0 0 20 20" fill="currentColor">

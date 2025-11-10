@@ -1,4 +1,3 @@
-// Fix: Import React to provide types for React.Dispatch and React.SetStateAction.
 import React from 'react';
 import type { Timestamp } from 'firebase/firestore';
 
@@ -33,19 +32,16 @@ export type ViewMode = 'admin' | 'customer' | 'driver';
 export type DriverView = 'overview' | 'orders' | 'active_orders' | 'earnings' | 'profile';
 
 export type Language = 'ar' | 'fr';
-
-// Fix: Added TranslatableString type to be used for internationalized database fields and resolve import error.
-export type TranslatableString = { [lang in Language]?: string };
+export type TranslatableString = { [key in Language]?: string; };
 
 export interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string, replacements?: Record<string, string | number>) => string;
-  // Fix: Added translateField to the context type to handle dynamic translation of DB fields.
-  translateField: (field: TranslatableString | string | undefined | null) => string;
   dbTranslations: Record<string, Record<string, string>>;
   setDbTranslations: React.Dispatch<React.SetStateAction<Record<string, Record<string, string>>>>;
   isLoadingTranslations: boolean;
+  translateField: (field: TranslatableString | string | undefined) => string;
 }
 
 
@@ -53,24 +49,24 @@ export interface LanguageContextType {
 
 export interface ProductOption {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   price: number;
 }
 
 export interface ProductOptionGroup {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   type: 'radio' | 'checkbox';
   options: ProductOption[];
 }
 
 export interface Product {
   id: string;
-  name: string;
-  description: string;
+  name: TranslatableString | string;
+  description: TranslatableString | string;
   price: number;
   image: string;
-  category: string;
+  category: TranslatableString | string;
   options?: ProductOptionGroup[];
   restaurant: string;
 }
@@ -79,9 +75,9 @@ export type RestaurantStatus = 'مفتوح' | 'مغلق' | 'قيد المراج�
 
 export interface Restaurant {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   logo: string;
-  cuisine: string;
+  cuisine: TranslatableString | string;
   status: RestaurantStatus;
   rating: number;
   commissionRate: number;
@@ -208,7 +204,7 @@ export interface Review {
 
 export interface Category {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   image: string;
   slug: string;
 }
@@ -233,7 +229,7 @@ export type ApprovalStatus = 'Pending' | 'Approved' | 'Rejected';
 
 export interface RestaurantManagementData {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   ownerName: string;
   ownerEmail: string;
   ownerPhone: string;
@@ -242,6 +238,7 @@ export interface RestaurantManagementData {
   isActive: boolean;
   location?: { latitude: number; longitude: number; addressText: string };
   coverPhotoUrl?: string;
+  cuisine?: TranslatableString | string;
 }
 
 export interface AiAnalysis {
@@ -255,13 +252,13 @@ export type AvailabilityStatus = 'متوفر' | 'غير متوفر';
 
 export interface ProductManagementData {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   image: string;
   restaurant: string;
-  category: string;
+  category: TranslatableString | string;
   price: number;
   availability: AvailabilityStatus;
-  description?: string;
+  description?: TranslatableString | string;
   options?: ProductOptionGroup[];
 }
 
@@ -304,7 +301,7 @@ export interface OrderManagementData {
   paymentMethod: 'COD' | 'Credit Card';
   date: string;
   courier: { name: string; avatar: string } | null;
-  items: { name: string; quantity: number; price: number; options?: string[]; category?: string }[];
+  items: { name: TranslatableString | string; quantity: number; price: number; options?: string[]; category?: string }[];
   deliveryAddress: { latitude: number; longitude: number; addressText: string };
   restaurantLocation?: { lat: number, lng: number }; // For DriverDashboardPage
   driverId?: string | null;
@@ -341,7 +338,7 @@ export interface Offer {
 
 export interface CategoryManagementData {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   image: string;
   slug: string;
   createdAt: string;

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { CategoryManagementData } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface CategoriesManagementTableProps {
   categories: CategoryManagementData[];
@@ -8,6 +9,8 @@ interface CategoriesManagementTableProps {
 }
 
 const CategoriesManagementTable: React.FC<CategoriesManagementTableProps> = ({ categories, onEdit, onDelete }) => {
+  const { translateField } = useLanguage();
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white">
@@ -25,8 +28,8 @@ const CategoriesManagementTable: React.FC<CategoriesManagementTableProps> = ({ c
             <tr key={category.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 <div className="flex items-center">
-                  <img className="h-10 w-10 rounded-md object-cover ml-4" src={category.image} alt={category.name} />
-                  {category.name}
+                  <img className="h-10 w-10 rounded-md object-cover ml-4" src={category.image} alt={translateField(category.name)} />
+                  {translateField(category.name)}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{category.slug}</td>

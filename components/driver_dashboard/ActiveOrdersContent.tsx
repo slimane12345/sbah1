@@ -8,7 +8,7 @@ interface ActiveOrdersContentProps {
 }
 
 const ActiveOrdersContent: React.FC<ActiveOrdersContentProps> = ({ orders, onSelectOrder }) => {
-    const { t } = useLanguage();
+    const { t, translateField } = useLanguage();
 
     return (
         <div className="space-y-4 pb-20 lg:pb-0">
@@ -18,7 +18,7 @@ const ActiveOrdersContent: React.FC<ActiveOrdersContentProps> = ({ orders, onSel
                     <div key={order.id} className="bg-white p-4 rounded-lg shadow-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div className="flex-1">
                             <p className="font-bold text-blue-600">{order.orderNumber}</p>
-                            <p className="font-semibold">{order.restaurant}</p>
+                            <p className="font-semibold">{translateField(order.restaurant)}</p>
                             <p className="text-sm text-gray-600">{order.deliveryAddress.addressText}</p>
                         </div>
                         <button onClick={() => onSelectOrder(order)} className="bg-indigo-600 text-white px-5 py-2 rounded-md hover:bg-indigo-700 text-sm font-semibold w-full sm:w-auto">

@@ -1,7 +1,9 @@
+
 import React, { useState, useMemo } from 'react';
 import type { Restaurant, RestaurantStatus } from '../types';
 import RestaurantsTable from '../components/RestaurantsTable';
 import Pagination from '../components/Pagination';
+import { useLanguage } from '../contexts/LanguageContext.tsx';
 
 const mockRestaurants: Restaurant[] = [
   { id: 'R001', name: 'مطعم البيت السعودي', logo: 'https://i.pravatar.cc/150?img=21', cuisine: 'سعودي', status: 'مفتوح', rating: 4.5, commissionRate: 15, totalOrders: 1204 },
@@ -18,6 +20,7 @@ const TABS: RestaurantStatus[] = ['مفتوح', 'مغلق', 'قيد المراج
 const ITEMS_PER_PAGE = 8;
 
 const RestaurantsPage: React.FC = () => {
+    const { translateField } = useLanguage();
     const [activeTab, setActiveTab] = useState<RestaurantStatus | 'الكل'>('الكل');
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
@@ -26,12 +29,13 @@ const RestaurantsPage: React.FC = () => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         return mockRestaurants.filter(restaurant => {
             const matchesTab = activeTab === 'الكل' || restaurant.status === activeTab;
+            // Fix: Use translateField to convert TranslatableString to string before calling toLowerCase.
             const matchesSearch = 
-                (restaurant.name || '').toLowerCase().includes(lowerCaseSearchTerm) ||
-                (restaurant.cuisine || '').toLowerCase().includes(lowerCaseSearchTerm);
+                (translateField(restaurant.name) || '').toLowerCase().includes(lowerCaseSearchTerm) ||
+                (translateField(restaurant.cuisine) || '').toLowerCase().includes(lowerCaseSearchTerm);
             return matchesTab && matchesSearch;
         });
-    }, [activeTab, searchTerm]);
+    }, [activeTab, searchTerm, translateField]);
 
     const totalPages = Math.ceil(filteredRestaurants.length / ITEMS_PER_PAGE);
 

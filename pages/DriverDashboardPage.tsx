@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { db } from '../scripts/firebase/firebaseConfig.js';
 // FIX: import 'orderBy' to resolve 'Cannot find name 'orderBy'' error.
 import { doc, onSnapshot, updateDoc, collection, query, where, getDocs, Timestamp, runTransaction, increment, orderBy } from 'firebase/firestore';
-import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, PaymentStatus, DailyEarning } from '../types.ts';
+import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, PaymentStatus, DailyEarning, TranslatableString } from '../types.ts';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ErrorDisplay from '../components/ErrorDisplay.tsx';
 import { useLanguage } from '../contexts/LanguageContext.tsx';
@@ -51,7 +51,7 @@ const mapFirestoreDocToOrder = (doc: any): OrderManagementData => {
         date: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toLocaleDateString('ar-SA') : 'N/A',
         courier: data.driverId ? { name: data.driverName || 'N/A', avatar: data.driverAvatar || '' } : null,
         items: (data.items || []).map((item: any) => ({
-            name: item.productName,
+            name: item.productName, // This should be a TranslatableString now
             quantity: item.quantity,
             price: item.unitPrice,
             options: item.options || []

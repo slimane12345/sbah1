@@ -15,11 +15,11 @@ const Categories: React.FC<CategoriesProps> = ({ title, onNavigateToCategory }) 
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { t } = useLanguage();
+    const { t, translateField } = useLanguage();
 
     useEffect(() => {
         setIsLoading(true);
-        const categoriesQuery = query(collection(db, "categories"), orderBy("name"));
+        const categoriesQuery = query(collection(db, "categories"), orderBy("name.ar"));
 
         const unsubscribe = onSnapshot(categoriesQuery, (querySnapshot) => {
             const fetchedCategories: Category[] = querySnapshot.docs.map(doc => ({
@@ -54,15 +54,15 @@ const Categories: React.FC<CategoriesProps> = ({ title, onNavigateToCategory }) 
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                     {categories.map((category) => (
                         <button 
-                            onClick={() => onNavigateToCategory(category.name)}
+                            onClick={() => onNavigateToCategory(translateField(category.name))}
                             key={category.id} 
                             className="text-center no-underline transition-opacity duration-300 ease-in-out hover:opacity-80 group w-24 flex-shrink-0">
                             <img 
                                 src={category.image}
-                                alt={category.name}
+                                alt={translateField(category.name)}
                                 className="w-full h-24 object-cover rounded-lg mb-2 shadow-sm"
                             />
-                            <h4 className="font-semibold text-gray-800 text-sm truncate">{category.name}</h4>
+                            <h4 className="font-semibold text-gray-800 text-sm truncate">{translateField(category.name)}</h4>
                         </button>
                     ))}
                 </div>

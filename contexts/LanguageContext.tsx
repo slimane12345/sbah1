@@ -2,7 +2,6 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { translations } from '../i18n';
 import { db } from '../scripts/firebase/firebaseConfig.js';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
-// Fix: Import TranslatableString type to use in the translateField function.
 import type { Language, LanguageContextType, TranslatableString } from '../types';
 
 
@@ -66,18 +65,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return translation;
   };
 
-  // Fix: Implement the translateField function to handle dynamic translation of database fields.
-  const translateField = (field: TranslatableString | string | undefined | null): string => {
+  const translateField = (field: TranslatableString | string | undefined): string => {
     if (!field) return '';
-    if (typeof field === 'string') {
-      return field;
-    }
-    // Handle TranslatableString object by picking the current language, falling back to 'ar', then the first available value.
-    return field[language] || field.ar || Object.values(field)[0] || '';
+    if (typeof field === 'string') return field;
+    // Return the translation for the current language, fallback to Arabic, then to the first available, then to empty.
+    return field[language] || field['ar'] || Object.values(field)[0] || '';
   };
 
   return (
-    // Fix: Add translateField to the context provider value.
     <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t, dbTranslations, setDbTranslations, isLoadingTranslations, translateField }}>
       {children}
     </LanguageContext.Provider>

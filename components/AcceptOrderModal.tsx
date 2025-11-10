@@ -12,7 +12,7 @@ interface AcceptOrderModalProps {
 }
 
 const AcceptOrderModal: React.FC<AcceptOrderModalProps> = ({ isOpen, onClose, onConfirm, order, driver }) => {
-    const { t } = useLanguage();
+    const { t, translateField } = useLanguage();
 
     if (!isOpen || !order) return null;
 
@@ -60,7 +60,7 @@ const AcceptOrderModal: React.FC<AcceptOrderModalProps> = ({ isOpen, onClose, on
                         <div className="flex justify-between border-t pt-4">
                             <div className="flex items-center gap-2">
                                 <div className="text-gray-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
                                 </div>
                                 <p><span className="font-semibold">{distance}</span> {t('km')}</p>
                             </div>
@@ -80,7 +80,7 @@ const AcceptOrderModal: React.FC<AcceptOrderModalProps> = ({ isOpen, onClose, on
                            <ul className="space-y-2">
                                 {order.items.map((item, index) => (
                                     <li key={index}>
-                                        <div className="font-semibold text-gray-800">{item.quantity} x {item.name}</div>
+                                        <div className="font-semibold text-gray-800">{item.quantity} x {translateField(item.name)}</div>
                                         {item.options && item.options.length > 0 && (
                                             <ul className="mr-4 mt-1 text-xs text-gray-500 list-disc list-inside">
                                                 {item.options.map((option, optIndex) => (

@@ -10,7 +10,7 @@ interface AvailableOrdersContentProps {
 }
 
 const AvailableOrdersContent: React.FC<AvailableOrdersContentProps> = ({ orders, onAccept, driver }) => {
-    const { t } = useLanguage();
+    const { t, translateField } = useLanguage();
 
     return (
         <div className="space-y-4 pb-20 lg:pb-0">
@@ -26,7 +26,7 @@ const AvailableOrdersContent: React.FC<AvailableOrdersContentProps> = ({ orders,
                     return (
                         <div key={order.id} className="bg-white p-4 rounded-lg shadow-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div className="flex-1">
-                                <p className="font-bold">{order.restaurant}</p>
+                                <p className="font-bold">{translateField(order.restaurant)}</p>
                                 <p className="text-sm text-gray-600">{order.deliveryAddress.addressText}</p>
                                 <div className="text-xs text-gray-500 mt-1">
                                     <span>{t('distance')}: ~{

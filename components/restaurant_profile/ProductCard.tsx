@@ -10,21 +10,21 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, showDescription = true, layout = 'horizontal' }) => {
-    const { t } = useLanguage();
+    const { t, translateField } = useLanguage();
 
     if (layout === 'vertical') {
         return (
             <div onClick={onClick} className="bg-white rounded-lg border border-gray-100 hover:shadow-lg transition-all duration-300 cursor-pointer group flex flex-col overflow-hidden h-full">
                 {product.image && (
                     <div className="w-full h-32 sm:h-40 overflow-hidden">
-                        <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <img src={product.image} alt={translateField(product.name)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     </div>
                 )}
                 <div className="p-3 flex flex-col flex-1">
                     <div>
-                        <h4 className="font-bold text-gray-900 text-sm sm:text-base line-clamp-2 h-10 sm:h-12">{product.name}</h4>
+                        <h4 className="font-bold text-gray-900 text-sm sm:text-base line-clamp-2 h-10 sm:h-12">{translateField(product.name)}</h4>
                         {showDescription && (
-                             <p className="text-xs text-gray-600 mt-1 line-clamp-2">{product.description}</p>
+                             <p className="text-xs text-gray-600 mt-1 line-clamp-2">{translateField(product.description)}</p>
                         )}
                         <p className="font-extrabold text-gray-900 mt-2 text-base">{product.price.toLocaleString('ar-MA')} {t('currency')}</p>
                     </div>
@@ -42,15 +42,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, showDescrip
     return (
         <div onClick={onClick} className={containerClasses}>
             <div className="flex-1">
-                <h4 className="font-bold text-gray-900 text-base">{product.name}</h4>
+                <h4 className="font-bold text-gray-900 text-base">{translateField(product.name)}</h4>
                 {showDescription && (
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2 h-10">{product.description}</p>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2 h-10">{translateField(product.description)}</p>
                 )}
                 <p className={priceClasses}>{product.price.toLocaleString('ar-MA')} {t('currency')}</p>
             </div>
             {product.image && (
                 <div className={imageContainerClasses}>
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <img src={product.image} alt={translateField(product.name)} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                 </div>
             )}
         </div>

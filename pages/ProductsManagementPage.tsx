@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { ProductManagementData, ProductOptionGroup } from '../types';
+import type { ProductManagementData, ProductOptionGroup, Category } from '../types';
 import ProductsManagementTable from '../components/ProductsManagementTable';
 import Pagination from '../components/Pagination';
 import ProductModal from '../components/ProductModal';
@@ -26,8 +26,10 @@ const ProductsManagementPage: React.FC = () => {
     const [editingProduct, setEditingProduct] = useState<ProductManagementData | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // State for restaurant names to populate dropdown in modal
+    // State for restaurant names and categories to populate dropdowns in modal
     const [restaurantNames, setRestaurantNames] = useState<string[]>([]);
+    const [allCategories, setAllCategories] = useState<Category[]>([]);
+
 
     useEffect(() => {
         setIsLoading(true);
@@ -56,19 +58,25 @@ const ProductsManagementPage: React.FC = () => {
             setIsLoading(false);
         });
 
-        // Fetch restaurant names for the modal
-        const fetchRestaurants = async () => {
+        // Fetch restaurants and categories for the modal
+        const fetchDropdownData = async () => {
             try {
-                const restaurantQuery = query(collection(db, "restaurants"), where("approvalStatus", "==", "Approved"));
-                const querySnapshot = await getDocs(restaurantQuery);
-                const names = querySnapshot.docs.map(doc => doc.data().name);
+                const restQuery = query(collection(db, "restaurants"), where("approvalStatus", "==", "Approved"));
+                const restSnapshot = await getDocs(restQuery);
+                const names = restSnapshot.docs.map(doc => doc.data().name.ar || doc.data().name); // Prioritize Arabic name for dropdown
                 setRestaurantNames(names);
+
+                const catQuery = query(collection(db, "categories"), orderBy("name.ar"));
+                const catSnapshot = await getDocs(catQuery);
+                const cats = catSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+                setAllCategories(cats);
+
             } catch (err) {
-                console.error("Error fetching restaurant names:", err);
+                console.error("Error fetching dropdown data:", err);
             }
         };
 
-        fetchRestaurants();
+        fetchDropdownData();
 
         return () => unsubscribe();
     }, []);
@@ -116,7 +124,7 @@ const ProductsManagementPage: React.FC = () => {
     };
 
     const handleDelete = async (product: ProductManagementData) => {
-        if (window.confirm(`هل أنت متأكد من رغبتك في حذف المنتج: ${product.name}؟`)) {
+        if (window.confirm(`هل أنت متأكد من رغبتك في حذف المنتج: ${typeof product.name === 'string' ? product.name : product.name.ar}؟`)) {
             try {
                 await deleteDoc(doc(db, "products", product.id));
             } catch (err) {
@@ -128,11 +136,14 @@ const ProductsManagementPage: React.FC = () => {
 
     const filteredProducts = useMemo(() => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        return products.filter(product =>
-            (product.name || '').toLowerCase().includes(lowerCaseSearchTerm) ||
-            (product.restaurant || '').toLowerCase().includes(lowerCaseSearchTerm) ||
-            (product.category || '').toLowerCase().includes(lowerCaseSearchTerm)
-        );
+        return products.filter(product => {
+            const name = typeof product.name === 'string' ? product.name : product.name.ar || '';
+            const category = typeof product.category === 'string' ? product.category : product.category.ar || '';
+            
+            return (name || '').toLowerCase().includes(lowerCaseSearchTerm) ||
+                (product.restaurant || '').toLowerCase().includes(lowerCaseSearchTerm) ||
+                (category || '').toLowerCase().includes(lowerCaseSearchTerm);
+        });
     }, [products, searchTerm]);
 
     const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
@@ -179,6 +190,7 @@ const ProductsManagementPage: React.FC = () => {
                     product={editingProduct}
                     isSubmitting={isSubmitting}
                     restaurantNames={restaurantNames}
+                    allCategories={allCategories}
                 />
             )}
         </>

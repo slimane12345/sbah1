@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { CategoryManagementData } from '../types';
+import type { CategoryManagementData, TranslatableString } from '../types';
 import CategoriesManagementTable from '../components/CategoriesManagementTable';
 import CategoryModal from '../components/CategoryModal';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -59,11 +59,11 @@ const CategoriesManagementPage: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleSave = async (categoryData: { name: string; image: string; location: { latitude: number; longitude: number; addressText: string; } | null }) => {
+    const handleSave = async (categoryData: { name: TranslatableString; image: string; location: { latitude: number; longitude: number; addressText: string; } | null }) => {
         setIsSubmitting(true);
         setError(null);
         
-        const slug = categoryData.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+        const slug = (categoryData.name.ar || '').toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
         
         const dataToSave = {
             name: categoryData.name,
@@ -92,7 +92,8 @@ const CategoriesManagementPage: React.FC = () => {
     };
 
     const handleDelete = async (category: CategoryManagementData) => {
-        if (window.confirm(`هل أنت متأكد من رغبتك في حذف الفئة: ${category.name}؟`)) {
+        const categoryName = typeof category.name === 'string' ? category.name : (category.name.ar || category.id);
+        if (window.confirm(`هل أنت متأكد من رغبتك في حذف الفئة: ${categoryName}؟`)) {
             try {
                 await deleteDoc(doc(db, "categories", category.id));
             } catch (err) {
@@ -104,10 +105,11 @@ const CategoriesManagementPage: React.FC = () => {
     
     const filteredCategories = useMemo(() => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        return categories.filter(category =>
-            (category.name || '').toLowerCase().includes(lowerCaseSearchTerm) ||
+        return categories.filter(category => {
+            const name = typeof category.name === 'string' ? category.name : category.name.ar || '';
+            return (name || '').toLowerCase().includes(lowerCaseSearchTerm) ||
             (category.slug || '').toLowerCase().includes(lowerCaseSearchTerm)
-        );
+        });
     }, [categories, searchTerm]);
 
     const totalPages = Math.ceil(filteredCategories.length / ITEMS_PER_PAGE);

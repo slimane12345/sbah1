@@ -1,6 +1,4 @@
-import type { TranslatableString } from './types';
-
-export const translations: Record<string, Record<string, string | TranslatableString>> = {
+export const translations: Record<string, Record<string, string>> = {
   ar: {
     // ======== GLOBAL ========
     currency: 'د.م.',
@@ -58,14 +56,14 @@ export const translations: Record<string, Record<string, string | TranslatableSt
     // Address Selection
     deliveryAddress: 'عنوان التوصيل',
     change: 'تغيير',
-    pleaseSelectAddress: "الرجاء تحديد عنوان التوصيل.",
+    pleaseSelectAddress: 'الرجاء تحديد عنوان التوصيل.',
     // Payment Methods
     paymentMethod: 'طريقة الدفع',
     cod: 'الدفع عند الاستلام',
     codDescription: 'ادفع نقدًا لمندوب التوصيل عند وصول طلبك.',
     card: 'البطاقة الائتمانية / مدى',
     cardDescription: 'آمن ومضمون. نقبل فيزا، ماستركارد ومدى.',
-    noPaymentMethodsAvailable: "لا توجد طرق دفع متاحة حاليًا. يرجى التواصل مع الدعم.",
+    noPaymentMethodsAvailable: 'لا توجد طرق دفع متاحة حاليًا. يرجى التواصل مع الدعم.',
     // Order Summary
     orderSummary: 'ملخص الطلب',
     subtotal: 'المجموع الفرعي',
@@ -73,7 +71,7 @@ export const translations: Record<string, Record<string, string | TranslatableSt
     placingOrder: 'جاري تأكيد الطلب...',
     // Errors
     emptyCartError: 'سلة التسوق فارغة.',
-    noAddressError: "الرجاء تحديد عنوان التوصيل.",
+    noAddressError: 'الرجاء تحديد عنوان التوصيل.',
     customerInfoError: 'الرجاء إدخال الاسم ورقم الهاتف.',
     paymentMethodError: 'الرجاء اختيار طريقة الدفع.',
     placeOrderFailedError: 'فشل إتمام الطلب. يرجى المحاولة مرة أخرى.',
@@ -158,7 +156,7 @@ export const translations: Record<string, Record<string, string | TranslatableSt
     newOrders: 'طلبات جديدة',
     noNewOrders: 'لا توجد طلبات جديدة متاحة حالياً.',
     myActiveOrders: 'طلباتي النشطة',
-    noActiveOrdersMessage: "ليس لديك أي طلبات نشطة حاليًا.",
+    noActiveOrdersMessage: 'ليس لديك أي طلبات نشطة حاليًا.',
     viewDetails: 'عرض التفاصيل',
     backToMyOrders: 'العودة إلى طلباتي',
     activeOrder: 'طلبي الحالي',
@@ -221,10 +219,16 @@ export const translations: Record<string, Record<string, string | TranslatableSt
     defaultValue: 'القيمة الافتراضية (العربية)',
     translationValue: 'قيمة الترجمة',
 
-    // ======== NEW ORDER NOTIFICATION ========
-    newOrderNotificationTitle: 'طلب جديد!',
-    newOrderNotificationBody: 'لديك طلب جديد رقم {{orderNumber}} من العميل {{customerName}}.',
-    viewOrder: 'عرض الطلب',
+    // ======== ADMIN MODALS ========
+    nameInArabic: 'الاسم (بالعربية)',
+    nameInFrench: 'الاسم (بالفرنسية)',
+    descriptionInArabic: 'الوصف (بالعربية)',
+    descriptionInFrench: 'الوصف (بالفرنسية)',
+    cuisineInArabic: 'نوع المطبخ (بالعربية)',
+    cuisineInFrench: 'نوع المطبخ (بالفرنسية)',
+    groupName: 'اسم المجموعة',
+    optionName: 'اسم الخيار',
+    additionalPrice: 'سعر إضافي',
   },
   fr: {
     // ======== GLOBAL ========
@@ -446,9 +450,15 @@ export const translations: Record<string, Record<string, string | TranslatableSt
     defaultValue: 'Valeur par défaut (Arabe)',
     translationValue: 'Valeur de la traduction',
 
-    // ======== NEW ORDER NOTIFICATION ========
-    newOrderNotificationTitle: 'Nouvelle commande !',
-    newOrderNotificationBody: 'Vous avez une nouvelle commande n°{{orderNumber}} du client {{customerName}}.',
-    viewOrder: 'Voir la commande',
+    // ======== ADMIN MODALS ========
+    nameInArabic: 'Nom (en Arabe)',
+    nameInFrench: 'Nom (en Français)',
+    descriptionInArabic: 'Description (en Arabe)',
+    descriptionInFrench: 'Description (en Français)',
+    cuisineInArabic: 'Type de cuisine (en Arabe)',
+    cuisineInFrench: 'Type de cuisine (en Français)',
+    groupName: 'Nom du groupe',
+    optionName: 'Nom de l\'option',
+    additionalPrice: 'Prix additionnel',
   }
 };

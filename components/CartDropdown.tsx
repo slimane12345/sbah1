@@ -1,5 +1,5 @@
 import React from 'react';
-import type { CartItem, CustomerPage } from '../types';
+import type { CartItem, CustomerPage, ProductOption } from '../types';
 import { useLanguage } from '../contexts/LanguageContext.tsx';
 
 interface CartDropdownProps {
@@ -11,7 +11,7 @@ interface CartDropdownProps {
 }
 
 const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose, cartItems, setCartItems, setCustomerPage }) => {
-  const { t } = useLanguage();
+  const { t, translateField } = useLanguage();
   if (!isOpen) return null;
 
   const handleRemoveItem = (itemIndex: number) => {
@@ -59,17 +59,17 @@ const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose, cartItems,
                   <div className="flex-1 overflow-y-auto p-4 space-y-4">
                       {cartItems.map((item, index) => (
                           <div key={`${item.product.id}-${index}`} className="flex items-center gap-4">
-                              <img src={item.product.image || 'https://via.placeholder.com/48'} alt={item.product.name} className="w-12 h-12 rounded-lg object-cover" />
+                              <img src={item.product.image || 'https://via.placeholder.com/48'} alt={translateField(item.product.name)} className="w-12 h-12 rounded-lg object-cover" />
                               <div className="flex-1 min-w-0">
-                                  <p className="font-bold text-gray-900 text-sm truncate">{item.quantity} x {item.product.name}</p>
+                                  <p className="font-bold text-gray-900 text-sm truncate">{item.quantity} x {translateField(item.product.name)}</p>
                                   <p className="text-xs text-gray-600 truncate">
-                                      {Object.values(item.selectedOptions).flat().map((opt: any) => opt.name).join(', ')}
+                                      {Object.values(item.selectedOptions).flat().map((opt: any) => translateField(opt.name)).join(', ')}
                                   </p>
                               </div>
                               <div className="text-right flex-shrink-0">
                                   <p className="font-semibold text-sm text-gray-800">{item.totalPrice.toFixed(2)} {t('currency')}</p>
                                   <button onClick={() => handleRemoveItem(index)} className="text-red-500 hover:text-red-700 mt-1 float-right">
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                   </button>
                               </div>
                           </div>

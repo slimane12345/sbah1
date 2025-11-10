@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { Product } from '../../types';
 import ProductCard from './ProductCard';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface MenuProps {
     menu: { [key: string]: Product[] };
@@ -11,6 +12,7 @@ const Menu: React.FC<MenuProps> = ({ menu, onProductClick }) => {
     const [isSticky, setIsSticky] = useState(false);
     const navRef = useRef<HTMLDivElement>(null);
     const categoryRefs = useRef<{[key: string]: HTMLDivElement | null}>({});
+    const { translateField } = useLanguage();
 
     useEffect(() => {
         const handleScroll = () => {

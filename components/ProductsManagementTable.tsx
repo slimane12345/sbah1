@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ProductManagementData } from '../types';
 import AvailabilityStatusBadge from './AvailabilityStatusBadge';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ProductsManagementTableProps {
   products: ProductManagementData[];
@@ -9,6 +10,7 @@ interface ProductsManagementTableProps {
 }
 
 const ProductsManagementTable: React.FC<ProductsManagementTableProps> = ({ products, onEdit, onDelete }) => {
+  const { translateField } = useLanguage();
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white">
@@ -27,12 +29,12 @@ const ProductsManagementTable: React.FC<ProductsManagementTableProps> = ({ produ
             <tr key={product.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 <div className="flex items-center">
-                  <img className="h-10 w-10 rounded-md object-cover ml-4" src={product.image} alt={product.name} />
-                  {product.name}
+                  <img className="h-10 w-10 rounded-md object-cover ml-4" src={product.image} alt={translateField(product.name)} />
+                  {translateField(product.name)}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.restaurant}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.category}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{translateField(product.category)}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{product.price.toLocaleString('ar-MA')} د.م.</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 <AvailabilityStatusBadge status={product.availability} />

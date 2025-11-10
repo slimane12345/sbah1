@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import type { Page, CustomerPage, ViewMode, CartItem, Restaurant, Product, UserLocation, UserProfileData, PastOrder, SavedAddress, OrderStatus, AppSettings } from './types.ts';
+
+import React, { useState, useEffect } from 'react';
+import type { Page, CustomerPage, ViewMode, CartItem, Restaurant, Product, UserLocation, UserProfileData, PastOrder, SavedAddress, OrderStatus, AppSettings, TranslatableString } from './types.ts';
 import { db } from './scripts/firebase/firebaseConfig.js';
 // FIX: Imported 'getDoc' to fetch single documents from Firestore.
-import { doc, setDoc, Timestamp, collection, query, where, getDocs, getDoc, updateDoc, addDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, Timestamp, collection, query, where, getDocs, getDoc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext.tsx';
 
 // Admin view components
@@ -23,8 +24,6 @@ import HomePageManagementPage from './pages/HomePageManagementPage.tsx';
 import AiAlgorithmsPage from './pages/AiAlgorithmsPage.tsx';
 import SupportChatbotPage from './pages/SupportChatbotPage.tsx';
 import SettingsPage from './pages/SettingsPage.tsx';
-import NotificationToast from './components/NotificationToast.tsx';
-
 
 // Customer view components
 import CustomerHeader from './components/CustomerHeader.tsx';
@@ -116,13 +115,8 @@ const MainApp: React.FC = () => {
 
     // Driver state
     const [driverId, setDriverId] = useState<string | null>(() => localStorage.getItem('sbahDriverId'));
-
-    // New order notification state for admin
-    const [newOrderNotification, setNewOrderNotification] = useState<{ orderNumber: string, customerName: string } | null>(null);
-    const isFirstLoad = useRef(true);
-    const [isAudioEnabled, setIsAudioEnabled] = useState(() => localStorage.getItem('isAudioEnabled') === 'true');
-    const audioRef = useRef<HTMLAudioElement | null>(null);
     
+    // Fix: Destructure translateField to handle translatable strings.
     const { t, translateField } = useLanguage();
 
     const MOCK_USER_ID = 'mock_customer_id';
@@ -138,65 +132,6 @@ const MainApp: React.FC = () => {
         // Redirect to the driver login page after logout.
         window.location.href = '/driver.html';
     };
-
-    // Create a single audio element to be reused and handle loading errors
-    useEffect(() => {
-        if (viewMode === 'admin' && !audioRef.current) {
-            audioRef.current = new Audio('/sounds/notification.mp3');
-            audioRef.current.onerror = () => {
-                console.error("Failed to load notification sound. Ensure '/sounds/notification.mp3' exists in the public directory.");
-            };
-        }
-    }, [viewMode]);
-
-    const toggleAudio = () => {
-        const newIsEnabled = !isAudioEnabled;
-        setIsAudioEnabled(newIsEnabled);
-        localStorage.setItem('isAudioEnabled', String(newIsEnabled));
-        if (newIsEnabled && audioRef.current) {
-            // Play a sound on first activation to unlock audio playback in the browser
-            audioRef.current.volume = 0.5;
-            audioRef.current.play().catch(e => {
-                console.error("Test audio play failed. User needs to interact with the page.", e);
-            });
-        }
-    };
-
-
-    // Listener for new orders (admin view only)
-    useEffect(() => {
-        if (viewMode !== 'admin') return;
-
-        const q = query(collection(db, "orders"));
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            if (isFirstLoad.current) {
-                isFirstLoad.current = false;
-                return;
-            }
-
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "added") {
-                    const orderData = change.doc.data();
-                    if (orderData.status === 'pending') {
-                        if (isAudioEnabled && audioRef.current) {
-                            audioRef.current.currentTime = 0;
-                            audioRef.current.play().catch(error => {
-                                console.error("Audio playback failed. The browser might have blocked it.", error);
-                            });
-                        }
-                        
-                        setNewOrderNotification({
-                            orderNumber: orderData.orderNumber || change.doc.id,
-                            customerName: orderData.customerName || 'N/A'
-                        });
-                    }
-                }
-            });
-        });
-
-        return () => unsubscribe();
-    }, [viewMode, isAudioEnabled]);
 
     useEffect(() => {
         const fetchAppSettings = async () => {
@@ -272,11 +207,12 @@ const MainApp: React.FC = () => {
                     .sort((a, b) => b.data.createdAt.toMillis() - a.data.createdAt.toMillis())
                     .map(({ data, id }) => ({
                         id: data.orderNumber || id,
-                        restaurantName: translateField(data.restaurantName) || 'مطعم غير معروف',
+                        restaurantName: data.restaurantName || 'مطعم غير معروف',
                         date: data.createdAt.toDate().toLocaleDateString('ar-SA'),
                         total: data.finalAmount,
                         status: mapBackendStatusToFrontend(data.status),
-                        items: data.items.map((i: any) => ({ name: translateField(i.productName), quantity: i.quantity, category: translateField(i.category) })),
+                        // Fix: Use translateField to convert category object/string to a string.
+                        items: data.items.map((i: any) => ({ name: i.productName, quantity: i.quantity, category: translateField(i.category) })),
                         deliveryAddress: data.deliveryAddress,
                     }));
                 setPastOrders(fetchedOrders);
@@ -301,6 +237,7 @@ const MainApp: React.FC = () => {
         };
 
         fetchProfilePageData();
+    // Fix: Add translateField to the dependency array.
     }, [customerPage, translateField]);
 
 
@@ -381,6 +318,7 @@ const MainApp: React.FC = () => {
             }
         });
         
+        // Fix: Use translateField to convert product name to string for the notification.
         setNotificationMessage(t('addedToCartNotification', { productName: translateField(newItem.product.name) }));
         setTimeout(() => setNotificationMessage(null), 3000);
     };
@@ -531,26 +469,11 @@ const MainApp: React.FC = () => {
             <div className="flex h-screen bg-gray-100" dir="rtl">
                 <Sidebar activePage={activePage} setActivePage={setActivePage} />
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <Header
-                        title={pageTitles[activePage] || 'لوحة التحكم'}
-                        isAudioEnabled={isAudioEnabled}
-                        onToggleAudio={toggleAudio}
-                    />
+                    <Header title={pageTitles[activePage] || 'لوحة التحكم'} />
                     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-8">
                         {renderAdminPage()}
                     </main>
                 </div>
-                 {newOrderNotification && (
-                    <NotificationToast
-                        orderNumber={newOrderNotification.orderNumber}
-                        customerName={newOrderNotification.customerName}
-                        onNavigate={() => {
-                            setActivePage('orders-management');
-                            setNewOrderNotification(null);
-                        }}
-                        onClose={() => setNewOrderNotification(null)}
-                    />
-                )}
             </div>
         );
     }

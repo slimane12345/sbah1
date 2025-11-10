@@ -13,7 +13,7 @@ interface ProductDetailsPageProps {
 const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ product, onBack, onAddToCart, cartItems, setCustomerPage }) => {
     const [quantity, setQuantity] = useState(1);
     const [selectedOptions, setSelectedOptions] = useState<{ [key: string]: any }>({});
-    const { t } = useLanguage();
+    const { t, translateField } = useLanguage();
     
     const handleOptionChange = (groupdId: string, option: ProductOption, type: 'radio' | 'checkbox') => {
         setSelectedOptions(prev => {
@@ -61,27 +61,27 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ product, onBack
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Back Button */}
                 <button onClick={onBack} className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900 mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                     {t('backToMenu')}
                 </button>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
                     {/* Image Column */}
                     <div>
-                        <img src={product.image || 'https://via.placeholder.com/400'} alt={product.name} className="w-full h-auto aspect-square object-cover rounded-2xl shadow-lg"/>
+                        <img src={product.image || 'https://via.placeholder.com/400'} alt={translateField(product.name)} className="w-full h-auto aspect-square object-cover rounded-2xl shadow-lg"/>
                     </div>
 
                     {/* Details Column */}
                     <div className="flex flex-col">
-                        <h1 className="text-4xl font-extrabold text-gray-900">{product.name}</h1>
-                        <p className="text-gray-600 mt-3 text-lg">{product.description}</p>
+                        <h1 className="text-4xl font-extrabold text-gray-900">{translateField(product.name)}</h1>
+                        <p className="text-gray-600 mt-3 text-lg">{translateField(product.description)}</p>
                         <p className="text-3xl font-bold text-gray-900 mt-4">{product.price.toLocaleString('ar-MA')} {t('currency')}</p>
 
                         {/* Options */}
                         <div className="mt-6 space-y-6">
                             {product.options?.map(group => (
                                 <div key={group.id}>
-                                    <h4 className="font-bold text-gray-900 text-lg border-b pb-2 mb-3">{group.name}</h4>
+                                    <h4 className="font-bold text-gray-900 text-lg border-b pb-2 mb-3">{translateField(group.name)}</h4>
                                     <div className="space-y-3">
                                         {group.options.map(option => (
                                             <label key={option.id} className="flex items-center justify-between p-3 rounded-lg border has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 cursor-pointer transition-colors">
@@ -92,7 +92,7 @@ const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ product, onBack
                                                         onChange={() => handleOptionChange(group.id, option, group.type)}
                                                         className="h-4 w-4"
                                                     />
-                                                    <span className="mr-3 text-gray-800 font-medium">{option.name}</span>
+                                                    <span className="mr-3 text-gray-800 font-medium">{translateField(option.name)}</span>
                                                 </div>
                                                 {option.price > 0 && <span className="text-sm font-semibold text-gray-700">+{option.price} {t('currency')}</span>}
                                             </label>

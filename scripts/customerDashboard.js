@@ -95,9 +95,8 @@ function closeModal() {
 function initializeMap() {
     map = L.map('map').setView([33.9716, -6.8498], 13); // Default to Rabat
 
-    // FIX: Use Esri tile layer for consistency with the rest of the application.
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
     
     marker = L.marker(map.getCenter(), { draggable: true }).addTo(map);

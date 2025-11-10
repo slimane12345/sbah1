@@ -1,7 +1,8 @@
 
 
+
 import React, { useState, useEffect } from 'react';
-import type { CartItem, UserLocation, UserProfileData, AppSettings, PastOrder } from '../types';
+import type { CartItem, UserLocation, UserProfileData, AppSettings, PastOrder, TranslatableString } from '../types';
 import OrderSummary from '../components/checkout/OrderSummary';
 import AddressSelection from '../components/checkout/AddressSelection';
 import PaymentMethods from '../components/checkout/PaymentMethods';
@@ -34,7 +35,8 @@ function calculateDistance(loc1: { lat: number; lng: number }, loc2: { lat: numb
 
 
 const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, userLocation, onOpenLocationModal, userProfile, appSettings }) => {
-    const { t } = useLanguage();
+    // Fix: Destructure translateField to handle translatable strings.
+    const { t, translateField } = useLanguage();
     
     // State for user inputs
     const [name, setName] = useState(userProfile?.fullName || '');
@@ -180,7 +182,8 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                 date: newOrder.createdAt.toDate().toLocaleDateString('ar-SA'),
                 total: newOrder.finalAmount,
                 status: 'جديد',
-                items: newOrder.items.map(item => ({ name: item.productName, quantity: item.quantity, category: item.category })),
+                // Fix: Use translateField to convert category object/string to string.
+                items: newOrder.items.map(item => ({ name: translateField(item.productName), quantity: item.quantity, category: translateField(item.category) })),
                 deliveryAddress: newOrder.deliveryAddress,
             };
 
