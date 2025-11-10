@@ -215,13 +215,49 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     };
 
     const handleUpdateOrderStatus = async (orderId: string, newStatus: 'picked_up' | 'delivered') => {
-        await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
-        if (newStatus === 'delivered') {
-            setSelectedOrder(null);
-            setActiveView('active_orders');
-            const remainingOrders = myActiveOrders.filter(o => o.id !== orderId);
-            const newDriverStatus = remainingOrders.length > 0 ? 'مشغول' : 'متاح';
-            await updateDoc(doc(db, 'drivers', driverId), { status: newDriverStatus });
+        try {
+            const orderRef = doc(db, 'orders', orderId);
+            await updateDoc(orderRef, { status: newStatus });
+    
+            if (newStatus === 'delivered' && driver) {
+                const orderToComplete = myActiveOrders.find(o => o.id === orderId);
+                if (!orderToComplete) {
+                    console.error("Completed order not found in active list for earnings calculation.");
+                    return;
+                }
+    
+                let earningForThisOrder = 0;
+                const restaurantLoc = orderToComplete.restaurantLocation;
+                const customerLoc = orderToComplete.deliveryAddress;
+    
+                if (restaurantLoc?.lat && restaurantLoc?.lng && customerLoc?.latitude && customerLoc?.longitude) {
+                    const distance = calculateDistance(
+                        { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
+                        { lat: customerLoc.latitude, lng: customerLoc.longitude }
+                    );
+                    earningForThisOrder = distance * (driver.ratePerKm ?? 2);
+                }
+    
+                const driverRef = doc(db, 'drivers', driverId);
+                const updatePayload = {
+                    totalOrderValue: (driver.totalOrderValue ?? 0) + orderToComplete.total,
+                    totalEarnings: (driver.totalEarnings ?? 0) + earningForThisOrder,
+                    totalDeliveries: (driver.totalDeliveries ?? 0) + 1,
+                };
+    
+                await updateDoc(driverRef, updatePayload);
+    
+                // Update driver status based on remaining orders
+                const remainingOrders = myActiveOrders.filter(o => o.id !== orderId);
+                const newDriverStatus = remainingOrders.length > 0 ? 'مشغول' : 'متاح';
+                await updateDoc(driverRef, { status: newDriverStatus });
+    
+                setSelectedOrder(null);
+                setActiveView('active_orders');
+            }
+        } catch (err) {
+            console.error("Error updating order status or calculating earnings:", err);
+            setError("فشل تحديث حالة الطلب. يرجى المحاولة مرة أخرى.");
         }
     };
 
