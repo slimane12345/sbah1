@@ -5,34 +5,20 @@ import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, Payment
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ErrorDisplay from '../components/ErrorDisplay.tsx';
 import { useLanguage } from '../contexts/LanguageContext.tsx';
-// Fix: Added '.tsx' extension to component imports.
 import AcceptOrderModal from '../components/AcceptOrderModal.tsx';
 import DriverLayout from '../components/driver_dashboard/DriverLayout.tsx';
-// Fix: Added '.tsx' extension to component imports.
 import DriverHeader from '../components/driver_dashboard/DriverHeader.tsx';
-// Fix: Added '.tsx' extension to component imports.
 import OverviewContent from '../components/driver_dashboard/OverviewContent.tsx';
-// Fix: Added '.tsx' extension to component imports.
 import AvailableOrdersContent from '../components/driver_dashboard/AvailableOrdersContent.tsx';
 import EarningsContent from '../components/driver_dashboard/EarningsContent.tsx';
-// Fix: Added '.tsx' extension to component imports.
-import ActiveOrderContent from '../components/driver_dashboard/ActiveOrderContent.tsx';
+import ActiveOrdersContent from '../components/driver_dashboard/ActiveOrdersContent.tsx';
+import ActiveOrderDetail from '../components/driver_dashboard/ActiveOrderContent.tsx';
 
 interface DriverDashboardPageProps {
     driverId: string;
     onLogout: () => void;
 }
 
-// Helper functions (could be moved to a utils file)
-const mapBackendStatusToFrontend = (status: string): OrderAdminStatus => {
-    const map: { [key: string]: OrderAdminStatus } = { pending: 'جديد', confirmed: 'مؤكد', preparing: 'قيد التجهيز', ready: 'جاهز', picked_up: 'بالتوصيل', delivered: 'مكتمل', cancelled: 'ملغي' };
-    return map[status] || 'جديد';
-};
-const mapPaymentStatusToFrontend = (status: string): PaymentStatus => {
-    const map: {[key: string]: PaymentStatus} = { pending: 'معلق', paid: 'مدفوع', failed: 'غير مدفوع', refunded: 'مسترجع' };
-    return map[status] || 'معلق';
-};
-// Fix: Exported the utility function so it can be imported and used in other components.
 export function calculateDistance(loc1: { lat: number, lng: number }, loc2: { lat: number, lng: number }): number {
     const R = 6371; // Earth's radius in km
     const dLat = (loc2.lat - loc1.lat) * Math.PI / 180;
@@ -42,7 +28,14 @@ export function calculateDistance(loc1: { lat: number, lng: number }, loc2: { la
     return R * c;
 }
 
-// Maps a Firestore document to the OrderManagementData type
+const mapBackendStatusToFrontend = (status: string): OrderAdminStatus => {
+    const map: { [key: string]: OrderAdminStatus } = { pending: 'جديد', confirmed: 'مؤكد', preparing: 'قيد التجهيز', ready: 'جاهز', picked_up: 'بالتوصيل', delivered: 'مكتمل', cancelled: 'ملغي' };
+    return map[status] || 'جديد';
+};
+const mapPaymentStatusToFrontend = (status: string): PaymentStatus => {
+    const map: {[key: string]: PaymentStatus} = { pending: 'معلق', paid: 'مدفوع', failed: 'غير مدفوع', refunded: 'مسترجع' };
+    return map[status] || 'معلق';
+};
 const mapFirestoreDocToOrder = (doc: any): OrderManagementData => {
     const data = doc.data();
     return {
@@ -75,7 +68,9 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     const [error, setError] = useState<string | null>(null);
 
     const [allNewOrders, setAllNewOrders] = useState<OrderManagementData[]>([]);
-    const [activeOrder, setActiveOrder] = useState<OrderManagementData | null>(null);
+    const [myActiveOrders, setMyActiveOrders] = useState<OrderManagementData[]>([]);
+    const [selectedOrder, setSelectedOrder] = useState<OrderManagementData | null>(null);
+
     const [driverLocation, setDriverLocation] = useState<{ lat: number, lng: number } | null>(null);
     const [orderToAccept, setOrderToAccept] = useState<OrderManagementData | null>(null);
     const [stats, setStats] = useState<{ totalEarnings: number, dailyEarnings: number, completedToday: number }>({ totalEarnings: 0, dailyEarnings: 0, completedToday: 0 });
@@ -85,7 +80,6 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     const watchId = useRef<number | null>(null);
     const isOnline = driver?.status === 'متاح' || driver?.status === 'مشغول';
 
-    // Calculate total & daily earnings, completed orders today
     useEffect(() => {
         if (!driverId) return;
 
@@ -100,7 +94,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
 
             querySnapshot.forEach(doc => {
                 const order = doc.data();
-                const earnings = order.deliveryFee || 10; // Use deliveryFee if available, else fallback
+                const earnings = order.deliveryFee || 10;
                 totalEarnings += earnings;
                 
                 if (order.createdAt.toDate() >= today) {
@@ -114,7 +108,6 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         fetchCompletedOrders();
     }, [driverId, driver?.totalDeliveries]);
 
-    // Fetch driver details
     useEffect(() => {
         const driverRef = doc(db, 'drivers', driverId);
         const unsubscribe = onSnapshot(driverRef, (docSnap) => {
@@ -125,7 +118,6 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         return () => unsubscribe();
     }, [driverId, onLogout]);
 
-    // Get Driver's location
     useEffect(() => {
         if (isOnline) {
             if (watchId.current) navigator.geolocation.clearWatch(watchId.current);
@@ -141,44 +133,40 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         return () => { if (watchId.current) navigator.geolocation.clearWatch(watchId.current); };
     }, [isOnline]);
 
-    // Fetch new & active orders
     useEffect(() => {
         if (!driver) return;
         const newOrdersQuery = query(collection(db, 'orders'), where('status', '==', 'confirmed'), where('driverId', '==', null));
         const unsubscribeNew = onSnapshot(newOrdersQuery, (snapshot) => {
-            const orders = snapshot.docs.map(mapFirestoreDocToOrder);
-            setAllNewOrders(orders);
+            setAllNewOrders(snapshot.docs.map(mapFirestoreDocToOrder));
         });
 
         const activeOrderQuery = query(collection(db, 'orders'), where('driverId', '==', driverId), where('status', 'in', ['confirmed', 'picked_up']));
         const unsubscribeActive = onSnapshot(activeOrderQuery, (snapshot) => {
-            if (snapshot.empty) {
-                setActiveOrder(null);
-            } else {
-                const docRef = snapshot.docs[0];
-                setActiveOrder(mapFirestoreDocToOrder(docRef));
+            const activeOrders = snapshot.docs.map(mapFirestoreDocToOrder);
+            setMyActiveOrders(activeOrders);
+            if (selectedOrder && !activeOrders.some(o => o.id === selectedOrder.id)) {
+                setSelectedOrder(null);
             }
         });
 
         return () => { unsubscribeNew(); unsubscribeActive(); };
-    }, [driver, driverId]);
+    }, [driver, driverId, selectedOrder]);
 
     const nearbyOrders = useMemo(() => {
         if (!driverLocation || !allNewOrders.length) return [];
         return allNewOrders.filter(order => {
             if (!order.restaurantLocation) return false;
-            return calculateDistance(driverLocation, order.restaurantLocation) <= 10; // 10km radius
+            return calculateDistance(driverLocation, order.restaurantLocation) <= 10;
         });
     }, [allNewOrders, driverLocation]);
 
     const handleToggleOnline = async () => {
         if (!driver) return;
-        const newStatus = driver.status === 'متاح' ? 'غير متصل' : 'متاح';
+        const newStatus = isOnline ? 'غير متصل' : 'متاح';
         await updateDoc(doc(db, 'drivers', driverId), { status: newStatus });
     };
 
     const handleAcceptOrder = async (order: OrderManagementData) => {
-        if (activeOrder) return;
         await updateDoc(doc(db, 'orders', order.id), { driverId, driverName: driver?.name, driverAvatar: driver?.avatar, status: 'confirmed' });
         await updateDoc(doc(db, 'drivers', driverId), { status: 'مشغول' });
     };
@@ -186,8 +174,11 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     const handleUpdateOrderStatus = async (orderId: string, newStatus: 'picked_up' | 'delivered') => {
         await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
         if (newStatus === 'delivered') {
-            await updateDoc(doc(db, 'drivers', driverId), { status: 'متاح', totalDeliveries: (driver?.totalDeliveries || 0) + 1 });
-            setActiveOrder(null);
+            setSelectedOrder(null);
+            setActiveView('active_orders');
+            const remainingOrders = myActiveOrders.filter(o => o.id !== orderId);
+            const newDriverStatus = remainingOrders.length > 0 ? 'مشغول' : 'متاح';
+            await updateDoc(doc(db, 'drivers', driverId), { status: newDriverStatus, totalDeliveries: (driver?.totalDeliveries || 0) + 1 });
         }
     };
 
@@ -195,13 +186,20 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     if (error && !error.includes("موقعك")) return <div className="bg-gray-100 min-h-screen"><ErrorDisplay message={error} /></div>;
     if (!driver) return <div className="bg-gray-100 min-h-screen"><ErrorDisplay message="Driver not found." /></div>;
 
-    if (activeOrder) {
-        return <ActiveOrderContent order={activeOrder} driver={driver} onUpdateStatus={handleUpdateOrderStatus} onLogout={onLogout} />;
-    }
-
     const renderContent = () => {
+        if (selectedOrder) {
+            return <ActiveOrderDetail 
+                order={selectedOrder} 
+                driver={driver} 
+                onUpdateStatus={handleUpdateOrderStatus} 
+                driverLocation={driverLocation}
+                onBack={() => setSelectedOrder(null)}
+            />;
+        }
+
         switch (activeView) {
             case 'orders': return <AvailableOrdersContent orders={nearbyOrders} onAccept={setOrderToAccept} />;
+            case 'active_orders': return <ActiveOrdersContent orders={myActiveOrders} onSelectOrder={setSelectedOrder} />;
             case 'earnings': return <EarningsContent stats={stats} driver={driver} />;
             case 'profile': return <div className="bg-white p-6 rounded-lg shadow-md">{t('profileSettings')} (coming soon)</div>;
             case 'overview':
