@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import type { OrderManagementData, OrderAdminStatus, PaymentStatus } from '../types';
+import type { OrderManagementData, OrderAdminStatus, PaymentStatus, Driver } from '../types';
 import OrdersManagementTable from '../components/OrdersManagementTable';
 import Pagination from '../components/Pagination';
 import OrderDetailsModal from '../components/OrderDetailsModal';
@@ -57,6 +57,7 @@ const mapPaymentStatusToFrontend = (status: string): PaymentStatus => {
 
 const OrdersManagementPage: React.FC = () => {
     const [orders, setOrders] = useState<OrderManagementData[]>([]);
+    const [allDrivers, setAllDrivers] = useState<Driver[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -72,7 +73,7 @@ const OrdersManagementPage: React.FC = () => {
         setIsLoading(true);
         const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
         
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const unsubscribeOrders = onSnapshot(q, (querySnapshot) => {
             const fetchedOrders: OrderManagementData[] = querySnapshot.docs.map(doc => {
                 const data = doc.data();
                 return {
@@ -86,6 +87,7 @@ const OrdersManagementPage: React.FC = () => {
                     paymentMethod: data.paymentMethod === 'cash' ? 'COD' : 'Credit Card',
                     date: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toLocaleDateString('ar-SA') : 'N/A',
                     courier: data.driverId ? { name: data.driverName || 'N/A', avatar: data.driverAvatar || '' } : null,
+                    driverId: data.driverId || null,
                     items: data.items.map((item: any) => ({
                         name: item.productName,
                         quantity: item.quantity,
@@ -100,14 +102,25 @@ const OrdersManagementPage: React.FC = () => {
             setIsLoading(false);
         }, (err) => {
             console.error("Firebase Error:", err);
-            // Fallback to mock data on error
-            console.warn("Falling back to mock data for Orders Management.");
             setOrders(mockOrdersManagementData);
             setError("حدث خطأ أثناء جلب البيانات. يتم عرض بيانات تجريبية.");
             setIsLoading(false);
         });
 
-        return () => unsubscribe();
+        const driversQuery = query(collection(db, "drivers"), orderBy("name"));
+        const unsubscribeDrivers = onSnapshot(driversQuery, (querySnapshot) => {
+            const fetchedDrivers: Driver[] = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Driver));
+            setAllDrivers(fetchedDrivers);
+        });
+
+
+        return () => {
+            unsubscribeOrders();
+            unsubscribeDrivers();
+        };
     }, []);
 
     const handleViewDetails = (order: OrderManagementData) => {
@@ -129,6 +142,38 @@ const OrdersManagementPage: React.FC = () => {
         } catch (err) {
             console.error("Error updating status:", err);
             setError("فشل تحديث حالة الطلب.");
+        }
+    };
+
+    const handleAssignDriver = async (orderId: string, driverId: string) => {
+        const orderRef = doc(db, 'orders', orderId);
+        const currentOrder = orders.find(o => o.id === orderId);
+        if (!currentOrder) return;
+
+        let updateData: any = {};
+
+        if (!driverId) {
+            updateData = { driverId: null, driverName: null, driverAvatar: null };
+        } else {
+            const selectedDriver = allDrivers.find(d => d.id === driverId);
+            if (!selectedDriver) return;
+
+            updateData = {
+                driverId: selectedDriver.id,
+                driverName: selectedDriver.name,
+                driverAvatar: selectedDriver.avatar,
+            };
+
+            if (currentOrder.status === 'جديد') {
+                updateData.status = mapFrontendStatusToBackend('مؤكد');
+            }
+        }
+
+        try {
+            await updateDoc(orderRef, updateData);
+        } catch (err) {
+            console.error("Error assigning driver:", err);
+            setError("فشل في تعيين الموزع.");
         }
     };
     
@@ -180,6 +225,8 @@ const OrdersManagementPage: React.FC = () => {
                             onViewDetails={handleViewDetails}
                             onStatusChange={handleStatusChange}
                             onTrack={handleTrackOrder}
+                            allDrivers={allDrivers}
+                            onAssignDriver={handleAssignDriver}
                         />
                         <Pagination 
                             currentPage={currentPage}
