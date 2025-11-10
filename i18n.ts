@@ -1,5 +1,3 @@
-
-
 export const translations: Record<string, Record<string, string>> = {
   ar: {
     // ======== GLOBAL ========
@@ -128,7 +126,7 @@ export const translations: Record<string, Record<string, string>> = {
     french: 'Français',
     // OrderHistory Component
     reorder: 'إعادة الطلب',
-    trackOrder: 'تتبع الطلب',
+    trackOrder: 'تتبع',
     trackOrderDisabledTooltip: 'لا يمكن تتبع هذا الطلب حاليًا',
     noPastOrders: 'لا يوجد طلبات سابقة.',
     // SavedAddresses Component

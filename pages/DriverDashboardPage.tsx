@@ -160,12 +160,6 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         });
     }, [allNewOrders, driverLocation]);
 
-    const handleToggleOnline = async () => {
-        if (!driver) return;
-        const newStatus = isOnline ? 'غير متصل' : 'متاح';
-        await updateDoc(doc(db, 'drivers', driverId), { status: newStatus });
-    };
-
     const handleAcceptOrder = async (order: OrderManagementData) => {
         await updateDoc(doc(db, 'orders', order.id), { driverId, driverName: driver?.name, driverAvatar: driver?.avatar, status: 'confirmed' });
         await updateDoc(doc(db, 'drivers', driverId), { status: 'مشغول' });
@@ -182,6 +176,20 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         }
     };
 
+    const handleToggleOnline = async () => {
+        if (!driver) return;
+        const driverRef = doc(db, 'drivers', driverId);
+        try {
+            const newStatus = isOnline ? 'غير متصل' : 'متاح';
+            await updateDoc(driverRef, {
+                status: newStatus
+            });
+        } catch (err) {
+            console.error("Error toggling online status:", err);
+            setError("Failed to update online status.");
+        }
+    };
+
     if (isLoading) return <div className="bg-gray-100 min-h-screen"><LoadingSpinner /></div>;
     if (error && !error.includes("موقعك")) return <div className="bg-gray-100 min-h-screen"><ErrorDisplay message={error} /></div>;
     if (!driver) return <div className="bg-gray-100 min-h-screen"><ErrorDisplay message="Driver not found." /></div>;
@@ -192,7 +200,6 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
                 order={selectedOrder} 
                 driver={driver} 
                 onUpdateStatus={handleUpdateOrderStatus} 
-                driverLocation={driverLocation}
                 onBack={() => setSelectedOrder(null)}
             />;
         }
