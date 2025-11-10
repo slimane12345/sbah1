@@ -196,7 +196,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     if (!driver) return <div className="bg-gray-100 min-h-screen"><ErrorDisplay message="Driver not found." /></div>;
 
     if (activeOrder) {
-        return <ActiveOrderContent order={activeOrder} driver={driver} onUpdateStatus={handleUpdateOrderStatus} onLogout={onLogout} driverLocation={driverLocation} />;
+        return <ActiveOrderContent order={activeOrder} driver={driver} onUpdateStatus={handleUpdateOrderStatus} onLogout={onLogout} />;
     }
 
     const renderContent = () => {
