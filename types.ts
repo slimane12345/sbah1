@@ -261,8 +261,6 @@ export interface Driver {
   totalDeliveries: number;
   lastSeen: string;
   ratePerKm: number;
-  totalOrderValue?: number;
-  totalEarnings?: number;
 }
 
 export type PaymentStatus = 'معلق' | 'مدفوع' | 'غير مدفوع' | 'مسترجع';

@@ -95,57 +95,56 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     useEffect(() => {
         if (!driverId || !driver) return;
 
-        const fetchStats = async () => {
-            // Fetch all completed orders for total delivery count
-            const allCompletedQuery = query(collection(db, 'orders'), where('driverId', '==', driverId), where('status', '==', 'delivered'));
-            const allCompletedSnapshot = await getDocs(allCompletedQuery);
-
-            // Sync driver's total deliveries count
-            if (driver.totalDeliveries !== allCompletedSnapshot.size) {
-                updateDoc(doc(db, 'drivers', driverId), {
-                    totalDeliveries: allCompletedSnapshot.size
-                });
-            }
-
-            // Calculate daily stats
+        const fetchCompletedOrders = async () => {
+            const q = query(collection(db, 'orders'), where('driverId', '==', driverId), where('status', '==', 'delivered'));
+            const querySnapshot = await getDocs(q);
+            
+            let totalOrderValue = 0;
             let dailyOrderValue = 0;
+            let myTotalEarnings = 0;
             let myDailyEarnings = 0;
             let completedToday = 0;
             
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            allCompletedSnapshot.forEach(doc => {
+            querySnapshot.forEach(doc => {
                 const order = doc.data();
-                if (order.createdAt && order.createdAt.toDate() >= today) {
-                    dailyOrderValue += order.finalAmount || 0;
+                
+                const orderFinalAmount = order.finalAmount || 0;
+                totalOrderValue += orderFinalAmount;
 
-                    let deliveryEarnings = 0;
-                    const restaurantLoc = order.restaurantLocation;
-                    const customerLoc = order.deliveryAddress;
-                    
-                    if (restaurantLoc?.lat && restaurantLoc?.lng && customerLoc?.latitude && customerLoc?.longitude) {
-                        const distance = calculateDistance(
-                            { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
-                            { lat: customerLoc.latitude, lng: customerLoc.longitude }
-                        );
-                        deliveryEarnings = distance * (driver.ratePerKm ?? 2);
-                    }
+                let deliveryEarnings = 0;
+                const restaurantLoc = order.restaurantLocation;
+                const customerLoc = order.deliveryAddress;
+                
+                if (restaurantLoc?.lat && restaurantLoc?.lng && customerLoc?.latitude && customerLoc?.longitude) {
+                    const distance = calculateDistance(
+                        { lat: restaurantLoc.lat, lng: restaurantLoc.lng },
+                        { lat: customerLoc.latitude, lng: customerLoc.longitude }
+                    );
+                    deliveryEarnings = distance * (driver.ratePerKm ?? 2);
+                }
+                myTotalEarnings += deliveryEarnings;
+                
+                if (order.createdAt && order.createdAt.toDate() >= today) {
+                    dailyOrderValue += orderFinalAmount;
                     myDailyEarnings += deliveryEarnings;
                     completedToday++;
                 }
             });
+
+            // Sync driver's total deliveries count
+            if (driver && driver.totalDeliveries !== querySnapshot.size) {
+                updateDoc(doc(db, 'drivers', driverId), {
+                    totalDeliveries: querySnapshot.size
+                });
+            }
             
-            setStats({ 
-                totalOrderValue: driver.totalOrderValue ?? 0, 
-                myTotalEarnings: driver.totalEarnings ?? 0,
-                dailyOrderValue, 
-                myDailyEarnings, 
-                completedToday 
-            });
+            setStats({ totalOrderValue, dailyOrderValue, myTotalEarnings, myDailyEarnings, completedToday });
         };
 
-        fetchStats();
+        fetchCompletedOrders();
     }, [driverId, driver]);
 
     useEffect(() => {

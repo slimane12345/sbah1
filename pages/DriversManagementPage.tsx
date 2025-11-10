@@ -43,8 +43,6 @@ const DriversManagementPage: React.FC = () => {
                     totalDeliveries: data.totalDeliveries || 0,
                     lastSeen: data.lastSeen ? new Date(data.lastSeen).toLocaleString('ar-SA') : 'N/A',
                     ratePerKm: data.ratePerKm ?? 2,
-                    totalOrderValue: data.totalOrderValue ?? 0,
-                    totalEarnings: data.totalEarnings ?? 0,
                 };
             });
             setDrivers(fetchedDrivers);
@@ -89,8 +87,6 @@ const DriversManagementPage: React.FC = () => {
                 await addDoc(collection(db, 'drivers'), {
                     ...driverData,
                     ratePerKm: driverData.ratePerKm ?? 2,
-                    totalOrderValue: driverData.totalOrderValue ?? 0,
-                    totalEarnings: driverData.totalEarnings ?? 0,
                     status: 'غير متصل',
                     rating: 5,
                     totalDeliveries: 0,
