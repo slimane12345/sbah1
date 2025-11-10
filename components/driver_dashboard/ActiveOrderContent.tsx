@@ -65,13 +65,22 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
 
             <div className="bg-white p-4 rounded-lg shadow">
                  <h3 className="font-bold text-gray-800 mb-2">{t('products')}</h3>
-                 <ul className="divide-y divide-gray-100 text-sm">
-                    {order.items.map((item, index) => (
-                        <li key={index} className="py-2 flex justify-between">
-                            <span className="text-gray-700">{item.quantity} x {item.name}</span>
-                        </li>
-                    ))}
-                </ul>
+                 <div className="text-sm bg-gray-50 p-3 rounded-lg border max-h-40 overflow-y-auto">
+                    <ul className="space-y-2">
+                        {order.items.map((item, index) => (
+                            <li key={index}>
+                                <div className="font-semibold text-gray-800">{item.quantity} x {item.name}</div>
+                                {item.options && item.options.length > 0 && (
+                                    <ul className="mr-4 mt-1 text-xs text-gray-500 list-disc list-inside">
+                                        {item.options.map((option, optIndex) => (
+                                            <li key={optIndex}>{option}</li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
 
             <div className="bg-white p-4 rounded-lg shadow">
