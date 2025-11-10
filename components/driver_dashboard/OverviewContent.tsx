@@ -36,7 +36,14 @@ const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearby
                 {isOnline ? (
                     <div className="space-y-4">
                         {nearbyOrders.length > 0 ? (
-                            nearbyOrders.map(order => (
+                            nearbyOrders.map(order => {
+                                const earnings = (order.restaurantLocation && order.deliveryAddress)
+                                    ? (calculateDistance(
+                                        { lat: order.restaurantLocation.lat, lng: order.restaurantLocation.lng },
+                                        { lat: order.deliveryAddress.latitude, lng: order.deliveryAddress.longitude }
+                                      ) * (driver.ratePerKm ?? 2)).toFixed(2)
+                                    : 'N/A';
+                                return (
                                 <div key={order.id} className="border p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div className="flex-1">
                                         <p className="font-bold">{order.restaurant}</p>
@@ -47,14 +54,14 @@ const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearby
                                                 `${calculateDistance({ lat: order.restaurantLocation.lat, lng: order.restaurantLocation.lng }, { lat: order.deliveryAddress.latitude, lng: order.deliveryAddress.longitude }).toFixed(1)} ${t('km')}` : 'N/A'
                                             }</span>
                                             <span className="mx-2">|</span>
-                                            <span>{t('earnings')}: {(order.total * 0.1).toFixed(2)} {t('currency')}</span>
+                                            <span>{t('earnings')}: {earnings} {earnings !== 'N/A' && t('currency')}</span>
                                         </div>
                                     </div>
                                     <button onClick={() => onAcceptOrder(order)} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 text-sm font-semibold w-full sm:w-auto">
                                         {t('acceptOrder')}
                                     </button>
                                 </div>
-                            ))
+                            )})
                         ) : (
                             <p className="text-center text-gray-500 py-4">{t('noNewOrders')}</p>
                         )}

@@ -231,7 +231,12 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
                 
                 await runTransaction(db, async (transaction) => {
                     const dailyDoc = await transaction.get(dailyEarningRef);
+                    const driverDoc = await transaction.get(driverRef);
+                    if (!driverDoc.exists()) {
+                      throw "Driver does not exist!";
+                    }
 
+                    // Update daily earnings
                     if (dailyDoc.exists()) {
                         transaction.update(dailyEarningRef, {
                             earnings: increment(earningForThisOrder),
@@ -249,6 +254,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
                         });
                     }
 
+                    // Update driver's total stats
                     transaction.update(driverRef, {
                         totalOrderValue: increment(orderToComplete.total),
                         totalEarnings: increment(earningForThisOrder),
@@ -256,6 +262,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
                     });
                 });
                 
+                // Finally, update the order status
                 await updateDoc(orderRef, { status: newStatus });
                 
                 const remainingOrders = myActiveOrders.filter(o => o.id !== orderId);
@@ -298,7 +305,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         }
 
         switch (activeView) {
-            case 'orders': return <AvailableOrdersContent orders={nearbyOrders} onAccept={setOrderToAccept} />;
+            case 'orders': return <AvailableOrdersContent orders={nearbyOrders} onAccept={setOrderToAccept} driver={driver} />;
             case 'active_orders': return <ActiveOrdersContent orders={myActiveOrders} onSelectOrder={setSelectedOrder} />;
             case 'earnings': return <EarningsContent stats={{ totalOrderValue: driver.totalOrderValue || 0, myTotalEarnings: driver.totalEarnings || 0 }} driver={driver} dailyEarnings={dailyEarnings} isLoading={isEarningsLoading} />;
             case 'profile': return <div className="bg-white p-6 rounded-lg shadow-md">{t('profileSettings')} (coming soon)</div>;
@@ -321,6 +328,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
                     onClose={() => setOrderToAccept(null)}
                     onConfirm={() => { orderToAccept && handleAcceptOrder(orderToAccept); setOrderToAccept(null); }}
                     order={orderToAccept}
+                    driver={driver}
                 />
             )}
         </DriverLayout>

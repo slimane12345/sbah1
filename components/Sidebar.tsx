@@ -30,10 +30,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
   return (
     <div className="flex flex-col w-64 bg-gray-50 shadow-lg">
       <div className="flex items-center justify-center h-20 border-b">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-        <span className="text-2xl font-bold text-gray-800 mr-2">Sbah ☀️</span>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-orange-500 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+        <span className="text-2xl font-bold text-amber-800 mr-2">Sbah ☀️</span>
       </div>
       <nav className="flex-1 px-4 py-6 space-y-2">
         {navItems.map(item => (
