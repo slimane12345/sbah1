@@ -34,10 +34,15 @@ export type DriverView = 'overview' | 'orders' | 'active_orders' | 'earnings' | 
 
 export type Language = 'ar' | 'fr';
 
+// Fix: Added TranslatableString type to be used for internationalized database fields and resolve import error.
+export type TranslatableString = { [lang in Language]?: string };
+
 export interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string, replacements?: Record<string, string | number>) => string;
+  // Fix: Added translateField to the context type to handle dynamic translation of DB fields.
+  translateField: (field: TranslatableString | string | undefined | null) => string;
   dbTranslations: Record<string, Record<string, string>>;
   setDbTranslations: React.Dispatch<React.SetStateAction<Record<string, Record<string, string>>>>;
   isLoadingTranslations: boolean;

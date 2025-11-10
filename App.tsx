@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Page, CustomerPage, ViewMode, CartItem, Restaurant, Product, UserLocation, UserProfileData, PastOrder, SavedAddress, OrderStatus, AppSettings } from './types.ts';
 import { db } from './scripts/firebase/firebaseConfig.js';
 // FIX: Imported 'getDoc' to fetch single documents from Firestore.
-import { doc, setDoc, Timestamp, collection, query, where, getDocs, getDoc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, Timestamp, collection, query, where, getDocs, getDoc, updateDoc, addDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext.tsx';
 
 // Admin view components
@@ -23,6 +23,8 @@ import HomePageManagementPage from './pages/HomePageManagementPage.tsx';
 import AiAlgorithmsPage from './pages/AiAlgorithmsPage.tsx';
 import SupportChatbotPage from './pages/SupportChatbotPage.tsx';
 import SettingsPage from './pages/SettingsPage.tsx';
+import NotificationToast from './components/NotificationToast.tsx';
+
 
 // Customer view components
 import CustomerHeader from './components/CustomerHeader.tsx';
@@ -114,8 +116,12 @@ const MainApp: React.FC = () => {
 
     // Driver state
     const [driverId, setDriverId] = useState<string | null>(() => localStorage.getItem('sbahDriverId'));
+
+    // New order notification state for admin
+    const [newOrderNotification, setNewOrderNotification] = useState<{ orderNumber: string, customerName: string } | null>(null);
+    const isFirstLoad = useRef(true);
     
-    const { t } = useLanguage();
+    const { t, translateField } = useLanguage();
 
     const MOCK_USER_ID = 'mock_customer_id';
 
@@ -130,6 +136,43 @@ const MainApp: React.FC = () => {
         // Redirect to the driver login page after logout.
         window.location.href = '/driver.html';
     };
+
+    // Listener for new orders (admin view only)
+    useEffect(() => {
+        if (viewMode !== 'admin') return;
+
+        const q = query(collection(db, "orders"));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            if (isFirstLoad.current) {
+                isFirstLoad.current = false;
+                return;
+            }
+
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const orderData = change.doc.data();
+                    if (orderData.status === 'pending') {
+                        try {
+                            const audio = new Audio('/sounds/notification.mp3');
+                            audio.play().catch(error => {
+                                console.error("Audio playback failed. User interaction might be required.", error);
+                            });
+                        } catch (e) {
+                            console.error("Could not create or play audio.", e)
+                        }
+                        
+                        setNewOrderNotification({
+                            orderNumber: orderData.orderNumber || change.doc.id,
+                            customerName: orderData.customerName || 'N/A'
+                        });
+                    }
+                }
+            });
+        });
+
+        return () => unsubscribe();
+    }, [viewMode]);
 
     useEffect(() => {
         const fetchAppSettings = async () => {
@@ -205,11 +248,11 @@ const MainApp: React.FC = () => {
                     .sort((a, b) => b.data.createdAt.toMillis() - a.data.createdAt.toMillis())
                     .map(({ data, id }) => ({
                         id: data.orderNumber || id,
-                        restaurantName: data.restaurantName || 'مطعم غير معروف',
+                        restaurantName: translateField(data.restaurantName) || 'مطعم غير معروف',
                         date: data.createdAt.toDate().toLocaleDateString('ar-SA'),
                         total: data.finalAmount,
                         status: mapBackendStatusToFrontend(data.status),
-                        items: data.items.map((i: any) => ({ name: i.productName, quantity: i.quantity, category: i.category })),
+                        items: data.items.map((i: any) => ({ name: translateField(i.productName), quantity: i.quantity, category: translateField(i.category) })),
                         deliveryAddress: data.deliveryAddress,
                     }));
                 setPastOrders(fetchedOrders);
@@ -234,7 +277,7 @@ const MainApp: React.FC = () => {
         };
 
         fetchProfilePageData();
-    }, [customerPage]);
+    }, [customerPage, translateField]);
 
 
     const handleLocationConfirm = async (coords: { lat: number, lng: number }) => {
@@ -314,7 +357,7 @@ const MainApp: React.FC = () => {
             }
         });
         
-        setNotificationMessage(t('addedToCartNotification', { productName: newItem.product.name }));
+        setNotificationMessage(t('addedToCartNotification', { productName: translateField(newItem.product.name) }));
         setTimeout(() => setNotificationMessage(null), 3000);
     };
     
@@ -469,6 +512,17 @@ const MainApp: React.FC = () => {
                         {renderAdminPage()}
                     </main>
                 </div>
+                 {newOrderNotification && (
+                    <NotificationToast
+                        orderNumber={newOrderNotification.orderNumber}
+                        customerName={newOrderNotification.customerName}
+                        onNavigate={() => {
+                            setActivePage('orders-management');
+                            setNewOrderNotification(null);
+                        }}
+                        onClose={() => setNewOrderNotification(null)}
+                    />
+                )}
             </div>
         );
     }

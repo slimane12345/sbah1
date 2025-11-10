@@ -1,4 +1,6 @@
-export const translations: Record<string, Record<string, string>> = {
+import type { TranslatableString } from './types';
+
+export const translations: Record<string, Record<string, string | TranslatableString>> = {
   ar: {
     // ======== GLOBAL ========
     currency: 'د.م.',
@@ -56,14 +58,14 @@ export const translations: Record<string, Record<string, string>> = {
     // Address Selection
     deliveryAddress: 'عنوان التوصيل',
     change: 'تغيير',
-    pleaseSelectAddress: 'الرجاء تحديد عنوان التوصيل.',
+    pleaseSelectAddress: "الرجاء تحديد عنوان التوصيل.",
     // Payment Methods
     paymentMethod: 'طريقة الدفع',
     cod: 'الدفع عند الاستلام',
     codDescription: 'ادفع نقدًا لمندوب التوصيل عند وصول طلبك.',
     card: 'البطاقة الائتمانية / مدى',
     cardDescription: 'آمن ومضمون. نقبل فيزا، ماستركارد ومدى.',
-    noPaymentMethodsAvailable: 'لا توجد طرق دفع متاحة حاليًا. يرجى التواصل مع الدعم.',
+    noPaymentMethodsAvailable: "لا توجد طرق دفع متاحة حاليًا. يرجى التواصل مع الدعم.",
     // Order Summary
     orderSummary: 'ملخص الطلب',
     subtotal: 'المجموع الفرعي',
@@ -71,7 +73,7 @@ export const translations: Record<string, Record<string, string>> = {
     placingOrder: 'جاري تأكيد الطلب...',
     // Errors
     emptyCartError: 'سلة التسوق فارغة.',
-    noAddressError: 'الرجاء تحديد عنوان التوصيل.',
+    noAddressError: "الرجاء تحديد عنوان التوصيل.",
     customerInfoError: 'الرجاء إدخال الاسم ورقم الهاتف.',
     paymentMethodError: 'الرجاء اختيار طريقة الدفع.',
     placeOrderFailedError: 'فشل إتمام الطلب. يرجى المحاولة مرة أخرى.',
@@ -156,7 +158,7 @@ export const translations: Record<string, Record<string, string>> = {
     newOrders: 'طلبات جديدة',
     noNewOrders: 'لا توجد طلبات جديدة متاحة حالياً.',
     myActiveOrders: 'طلباتي النشطة',
-    noActiveOrdersMessage: 'ليس لديك أي طلبات نشطة حاليًا.',
+    noActiveOrdersMessage: "ليس لديك أي طلبات نشطة حاليًا.",
     viewDetails: 'عرض التفاصيل',
     backToMyOrders: 'العودة إلى طلباتي',
     activeOrder: 'طلبي الحالي',
@@ -218,6 +220,11 @@ export const translations: Record<string, Record<string, string>> = {
     translationKey: 'مفتاح الترجمة',
     defaultValue: 'القيمة الافتراضية (العربية)',
     translationValue: 'قيمة الترجمة',
+
+    // ======== NEW ORDER NOTIFICATION ========
+    newOrderNotificationTitle: 'طلب جديد!',
+    newOrderNotificationBody: 'لديك طلب جديد رقم {{orderNumber}} من العميل {{customerName}}.',
+    viewOrder: 'عرض الطلب',
   },
   fr: {
     // ======== GLOBAL ========
@@ -438,5 +445,10 @@ export const translations: Record<string, Record<string, string>> = {
     translationKey: 'Clé de traduction',
     defaultValue: 'Valeur par défaut (Arabe)',
     translationValue: 'Valeur de la traduction',
+
+    // ======== NEW ORDER NOTIFICATION ========
+    newOrderNotificationTitle: 'Nouvelle commande !',
+    newOrderNotificationBody: 'Vous avez une nouvelle commande n°{{orderNumber}} du client {{customerName}}.',
+    viewOrder: 'Voir la commande',
   }
 };
