@@ -149,6 +149,12 @@ export const translations: Record<string, Record<string, string>> = {
     setDefaultAddress: 'تعيين كعنوان افتراضي',
     cancel: 'إلغاء',
     
+    // ======== PWA INSTALL BANNER ========
+    installAppTitle: 'ثبت تطبيق Sbah!',
+    installAppPrompt: 'أضف التطبيق لشاشتك الرئيسية لتجربة أسرع وأفضل.',
+    later: 'لاحقاً',
+    install: 'تثبيت',
+
     // ======== DRIVER DASHBOARD ========
     driverInterface: 'واجهة الموزع',
     driverDashboard: 'لوحة تحكم الموزع',
@@ -383,6 +389,12 @@ export const translations: Record<string, Record<string, string>> = {
     setDefaultAddress: 'Définir comme adresse par défaut',
     cancel: 'Annuler',
     
+    // ======== PWA INSTALL BANNER ========
+    installAppTitle: 'Installez Sbah !',
+    installAppPrompt: 'Ajoutez l\'application à votre écran d\'accueil pour une expérience plus rapide et meilleure.',
+    later: 'Plus tard',
+    install: 'Installer',
+
     // ======== DRIVER DASHBOARD ========
     driverInterface: 'Interface Livreur',
     driverDashboard: 'Tableau de bord livreur',

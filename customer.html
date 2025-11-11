@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -38,6 +36,20 @@
     }
     .animate-fade-in-down {
       animation: fadeInDown 0.5s ease-out forwards;
+    }
+    /* PWA Banner animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.5s ease-out forwards;
     }
     /* Customer View Button Styles - NEW PROFESSIONAL MORNING THEME */
     .btn-customer-primary {

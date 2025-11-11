@@ -35,6 +35,7 @@ import CategoryProductsPage from './pages/CategoryProductsPage.tsx';
 import ProductDetailsPage from './pages/ProductDetailsPage.tsx';
 import LocationModal from './components/customer_home/LocationModal.tsx';
 import CustomerOrderTrackingModal from './components/user_profile/CustomerOrderTrackingModal.tsx';
+import InstallPwaBanner from './components/InstallPwaBanner.tsx';
 
 // Driver view components
 import DriverLoginPage from './pages/DriverLoginPage.tsx';
@@ -556,6 +557,9 @@ const MainApp: React.FC = () => {
                 isOpen={isTrackingModalOpen}
                 onClose={() => setIsTrackingModalOpen(false)}
             />
+            {deferredInstallPrompt && (
+                <InstallPwaBanner onInstall={handleInstallApp} />
+            )}
         </div>
     );
 };
