@@ -20,6 +20,8 @@ interface UserProfilePageProps {
     onSaveAddress: (address: SavedAddress) => Promise<void>;
     onDeleteAddress: (id: string) => Promise<void>;
     onTrackOrder: (order: PastOrder) => void;
+    deferredInstallPrompt: any;
+    onInstallApp: () => void;
 }
 
 const UserProfilePage: React.FC<UserProfilePageProps> = ({
@@ -31,6 +33,8 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({
     onSaveAddress,
     onDeleteAddress,
     onTrackOrder,
+    deferredInstallPrompt,
+    onInstallApp
 }) => {
     const [activeTab, setActiveTab] = useState<ProfileTab>('profile');
     const { t } = useLanguage();
@@ -42,7 +46,12 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({
         
         switch (activeTab) {
             case 'profile':
-                return <ProfileSettings user={user} onSave={onUpdateProfile} />;
+                return <ProfileSettings 
+                            user={user} 
+                            onSave={onUpdateProfile} 
+                            deferredInstallPrompt={deferredInstallPrompt}
+                            onInstallApp={onInstallApp}
+                        />;
             case 'orders':
                 return <OrderHistory orders={orders} onTrackOrder={onTrackOrder} />;
             case 'addresses':
@@ -50,7 +59,12 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({
             case 'rewards':
                 return <Rewards />;
             default:
-                return <ProfileSettings user={user} onSave={onUpdateProfile} />;
+                return <ProfileSettings 
+                            user={user} 
+                            onSave={onUpdateProfile} 
+                            deferredInstallPrompt={deferredInstallPrompt}
+                            onInstallApp={onInstallApp}
+                        />;
         }
     };
     

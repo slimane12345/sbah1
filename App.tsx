@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import type { Page, CustomerPage, ViewMode, CartItem, Restaurant, Product, UserLocation, UserProfileData, PastOrder, SavedAddress, OrderStatus, AppSettings, TranslatableString } from './types.ts';
 import { db } from './scripts/firebase/firebaseConfig.js';
@@ -113,6 +114,9 @@ const MainApp: React.FC = () => {
     // App-wide settings state
     const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
 
+    // PWA Install Prompt State
+    const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
+
     // Driver state
     const [driverId, setDriverId] = useState<string | null>(() => localStorage.getItem('sbahDriverId'));
     
@@ -132,6 +136,46 @@ const MainApp: React.FC = () => {
         // Redirect to the driver login page after logout.
         window.location.href = '/driver.html';
     };
+
+    // Service Worker and PWA Install Prompt Logic
+    useEffect(() => {
+        if (viewMode === 'customer') {
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    }, err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+                });
+            }
+
+            // Listen for the install prompt
+            const handleBeforeInstallPrompt = (e: Event) => {
+                e.preventDefault();
+                setDeferredInstallPrompt(e);
+            };
+            window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            return () => {
+                window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            };
+        }
+    }, [viewMode]);
+
+    const handleInstallApp = async () => {
+        if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            if (outcome === 'accepted') {
+                console.log('User accepted the A2HS prompt');
+            } else {
+                console.log('User dismissed the A2HS prompt');
+            }
+            setDeferredInstallPrompt(null);
+        }
+    };
+
 
     useEffect(() => {
         const fetchAppSettings = async () => {
@@ -444,6 +488,8 @@ const MainApp: React.FC = () => {
                     onSaveAddress={handleSaveAddress}
                     onDeleteAddress={handleDeleteAddress}
                     onTrackOrder={handleTrackOrder}
+                    deferredInstallPrompt={deferredInstallPrompt}
+                    onInstallApp={handleInstallApp}
                 />;
             default:
                 return <CustomerHomePage 

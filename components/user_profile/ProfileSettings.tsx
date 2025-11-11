@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import type { UserProfileData } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext.tsx';
@@ -12,15 +13,25 @@ const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 interface ProfileSettingsProps {
     user: UserProfileData | null;
     onSave: (data: Omit<UserProfileData, 'id' | 'avatarUrl'>) => Promise<void>;
+    deferredInstallPrompt: any;
+    onInstallApp: () => void;
 }
 
-const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onSave }) => {
+const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onSave, deferredInstallPrompt, onInstallApp }) => {
     const { language, setLanguage, t } = useLanguage();
     const [name, setName] = useState(user?.fullName || '');
     const [email, setEmail] = useState(user?.email || '');
     const [phone, setPhone] = useState(user?.phone || '');
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
+
+    const [isAppInstalled, setIsAppInstalled] = useState(false);
+    useEffect(() => {
+        // Check if the app is already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            setIsAppInstalled(true);
+        }
+    }, []);
 
     useEffect(() => {
         if (user) {
@@ -99,6 +110,22 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ user, onSave }) => {
                     </button>
                 </div>
             </Card>
+
+            {deferredInstallPrompt && !isAppInstalled && (
+                <Card>
+                    <h3 className="text-lg font-medium text-gray-900">{t('appSettings')}</h3>
+                    <p className="mt-1 text-sm text-gray-500">{t('installAppDescription')}</p>
+                    <div className="mt-4">
+                        <button 
+                            onClick={onInstallApp}
+                            className="btn-customer-secondary flex items-center gap-2"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            {t('installApp')}
+                        </button>
+                    </div>
+                </Card>
+            )}
         </div>
     );
 };

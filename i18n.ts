@@ -124,6 +124,9 @@ export const translations: Record<string, Record<string, string>> = {
     languageDescription: 'اختر لغة العرض المفضلة لديك.',
     arabic: 'العربية',
     french: 'Français',
+    appSettings: 'إعدادات التطبيق',
+    installAppDescription: 'ثبّت التطبيق على شاشتك الرئيسية للوصول السريع.',
+    installApp: 'تثبيت التطبيق',
     // OrderHistory Component
     reorder: 'إعادة الطلب',
     trackOrder: 'تتبع',
@@ -355,6 +358,9 @@ export const translations: Record<string, Record<string, string>> = {
     languageDescription: "Choisissez votre langue d'affichage préférée.",
     arabic: 'العربية',
     french: 'Français',
+    appSettings: 'Paramètres de l\'application',
+    installAppDescription: 'Installez l\'application sur votre écran d\'accueil pour un accès rapide.',
+    installApp: 'Installer l\'application',
     // OrderHistory Component
     reorder: 'Recommander',
     trackOrder: 'Suivre',
