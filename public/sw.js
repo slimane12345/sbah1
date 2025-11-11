@@ -3,7 +3,7 @@
 const CACHE_NAME = 'sbah-cache-v1';
 const urlsToCache = [
   '/customer.html',
-  '/',
+  '/', // Cache the root as well, which might redirect
 ];
 
 self.addEventListener('install', (event) => {
