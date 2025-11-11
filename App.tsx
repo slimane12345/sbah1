@@ -84,6 +84,7 @@ const MainApp: React.FC = () => {
     const viewMode: ViewMode = isDriverPath ? 'driver' : isCustomerPath ? 'customer' : 'admin';
     
     const [activePage, setActivePage] = useState<Page>('dashboard');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [customerPage, setCustomerPage] = useState<CustomerPage>('home');
     const [previousCustomerPage, setPreviousCustomerPage] = useState<CustomerPage>('home');
     
@@ -510,9 +511,9 @@ const MainApp: React.FC = () => {
     if (viewMode === 'admin') {
          return (
             <div className="flex h-screen bg-gray-100" dir="rtl">
-                <Sidebar activePage={activePage} setActivePage={setActivePage} />
+                <Sidebar activePage={activePage} setActivePage={setActivePage} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <Header title={pageTitles[activePage] || 'لوحة التحكم'} />
+                    <Header title={pageTitles[activePage] || 'لوحة التحكم'} onMenuClick={() => setIsSidebarOpen(true)} />
                     <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
                         {renderAdminPage()}
                     </main>

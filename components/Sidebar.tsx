@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import type { Page } from '../types';
 
 interface SidebarProps {
   activePage: Page;
   setActivePage: (page: Page) => void;
+  isOpen: boolean;
+  setOpen: (open: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage, isOpen, setOpen }) => {
     
     const navItems: { id: Page; label: string; icon: React.ReactNode }[] = [
         { id: 'dashboard', label: 'لوحة التحكم', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg> },
@@ -27,59 +29,80 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
     ];
 
     return (
-        <div className="w-64 bg-gray-800 text-gray-300 flex flex-col">
-            <div className="flex items-center justify-center h-20 border-b border-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                <span className="text-xl font-bold mr-2 text-white">Sbah Dashboard</span>
-            </div>
-            <nav className="flex-1 px-2 py-4 space-y-1">
-                {navItems.map((item) => (
-                    <button
-                        key={item.id}
-                        onClick={() => setActivePage(item.id)}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors relative ${
-                            activePage === item.id
-                                ? 'bg-gray-900 text-white'
-                                : 'text-gray-400 hover:bg-gray-700 hover:text-white'
-                        }`}
+        <Fragment>
+            {/* Overlay for mobile */}
+            <div
+                className={`fixed inset-0 bg-gray-900 bg-opacity-50 z-30 lg:hidden ${isOpen ? 'block' : 'hidden'}`}
+                onClick={() => setOpen(false)}
+                aria-hidden="true"
+            ></div>
+
+            {/* Sidebar */}
+            <div className={`fixed inset-y-0 right-0 z-40 w-64 bg-gray-800 text-gray-300 flex flex-col transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                <div className="flex items-center justify-between lg:justify-center h-20 border-b border-gray-700 px-4">
+                    <div className="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        <span className="text-xl font-bold mr-2 text-white">Sbah Dashboard</span>
+                    </div>
+                     <button
+                        className="text-gray-300 hover:text-white lg:hidden"
+                        onClick={() => setOpen(false)}
                     >
-                        {activePage === item.id && (
-                           <span className="absolute inset-y-0 left-0 w-1 bg-orange-500 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
-                        )}
-                         <span className={activePage === item.id ? 'text-orange-400' : 'text-gray-400'}>
-                             {item.icon}
-                         </span>
-                        <span>{item.label}</span>
+                        <span className="sr-only">Close sidebar</span>
+                        <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
-                ))}
-                <div className="pt-4 mt-4 border-t border-gray-700 space-y-1">
-                    <a
-                        href="/customer.html"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                        <span>معاينة واجهة العميل</span>
-                    </a>
-                    <a
-                        href="/driver.html"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2m0 14v2m-7-9H3m18 0h-2" />
-                        </svg>
-                        <span>واجهة السائق</span>
-                    </a>
                 </div>
-            </nav>
-        </div>
+                <nav className="flex-1 px-2 py-4 space-y-1">
+                    {navItems.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActivePage(item.id)}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium transition-colors relative ${
+                                activePage === item.id
+                                    ? 'bg-gray-900 text-white'
+                                    : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                            }`}
+                        >
+                            {activePage === item.id && (
+                            <span className="absolute inset-y-0 left-0 w-1 bg-orange-500 rounded-tr-lg rounded-br-lg" aria-hidden="true"></span>
+                            )}
+                            <span className={activePage === item.id ? 'text-orange-400' : 'text-gray-400'}>
+                                {item.icon}
+                            </span>
+                            <span>{item.label}</span>
+                        </button>
+                    ))}
+                    <div className="pt-4 mt-4 border-t border-gray-700 space-y-1">
+                        <a
+                            href="/customer.html"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            <span>معاينة واجهة العميل</span>
+                        </a>
+                        <a
+                            href="/driver.html"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-md text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2m0 14v2m-7-9H3m18 0h-2" />
+                            </svg>
+                            <span>واجهة السائق</span>
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </Fragment>
     );
 };
 
