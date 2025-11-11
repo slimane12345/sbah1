@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { ProductManagementData, AvailabilityStatus, ProductOptionGroup, ProductOption, TranslatableString, Category } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { storage } from '../scripts/firebase/firebaseConfig.js';
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 interface ProductModalProps {
     isOpen: boolean;
@@ -31,6 +33,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
         availability: 'متوفر',
         options: []
     });
+    
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>('');
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         if (product) {
@@ -51,6 +57,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                     options: g.options.map(o => ({...o, name: normalizeTranslatable(o.name)}))
                 }))
             });
+            setImagePreview(product.image || '');
         } else {
             setProductData({
                 name: { ar: '', fr: '' },
@@ -62,7 +69,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                 availability: 'متوفر',
                 options: []
             });
+            setImagePreview('');
         }
+        // Reset file input state when modal opens
+        setImageFile(null);
+        setIsUploading(false);
     }, [product, isOpen, restaurantNames, allCategories]);
 
     if (!isOpen) return null;
@@ -83,6 +94,17 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
         const selectedCategory = allCategories.find(c => translateField(c.name) === selectedCategoryName);
         if (selectedCategory) {
             setProductData(prev => ({ ...prev, category: selectedCategory.name }));
+        }
+    };
+    
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        } else {
+            setImageFile(null);
+            setImagePreview(product?.image || '');
         }
     };
 
@@ -146,7 +168,33 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave(productData);
+
+        const finalSave = (imageUrl: string) => {
+            onSave({ ...productData, image: imageUrl });
+        };
+
+        if (imageFile) {
+            setIsUploading(true);
+            const storageRef = ref(storage, `product_images/${Date.now()}_${imageFile.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, imageFile);
+
+            uploadTask.on('state_changed', 
+                (snapshot) => { /* Can show progress here if needed */ }, 
+                (error) => {
+                    console.error("Image upload failed:", error);
+                    alert("فشل رفع الصورة. يرجى المحاولة مرة أخرى.");
+                    setIsUploading(false);
+                }, 
+                () => {
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                        finalSave(downloadURL);
+                        setIsUploading(false);
+                    });
+                }
+            );
+        } else {
+            finalSave(productData.image);
+        }
     };
 
     return (
@@ -174,10 +222,31 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <input type="number" step="0.01" placeholder="السعر (د.م.)" value={productData.price} onChange={e => handleInputChange('price', parseFloat(e.target.value))} className="w-full border-gray-300 rounded-md" required />
-                             <input type="text" placeholder="رابط الصورة" value={productData.image} onChange={e => handleInputChange('image', e.target.value)} className="w-full border-gray-300 rounded-md" />
+                            <select value={productData.availability} onChange={e => handleInputChange('availability', e.target.value)} className="w-full border-gray-300 rounded-md"><option value="متوفر">متوفر</option><option value="غير متوفر">غير متوفر</option></select>
                         </div>
-                        <select value={productData.availability} onChange={e => handleInputChange('availability', e.target.value)} className="w-full border-gray-300 rounded-md"><option value="متوفر">متوفر</option><option value="غير متوفر">غير متوفر</option></select>
-                        
+                        <div>
+                            <label htmlFor="productImage" className="block text-sm font-medium text-gray-700">صورة المنتج</label>
+                            <div className="mt-1 flex items-center gap-4">
+                                {imagePreview ? (
+                                    <img src={imagePreview} alt="معاينة المنتج" className="h-16 w-16 rounded-md object-cover" />
+                                ) : (
+                                    <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center text-gray-400">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    </div>
+                                )}
+                                <div className="w-full">
+                                    <input
+                                        id="productImage"
+                                        type="file"
+                                        accept="image/png, image/jpeg, image/webp"
+                                        onChange={handleFileChange}
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                    />
+                                    {isUploading && <p className="text-xs text-blue-600 mt-1">جاري رفع الصورة...</p>}
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Dynamic Options */}
                         <div className="border-t pt-4">
                             <h3 className="font-semibold text-gray-700 mb-2">خيارات المنتج المتغيرة</h3>
@@ -208,8 +277,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                         </div>
                     </div>
                     <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">
-                        <button type="button" onClick={onClose} disabled={isSubmitting} className="bg-white py-2 px-4 border rounded-md">إلغاء</button>
-                        <button type="submit" disabled={isSubmitting} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-blue-300">{isSubmitting ? 'جاري الحفظ...' : 'حفظ'}</button>
+                        <button type="button" onClick={onClose} disabled={isSubmitting || isUploading} className="bg-white py-2 px-4 border rounded-md">إلغاء</button>
+                        <button type="submit" disabled={isSubmitting || isUploading} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-blue-300">
+                             {isUploading ? 'جاري الرفع...' : isSubmitting ? 'جاري الحفظ...' : 'حفظ'}
+                        </button>
                     </div>
                 </form>
             </div>
