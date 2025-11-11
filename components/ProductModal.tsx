@@ -7,7 +7,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 interface ProductModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (productData: Omit<ProductManagementData, 'id'>) => void;
+    onSave: (productData: Omit<ProductManagementData, 'id'>) => Promise<void>;
     product: ProductManagementData | null;
     isSubmitting: boolean;
     restaurantNames: string[];
@@ -166,35 +166,35 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        let imageUrl = productData.image; // Use existing image URL by default
 
-        const finalSave = (imageUrl: string) => {
-            onSave({ ...productData, image: imageUrl });
-        };
-
+        // If a new file is selected, upload it first.
         if (imageFile) {
             setIsUploading(true);
-            const storageRef = ref(storage, `product_images/${Date.now()}_${imageFile.name}`);
-            const uploadTask = uploadBytesResumable(storageRef, imageFile);
+            try {
+                const storageRef = ref(storage, `product_images/${Date.now()}_${imageFile.name}`);
+                const uploadTask = uploadBytesResumable(storageRef, imageFile);
+                
+                // Await the upload to complete
+                await uploadTask;
 
-            uploadTask.on('state_changed', 
-                (snapshot) => { /* Can show progress here if needed */ }, 
-                (error) => {
-                    console.error("Image upload failed:", error);
-                    alert("فشل رفع الصورة. يرجى المحاولة مرة أخرى.");
-                    setIsUploading(false);
-                }, 
-                () => {
-                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                        finalSave(downloadURL);
-                        setIsUploading(false);
-                    });
-                }
-            );
-        } else {
-            finalSave(productData.image);
+                // Get the URL of the uploaded file
+                imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            } catch (error) {
+                console.error("Image upload failed:", error);
+                alert("فشل رفع الصورة. يرجى المحاولة مرة أخرى.");
+                setIsUploading(false);
+                return; // Stop if upload fails
+            } finally {
+                setIsUploading(false); // Reset upload state regardless of success or failure
+            }
         }
+        
+        // Now call the onSave prop with the final image URL.
+        // The parent component will handle the 'isSubmitting' state for the database write.
+        await onSave({ ...productData, image: imageUrl });
     };
 
     return (

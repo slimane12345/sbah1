@@ -1,0 +1,6 @@
+{
+  "appId": "com.sbah.delivery",
+  "appName": "Sbah Delivery",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
