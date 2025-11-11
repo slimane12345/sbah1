@@ -129,18 +129,18 @@ const DashboardPage: React.FC = () => {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-sm">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">الطلبات خلال الأسبوع</h3>
           <OrdersChart />
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-sm">
           <h3 className="text-xl font-semibold text-gray-800 mb-4">الإيرادات الشهرية</h3>
           <RevenueChart />
         </div>
       </div>
 
       {/* Recent Orders */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-lg shadow-sm">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">أحدث الطلبات</h3>
         <OrdersTable orders={recentOrders} />
       </div>

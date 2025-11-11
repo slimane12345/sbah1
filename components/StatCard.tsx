@@ -11,7 +11,6 @@ interface StatCardProps {
   changeType: ChangeType;
 }
 
-// Redesigned icon map with main and light colors for a more modern look
 const iconMap: Record<StatCardIcon, { Svg: React.ReactElement; mainColor: string; lightColor: string }> = {
   orders: {
     Svg: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>,
@@ -46,20 +45,17 @@ const StatCard: React.FC<StatCardProps> = ({ icon, title, value, change, changeT
   const changeIcon = changeType === 'increase' ? '▲' : '▼';
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
-      <div className="flex justify-between items-start mb-4">
-        <div className={`p-3 rounded-full ${lightColor} ${mainColor}`}>
-          {Svg}
-        </div>
-        <p className="text-3xl font-bold text-gray-800">{value}</p>
+    <div className="bg-white p-5 rounded-lg shadow-sm flex items-center gap-4">
+      <div className={`flex-shrink-0 p-3.5 rounded-full ${lightColor}`}>
+        <div className={mainColor}>{Svg}</div>
       </div>
-      <div>
-        <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-        <div className="flex items-center">
-          <span className={`text-sm font-semibold ${changeColor} ml-1`}>
-            {changeIcon} {change}
-          </span>
-          <span className="text-xs text-gray-400">عن الأمس</span>
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-gray-500">{title}</p>
+        <div className="flex items-baseline gap-2">
+            <p className="text-2xl font-bold text-gray-900">{value}</p>
+            <span className={`text-xs font-semibold ${changeColor} flex items-center`}>
+                {changeIcon} {change}
+            </span>
         </div>
       </div>
     </div>

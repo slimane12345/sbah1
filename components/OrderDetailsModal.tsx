@@ -2,6 +2,7 @@ import React from 'react';
 import type { OrderManagementData } from '../types';
 import OrderAdminStatusBadge from './OrderAdminStatusBadge';
 import PaymentStatusBadge from './PaymentStatusBadge';
+import { useLanguage } from '../contexts/LanguageContext.tsx';
 
 interface OrderDetailsModalProps {
   order: OrderManagementData;
@@ -21,7 +22,7 @@ const InfoCard: React.FC<{ title: string; icon: React.ReactNode; children: React
 );
 
 const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose }) => {
-
+  const { translateField } = useLanguage();
   const subtotal = order.items.reduce((sum, item) => sum + (item.price ?? 0) * (item.quantity ?? 0), 0);
   const deliveryFee = (order.total ?? 0) - subtotal;
 
@@ -54,7 +55,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                             {order.items.map((item, index) => (
                                 <tr key={index}>
                                     <td className="px-4 py-3">
-                                      <div className="font-semibold">{item.name}</div>
+                                      <div className="font-semibold">{translateField(item.name)}</div>
                                       {item.options && item.options.length > 0 && (
                                           <ul className="list-disc list-inside text-xs text-gray-500 mt-1 mr-2">
                                               {item.options.map((opt, i) => <li key={i}>{opt}</li>)}

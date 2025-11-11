@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import type { Page, CustomerPage, ViewMode, CartItem, Restaurant, Product, UserLocation, UserProfileData, PastOrder, SavedAddress, OrderStatus, AppSettings, TranslatableString } from './types.ts';
 import { db } from './scripts/firebase/firebaseConfig.js';
@@ -255,8 +253,7 @@ const MainApp: React.FC = () => {
                         date: data.createdAt.toDate().toLocaleDateString('ar-SA'),
                         total: data.finalAmount,
                         status: mapBackendStatusToFrontend(data.status),
-                        // Fix: Use translateField to convert category object/string to a string.
-                        items: data.items.map((i: any) => ({ name: i.productName, quantity: i.quantity, category: translateField(i.category) })),
+                        items: data.items.map((i: any) => ({ name: translateField(i.productName), quantity: i.quantity, category: translateField(i.category) })),
                         deliveryAddress: data.deliveryAddress,
                     }));
                 setPastOrders(fetchedOrders);
@@ -516,7 +513,7 @@ const MainApp: React.FC = () => {
                 <Sidebar activePage={activePage} setActivePage={setActivePage} />
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <Header title={pageTitles[activePage] || 'لوحة التحكم'} />
-                    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-8">
+                    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
                         {renderAdminPage()}
                     </main>
                 </div>
