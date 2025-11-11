@@ -510,11 +510,11 @@ const MainApp: React.FC = () => {
 
     if (viewMode === 'admin') {
          return (
-            <div className="flex h-screen bg-gray-100" dir="rtl">
+            <div className="relative min-h-screen bg-gray-100 lg:flex" dir="rtl">
                 <Sidebar activePage={activePage} setActivePage={setActivePage} isOpen={isSidebarOpen} setOpen={setIsSidebarOpen} />
-                <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 flex flex-col">
                     <Header title={pageTitles[activePage] || 'لوحة التحكم'} onMenuClick={() => setIsSidebarOpen(true)} />
-                    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                    <main className="flex-1 p-6 bg-gray-100">
                         {renderAdminPage()}
                     </main>
                 </div>
