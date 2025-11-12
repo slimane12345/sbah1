@@ -1,0 +1,6 @@
+{
+  "appId": "com.sbah.driver",
+  "appName": "Sbah Driver",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

@@ -1,0 +1,22 @@
+{
+  "name": "sbah-driver",
+  "version": "1.0.0",
+  "description": "Driver application for Sbah",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build --outDir=dist",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "firebase": "^10.14.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.0"
+  }
+}
