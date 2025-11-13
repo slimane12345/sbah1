@@ -6,13 +6,26 @@ import ProductModal from '../components/ProductModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
 import { db } from '../scripts/firebase/firebaseConfig.js';
-// Fix: 'where' was used but not imported from firestore.
 import { collection, query, onSnapshot, doc, updateDoc, orderBy, Timestamp, addDoc, deleteDoc, getDocs, where } from 'firebase/firestore';
+import { GoogleGenAI } from '@google/genai';
 
 const ITEMS_PER_PAGE = 8;
 
 const mapAvailabilityToFrontend = (isAvailable: boolean): 'متوفر' | 'غير متوفر' => {
     return isAvailable ? 'متوفر' : 'غير متوفر';
+};
+
+// Helper function to call Gemini API for translation
+const translateText = async (text: string, targetLanguage: 'French' | 'Arabic'): Promise<string> => {
+    if (!process.env.API_KEY) throw new Error("API_KEY environment variable is not set.");
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `Translate the following text to ${targetLanguage}. Return only the translated text, without any introductory phrases or explanations.\n\nText: "${text}"`;
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+    });
+    return response.text.trim();
 };
 
 const ProductsManagementPage: React.FC = () => {
@@ -25,6 +38,10 @@ const ProductsManagementPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<ProductManagementData | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Translation state
+    const [translatingProductId, setTranslatingProductId] = useState<string | null>(null);
+    const [isBulkTranslating, setIsBulkTranslating] = useState(false);
     
     // State for restaurant names and categories to populate dropdowns in modal
     const [restaurantNames, setRestaurantNames] = useState<string[]>([]);
@@ -40,13 +57,13 @@ const ProductsManagementPage: React.FC = () => {
                 const data = doc.data();
                 return {
                     id: doc.id,
-                    name: data.name || 'N/A',
+                    name: data.name || { ar: 'N/A', fr: '' },
                     image: data.imageUrl || '',
                     restaurant: data.restaurantName || 'N/A',
-                    category: data.category || 'N/A',
+                    category: data.category || { ar: 'N/A', fr: '' },
                     price: data.price || 0,
                     availability: mapAvailabilityToFrontend(data.isAvailable),
-                    description: data.description || '',
+                    description: data.description || { ar: '', fr: '' },
                     options: data.options || [],
                     tags: data.tags || [],
                     calories: data.calories,
@@ -83,6 +100,60 @@ const ProductsManagementPage: React.FC = () => {
 
         return () => unsubscribe();
     }, []);
+
+    const handleTranslateProduct = async (productId: string) => {
+        setTranslatingProductId(productId);
+        setError(null);
+        try {
+            const product = products.find(p => p.id === productId);
+            if (!product) throw new Error("Product not found");
+
+            const productRef = doc(db, 'products', productId);
+            const updates: { [key: string]: any } = {};
+
+            const name = typeof product.name === 'string' ? { ar: product.name, fr: '' } : product.name;
+            const description = typeof product.description === 'string' ? { ar: product.description, fr: '' } : product.description;
+
+            if (name?.ar && !name?.fr) {
+                updates['name.fr'] = await translateText(name.ar, 'French');
+            }
+            if (description?.ar && !description?.fr) {
+                updates['description.fr'] = await translateText(description.ar, 'French');
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await updateDoc(productRef, updates);
+            }
+
+        } catch (err: any) {
+            console.error("Translation error:", err);
+            setError(`فشل الترجمة: ${err.message}`);
+        } finally {
+            setTranslatingProductId(null);
+        }
+    };
+    
+    const handleBulkTranslate = async () => {
+        setIsBulkTranslating(true);
+        setError(null);
+        const productsToTranslate = products.filter(p => {
+             const name = typeof p.name === 'string' ? { ar: p.name, fr: '' } : p.name;
+             return name?.ar && !name?.fr;
+        });
+
+        if (productsToTranslate.length === 0) {
+            alert('لا توجد منتجات تحتاج إلى ترجمة.');
+            setIsBulkTranslating(false);
+            return;
+        }
+
+        for (const product of productsToTranslate) {
+            await handleTranslateProduct(product.id);
+        }
+
+        setIsBulkTranslating(false);
+        alert(`تمت ترجمة ${productsToTranslate.length} منتج بنجاح.`);
+    };
 
     const handleEdit = (product: ProductManagementData) => {
         setEditingProduct(product);
@@ -175,6 +246,9 @@ const ProductsManagementPage: React.FC = () => {
                             }}
                             className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                         />
+                         <button onClick={handleBulkTranslate} disabled={isBulkTranslating} className="bg-teal-500 text-white px-4 py-2 rounded-md hover:bg-teal-600 text-sm disabled:bg-teal-300 whitespace-nowrap">
+                            {isBulkTranslating ? 'جاري الترجمة...' : 'ترجمة كل الحقول الناقصة'}
+                        </button>
                         <button onClick={handleAddNew} className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm">
                             إضافة منتج
                         </button>
@@ -183,7 +257,13 @@ const ProductsManagementPage: React.FC = () => {
 
                 {isLoading ? <LoadingSpinner /> : error ? <ErrorDisplay message={error} /> : (
                     <>
-                        <ProductsManagementTable products={paginatedProducts} onEdit={handleEdit} onDelete={handleDelete} />
+                        <ProductsManagementTable 
+                            products={paginatedProducts} 
+                            onEdit={handleEdit} 
+                            onDelete={handleDelete}
+                            onTranslate={handleTranslateProduct}
+                            translatingProductId={translatingProductId} 
+                        />
                         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                     </>
                 )}
