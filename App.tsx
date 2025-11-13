@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Page, CustomerPage, ViewMode, CartItem, Restaurant, Product, UserLocation, UserProfileData, PastOrder, SavedAddress, OrderStatus, AppSettings, TranslatableString } from './types.ts';
-import { db } from './scripts/firebase/firebaseConfig.js';
+import { db, auth } from './scripts/firebase/firebaseConfig.js';
+import { signInAnonymously } from 'firebase/auth';
 // FIX: Imported 'getDoc' to fetch single documents from Firestore.
 import { doc, setDoc, Timestamp, collection, query, where, getDocs, getDoc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext.tsx';
@@ -40,6 +41,8 @@ import InstallPwaBanner from './components/InstallPwaBanner.tsx';
 // Driver view components
 import DriverLoginPage from './pages/DriverLoginPage.tsx';
 import DriverDashboardPage from './pages/DriverDashboardPage.tsx';
+import LoadingSpinner from './components/LoadingSpinner.tsx';
+import ErrorDisplay from './components/ErrorDisplay.tsx';
 
 const pageTitles: Record<Page, string> = {
     dashboard: 'لوحة التحكم الرئيسية',
@@ -123,7 +126,48 @@ const MainApp: React.FC = () => {
     // Fix: Destructure translateField to handle translatable strings.
     const { t, translateField } = useLanguage();
 
+    // Firebase initialization state
+    const [isFirebaseReady, setIsFirebaseReady] = useState(false);
+    const [firebaseError, setFirebaseError] = useState<React.ReactNode | null>(null);
+
     const MOCK_USER_ID = 'mock_customer_id';
+
+    // Handle Firebase Anonymous Auth
+    useEffect(() => {
+        const anony_auth = async () => {
+          try {
+            if (!auth.currentUser) {
+              await signInAnonymously(auth);
+              console.log("Firebase signed in anonymously for main app.");
+            }
+            setIsFirebaseReady(true);
+          } catch (error: any) {
+            if (error.code === 'auth/admin-restricted-operation') {
+              setFirebaseError(
+                <>
+                  <p className="font-bold">خطأ في مصادقة Firebase</p>
+                  <p className="text-sm mt-2">ميزة "تسجيل الدخول المجهول" غير مفعلة. هذه الميزة ضرورية لعمل التطبيق بشكل صحيح.</p>
+                  <div className="text-left text-sm mt-4 bg-gray-800 text-white p-4 rounded-md font-mono" dir="ltr">
+                    <p className="font-semibold">How to fix:</p>
+                    <ol className="list-decimal list-inside mt-2 space-y-1">
+                      <li>Go to your Firebase Console.</li>
+                      <li>Navigate to <strong>Authentication</strong> &rarr; <strong>Sign-in method</strong> tab.</li>
+                      <li>Find and <strong>enable</strong> the <strong>Anonymous</strong> sign-in provider.</li>
+                      <li>Save and refresh this page.</li>
+                    </ol>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-4">Error code: {error.code}</p>
+                </>
+              );
+            } else {
+              setFirebaseError(`حدث خطأ غير متوقع في Firebase: ${error.message}`);
+            }
+            // Still set ready to true to show the error screen instead of loading forever
+            setIsFirebaseReady(true);
+          }
+        };
+        anony_auth();
+      }, []);
 
     const handleDriverLogin = (id: string) => {
         localStorage.setItem('sbahDriverId', id);
@@ -501,6 +545,21 @@ const MainApp: React.FC = () => {
                         />;
         }
     };
+
+    if (!isFirebaseReady) {
+        return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>;
+    }
+
+    if (firebaseError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
+                <div className="max-w-2xl w-full">
+                    <ErrorDisplay message={firebaseError} />
+                </div>
+            </div>
+        );
+    }
+
 
     if (viewMode === 'driver') {
         if (driverId) {

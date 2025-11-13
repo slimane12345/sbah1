@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth, signInAnonymously } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 import { getMessaging } from "firebase/messaging";
 
@@ -25,18 +25,6 @@ const auth = getAuth(app);
 const storage = getStorage(app);
 const messaging = getMessaging(app);
 
-// Automatically sign in anonymously to allow Firebase Storage operations
-// for unauthenticated sessions (like the admin panel). This satisfies
-// the default security rule `allow read, write: if request.auth != null;`.
-if (!auth.currentUser) {
-  signInAnonymously(auth)
-    .then(() => {
-      console.log("Firebase signed in anonymously.");
-    })
-    .catch((error) => {
-      console.error("Anonymous sign-in failed:", error);
-    });
-}
-
+// Anonymous sign-in will be handled at the component level to provide user feedback.
 
 export { db, auth, storage, messaging };
