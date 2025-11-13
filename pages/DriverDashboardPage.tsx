@@ -43,7 +43,7 @@ const mapFirestoreDocToOrder = (doc: any): OrderManagementData => {
     return {
         id: doc.id,
         orderNumber: data.orderNumber || 'N/A',
-        customer: { name: data.customerName || 'N/A', avatar: data.customerAvatar || '' },
+        customer: { name: data.customerName || 'N/A', avatar: data.customerAvatar || '', phone: data.customerPhone || null },
         restaurant: data.restaurantName || 'N/A',
         total: data.finalAmount || 0,
         status: mapBackendStatusToFrontend(data.status),

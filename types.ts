@@ -298,7 +298,7 @@ export type PaymentStatus = 'معلق' | 'مدفوع' | 'غير مدفوع' | '�
 export interface OrderManagementData {
   id: string;
   orderNumber: string;
-  customer: { name: string; avatar: string };
+  customer: { name: string; avatar: string; phone?: string; };
   restaurant: string;
   total: number;
   status: OrderAdminStatus;

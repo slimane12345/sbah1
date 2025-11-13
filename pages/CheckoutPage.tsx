@@ -146,6 +146,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
             const newOrder = {
                 customerId: userProfile?.id || 'mock_customer_id',
                 customerName: name,
+                customerPhone: phone,
                 customerAvatar: userProfile?.avatarUrl || null,
                 restaurantName: restaurantName,
                 items: cartItems.map(item => ({
