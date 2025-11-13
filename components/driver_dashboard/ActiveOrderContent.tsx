@@ -34,13 +34,24 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
     const customerLocation = order.deliveryAddress;
 
     const handleTrack = () => {
-        if (restaurantLocation && customerLocation) {
-            const origin = `${restaurantLocation.lat},${restaurantLocation.lng}`;
-            const destination = `${customerLocation.latitude},${customerLocation.longitude}`;
-            const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
-            window.open(url, '_blank', 'noopener,noreferrer');
+        if (isPickupPhase) {
+            // Driver is going TO the restaurant
+            if (restaurantLocation) {
+                const destination = `${restaurantLocation.lat},${restaurantLocation.lng}`;
+                const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        } else {
+            // Driver has the food and is going TO the customer
+            if (customerLocation) {
+                const destination = `${customerLocation.latitude},${customerLocation.longitude}`;
+                const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
         }
     };
+
+    const isTrackingDisabled = isPickupPhase ? !restaurantLocation : !customerLocation;
 
     return (
         <div className="space-y-6 pb-28 lg:pb-0">
@@ -96,7 +107,7 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
                 <div className="max-w-3xl mx-auto flex gap-4">
                     <button 
                         onClick={handleTrack}
-                        disabled={!restaurantLocation || !customerLocation}
+                        disabled={isTrackingDisabled}
                         className="w-full lg:w-1/3 flex justify-center items-center gap-2 py-3 px-4 border border-gray-300 rounded-lg shadow-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                     >
                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
