@@ -117,7 +117,6 @@ export interface PastOrder {
   status: OrderStatus;
   items: { name: string; quantity: number; category: string }[];
   deliveryAddress: { addressText: string; latitude: number; longitude: number };
-  customerNotes?: string;
 }
 
 export interface SavedAddress {
@@ -306,7 +305,6 @@ export interface OrderManagementData {
   deliveryAddress: { latitude: number; longitude: number; addressText: string };
   restaurantLocation?: { lat: number, lng: number }; // For DriverDashboardPage
   driverId?: string | null;
-  customerNotes?: string;
 }
 
 export type CampaignStatus = 'نشطة' | 'مجدولة' | 'مكتملة' | 'مسودة';

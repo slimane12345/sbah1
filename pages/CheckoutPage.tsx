@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import type { CartItem, UserLocation, UserProfileData, AppSettings, PastOrder, TranslatableString } from '../types';
 import OrderSummary from '../components/checkout/OrderSummary';
@@ -44,7 +40,6 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
     const [phone, setPhone] = useState(userProfile?.phone || '');
     const [addressDetails, setAddressDetails] = useState('');
     const [selectedMethod, setSelectedMethod] = useState<'cod' | 'card' | null>(null);
-    const [notes, setNotes] = useState('');
     
     // State for order processing
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -173,7 +168,6 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                 createdAt: Timestamp.now(),
                 driverId: null,
                 restaurantLocation: restaurantLocation,
-                customerNotes: notes.trim() || null,
             };
 
             await addDoc(collection(db, 'orders'), newOrder);
@@ -188,7 +182,6 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                 // Fix: Use translateField to convert category object/string to string.
                 items: newOrder.items.map(item => ({ name: translateField(item.productName), quantity: item.quantity, category: translateField(item.category) })),
                 deliveryAddress: newOrder.deliveryAddress,
-                customerNotes: newOrder.customerNotes || undefined,
             };
 
             setPlacedOrder(orderForTracker);
@@ -221,20 +214,6 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                             addressDetails={addressDetails}
                             setAddressDetails={setAddressDetails}
                         />
-                        <div className="bg-white rounded-lg shadow-md p-6">
-                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 9h.01" /></svg>
-                                <span>{t('orderNotes')}</span>
-                            </h2>
-                            <textarea
-                                id="orderNotes"
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                rows={3}
-                                className="w-full text-base border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors p-3"
-                                placeholder={t('orderNotesPlaceholder')}
-                            />
-                        </div>
                         <PaymentMethods 
                             selectedMethod={selectedMethod} 
                             setSelectedMethod={setSelectedMethod}

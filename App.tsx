@@ -257,7 +257,6 @@ const MainApp: React.FC = () => {
                         status: mapBackendStatusToFrontend(data.status),
                         items: data.items.map((i: any) => ({ name: translateField(i.productName), quantity: i.quantity, category: translateField(i.category) })),
                         deliveryAddress: data.deliveryAddress,
-                        customerNotes: data.customerNotes || undefined,
                     }));
                 setPastOrders(fetchedOrders);
 
