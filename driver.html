@@ -21,6 +21,20 @@
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
     body { font-family: 'Cairo', sans-serif; }
     .leaflet-div-icon-custom { background: transparent; border: none; }
+     /* Add to cart notification animation */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px) translateX(50%);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) translateX(50%);
+      }
+    }
+    .animate-fade-in-down {
+      animation: fadeInDown 0.5s ease-out forwards;
+    }
   </style>
 </head>
 <body>

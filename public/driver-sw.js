@@ -43,6 +43,10 @@ self.addEventListener('notificationclick', (event) => {
         for (const client of clientList) {
             // Check if a client is already open and focus it.
             if (client.url.includes('/driver.html') && 'focus' in client) {
+                // If found, navigate the existing client to the new URL
+                if (client.navigate) {
+                    client.navigate(urlToOpen);
+                }
                 return client.focus();
             }
         }

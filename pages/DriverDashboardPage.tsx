@@ -402,7 +402,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         <DriverLayout activeView={activeView} setActiveView={setActiveView}>
             {inAppNotification && (
                 <div 
-                    className="fixed top-20 right-4 z-50 bg-white p-4 rounded-lg shadow-lg border-l-4 border-blue-500 animate-fade-in-down w-full max-w-sm"
+                    className="fixed top-20 right-1/2 translate-x-1/2 z-50 bg-white p-4 rounded-lg shadow-lg border-l-4 border-blue-500 animate-fade-in-down w-full max-w-sm"
                     onClick={() => setInAppNotification(null)}
                 >
                     <div className="flex items-start gap-3">

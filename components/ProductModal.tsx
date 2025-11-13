@@ -12,23 +12,6 @@ interface ProductModalProps {
     allCategories: Category[];
 }
 
-const TrashIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-    </svg>
-);
-
-const ToggleSwitch: React.FC<{ enabled: boolean; onChange: (enabled: boolean) => void }> = ({ enabled, onChange }) => (
-    <button
-        type="button"
-        className={`${enabled ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex items-center h-6 rounded-full w-11 transition-colors`}
-        onClick={() => onChange(!enabled)}
-    >
-        <span className={`${enabled ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`} />
-    </button>
-);
-
-
 const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, product, isSubmitting, restaurantNames, allCategories }) => {
     const { t, translateField } = useLanguage();
 
@@ -64,17 +47,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                 image: product.image,
                 description: normalizeTranslatable(product.description),
                 availability: product.availability,
-                options: (product.options || []).map(g => ({
-                    ...g,
-                    id: g.id || `group-${crypto.randomUUID()}`, // Ensure ID exists
-                    required: g.required !== undefined ? g.required : true,
-                    name: normalizeTranslatable(g.name),
-                    options: (g.options || []).map(o => ({
-                        ...o, 
-                        id: o.id || `option-${crypto.randomUUID()}`, // Ensure ID exists
-                        name: normalizeTranslatable(o.name)
-                    }))
-                }))
+                options: product.options || [] // Keep existing options data
             });
             setImagePreview(product.image || '');
         } else {
@@ -117,72 +90,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
         const url = e.target.value;
         setProductData(prev => ({ ...prev, image: url }));
         setImagePreview(url);
-    };
-
-    const handleAddOptionGroup = () => {
-        setProductData(prev => ({
-            ...prev,
-            options: [
-                ...(prev.options || []),
-                {
-                    id: `group-${crypto.randomUUID()}`,
-                    name: { ar: '', fr: '' },
-                    type: 'radio',
-                    required: true,
-                    options: [],
-                }
-            ]
-        }));
-    };
-    
-    const handleRemoveOptionGroup = (groupId: string) => {
-        setProductData(prev => ({ ...prev, options: prev.options?.filter(g => g.id !== groupId) }));
-    };
-
-    const handleGroupChange = (groupId: string, field: 'type' | 'required', value: 'radio' | 'checkbox' | boolean) => {
-        setProductData(prev => ({
-            ...prev,
-            options: prev.options?.map(g => g.id === groupId ? { ...g, [field]: value } : g)
-        }));
-    };
-
-    const handleGroupTranslatableChange = (groupId: string, lang: 'ar' | 'fr', value: string) => {
-        setProductData(prev => ({
-            ...prev,
-            options: prev.options?.map(g => g.id === groupId ? { ...g, name: { ...(normalizeTranslatable(g.name)), [lang]: value } } : g)
-        }));
-    };
-    
-    const handleAddOption = (groupId: string) => {
-        setProductData(prev => ({
-            ...prev,
-            options: prev.options?.map(g => 
-                g.id === groupId 
-                ? { ...g, options: [...g.options, { id: `option-${crypto.randomUUID()}`, name: { ar: '', fr: '' }, price: 0 }] } 
-                : g
-            )
-        }));
-    };
-    
-    const handleRemoveOption = (groupId: string, optionId: string) => {
-         setProductData(prev => ({
-            ...prev,
-            options: prev.options?.map(g => g.id === groupId ? { ...g, options: g.options.filter(o => o.id !== optionId) } : g)
-        }));
-    };
-    
-    const handleOptionChange = (groupId: string, optionId: string, field: 'price', value: number) => {
-        setProductData(prev => ({
-            ...prev,
-            options: prev.options?.map(g => g.id === groupId ? { ...g, options: g.options.map(o => o.id === optionId ? { ...o, [field]: value } : o) } : g)
-        }));
-    };
-
-    const handleOptionTranslatableChange = (groupId: string, optionId: string, lang: 'ar' | 'fr', value: string) => {
-        setProductData(prev => ({
-            ...prev,
-            options: prev.options?.map(g => g.id === groupId ? { ...g, options: g.options.map(o => o.id === optionId ? { ...o, name: { ...(normalizeTranslatable(o.name)), [lang]: value } } : g) } : g)
-        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -239,49 +146,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                                     />
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Dynamic Options */}
-                        <div className="border-t pt-4">
-                            <h3 className="font-semibold text-gray-700 mb-2">خيارات المنتج المتغيرة</h3>
-                            <div className="space-y-4">
-                                {productData.options?.map((group) => (
-                                    <div key={group.id} className="p-4 bg-gray-50 rounded-lg border space-y-3">
-                                        {/* Group Header */}
-                                        <div className="flex justify-between items-center gap-2">
-                                            <div className="flex-1 grid grid-cols-2 gap-2">
-                                                <input type="text" placeholder={`${t('groupName')} (${t('arabic')})`} value={normalizeTranslatable(group.name).ar} onChange={e => handleGroupTranslatableChange(group.id, 'ar', e.target.value)} className="border-gray-300 rounded-md text-sm" />
-                                                <input type="text" placeholder={`${t('groupName')} (${t('french')})`} value={normalizeTranslatable(group.name).fr} onChange={e => handleGroupTranslatableChange(group.id, 'fr', e.target.value)} className="flex-1 border-gray-300 rounded-md text-sm" />
-                                            </div>
-                                            <select value={group.type} onChange={e => handleGroupChange(group.id, 'type', e.target.value as 'radio' | 'checkbox')} className="border-gray-300 rounded-md text-sm"><option value="radio">اختيار واحد</option><option value="checkbox">اختيارات متعددة</option></select>
-                                            <div className="flex items-center gap-2">
-                                                <ToggleSwitch enabled={group.required} onChange={(val) => handleGroupChange(group.id, 'required', val)} />
-                                                <label className="text-sm font-medium text-gray-700">{t('required')}</label>
-                                            </div>
-                                            <button type="button" onClick={() => handleRemoveOptionGroup(group.id)} className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100">
-                                                <TrashIcon />
-                                            </button>
-                                        </div>
-
-                                        {/* Options List */}
-                                        <div className="space-y-2 pr-4 border-r-2 border-gray-200">
-                                            {group.options.map((option) => (
-                                                 <div key={option.id} className="flex items-center gap-2">
-                                                     <input type="text" placeholder={`${t('optionName')} (${t('arabic')})`} value={normalizeTranslatable(option.name).ar} onChange={e => handleOptionTranslatableChange(group.id, option.id, 'ar', e.target.value)} className="flex-1 border-gray-300 rounded-md text-sm" />
-                                                     <input type="text" placeholder={`${t('optionName')} (${t('french')})`} value={normalizeTranslatable(option.name).fr} onChange={e => handleOptionTranslatableChange(group.id, option.id, 'fr', e.target.value)} className="flex-1 border-gray-300 rounded-md text-sm" />
-                                                     <div className="relative w-32">
-                                                        <input type="number" step="0.01" placeholder={t('additionalPrice')} value={option.price} onChange={e => handleOptionChange(group.id, option.id, 'price', parseFloat(e.target.value) || 0)} className="w-full border-gray-300 rounded-md text-sm pl-7" />
-                                                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-500">{t('currency')}</span>
-                                                     </div>
-                                                     <button type="button" onClick={() => handleRemoveOption(group.id, option.id)} className="text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50"><TrashIcon /></button>
-                                                 </div>
-                                            ))}
-                                             <button type="button" onClick={() => handleAddOption(group.id)} className="text-blue-600 hover:text-blue-800 text-sm font-semibold pt-2">+ {t('addNewOption')}</button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                             <button type="button" onClick={handleAddOptionGroup} className="mt-4 bg-blue-100 text-blue-700 text-sm font-semibold py-2 px-4 rounded-md hover:bg-blue-200">+ إضافة مجموعة خيارات</button>
                         </div>
                     </div>
                     <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">
