@@ -261,6 +261,9 @@ export interface ProductManagementData {
   availability: AvailabilityStatus;
   description?: TranslatableString | string;
   options?: ProductOptionGroup[];
+  tags?: string[];
+  calories?: number;
+  sortOrder?: number;
 }
 
 export type DriverStatus = 'متاح' | 'مشغول' | 'غير متصل';

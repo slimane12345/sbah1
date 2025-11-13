@@ -46,8 +46,11 @@ const ProductsManagementPage: React.FC = () => {
                     category: data.category || 'N/A',
                     price: data.price || 0,
                     availability: mapAvailabilityToFrontend(data.isAvailable),
-                    description: data.description || '', // Fetch description
-                    options: data.options || [], // Fetch options
+                    description: data.description || '',
+                    options: data.options || [],
+                    tags: data.tags || [],
+                    calories: data.calories,
+                    sortOrder: data.sortOrder,
                 };
             });
             setProducts(fetchedProducts);
@@ -101,7 +104,10 @@ const ProductsManagementPage: React.FC = () => {
             imageUrl: productData.image,
             description: productData.description,
             isAvailable: productData.availability === 'متوفر',
-            options: productData.options || [] // Save options
+            options: productData.options || [],
+            tags: productData.tags || [],
+            calories: productData.calories || null,
+            sortOrder: productData.sortOrder || 0,
         };
 
         try {
