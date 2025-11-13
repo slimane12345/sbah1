@@ -192,16 +192,25 @@ const OrdersManagementPage: React.FC = () => {
                 const assignedDriver = allDrivers.find(d => d.id === driverId);
                 if (assignedDriver?.fcmToken) {
                     console.log(`Sending notification to ${assignedDriver.name} with token ${assignedDriver.fcmToken}`);
+                    
+                    const url = `${window.location.origin}/driver.html?view=active_orders`;
                     const message = {
                         to: assignedDriver.fcmToken,
                         notification: {
                             title: "طلب جديد!",
                             body: `لقد تم تعيين طلب جديد لك من مطعم ${currentOrder.restaurant}.`,
+                            icon: '/assets/icons/icon-192x192.png'
                         },
                         webpush: {
+                            notification: {
+                                sound: "/assets/sounds/notification.mp3"
+                            },
                             fcm_options: {
-                                link: `${window.location.origin}/driver.html?view=active_orders`
+                                link: url
                             }
+                        },
+                        data: {
+                            url: url
                         }
                     };
                     

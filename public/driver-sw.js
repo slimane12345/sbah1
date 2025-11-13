@@ -20,28 +20,34 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
-    icon: '/assets/icons/icon-192x192.png'
+    icon: payload.notification.icon || '/assets/icons/icon-192x192.png',
+    sound: payload.webpush?.notification?.sound, // Use sound from webpush config
+    data: {
+        url: payload.data.url // Pass the URL to the notification data object
+    }
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  return self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
 self.addEventListener('notificationclick', (event) => {
-    console.log('On notification click: ', event.notification.tag);
+    console.log('On notification click: ', event.notification.data);
     event.notification.close();
 
-    const urlToOpen = new URL('/driver.html?view=active_orders', self.location.origin).href;
+    const urlToOpen = event.notification.data.url;
 
     event.waitUntil(clients.matchAll({
         type: "window",
         includeUncontrolled: true
     }).then((clientList) => {
         for (const client of clientList) {
+            // Check if a client is already open and focus it.
             if (client.url.includes('/driver.html') && 'focus' in client) {
                 return client.focus();
             }
         }
-        if (clients.openWindow) {
+        // If no client is open, open a new window.
+        if (clients.openWindow && urlToOpen) {
             return clients.openWindow(urlToOpen);
         }
     }));

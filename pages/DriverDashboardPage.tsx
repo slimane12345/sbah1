@@ -86,6 +86,8 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     const [dailyEarnings, setDailyEarnings] = useState<DailyEarning[]>([]);
     const [isEarningsLoading, setIsEarningsLoading] = useState(false);
     const [activeView, setActiveView] = useState<DriverView>('overview');
+    const [inAppNotification, setInAppNotification] = useState<{title: string; body: string} | null>(null);
+
 
     const { t } = useLanguage();
     const watchId = useRef<number | null>(null);
@@ -143,7 +145,19 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
         if (!messaging) return;
         const unsubscribe = onMessage(messaging, (payload) => {
             console.log('Message received in foreground. ', payload);
-            alert(`طلب جديد: ${payload.notification?.title}\n${payload.notification?.body}`);
+            if (payload.notification) {
+                setInAppNotification({
+                    title: payload.notification.title || 'إشعار جديد',
+                    body: payload.notification.body || ''
+                });
+                
+                // Play sound for foreground notification
+                const audio = new Audio('/assets/sounds/notification.mp3');
+                audio.play().catch(error => console.error("Error playing notification sound:", error));
+                
+                // Hide notification after a few seconds
+                setTimeout(() => setInAppNotification(null), 6000);
+            }
         });
         return () => unsubscribe();
     }, []);
@@ -386,6 +400,22 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
 
     return (
         <DriverLayout activeView={activeView} setActiveView={setActiveView}>
+            {inAppNotification && (
+                <div 
+                    className="fixed top-20 right-4 z-50 bg-white p-4 rounded-lg shadow-lg border-l-4 border-blue-500 animate-fade-in-down w-full max-w-sm"
+                    onClick={() => setInAppNotification(null)}
+                >
+                    <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 pt-1">
+                             <svg className="h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-gray-800">{inAppNotification.title}</h4>
+                            <p className="text-sm text-gray-600">{inAppNotification.body}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
             <DriverHeader driver={driver} isOnline={isOnline} onToggleOnline={handleToggleOnline} onLogout={onLogout} />
             <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
                 {error && <div className="mb-4"><ErrorDisplay message={error} /></div>}
