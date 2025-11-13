@@ -1,11 +1,10 @@
-
-
 <!DOCTYPE html>
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sbah ☀️ - واجهة الموزع</title>
+  <link rel="manifest" href="/driver-manifest.json">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -26,6 +25,15 @@
 </head>
 <body>
   <div id="root"></div>
+  <script type="module">
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/driver-sw.js')
+          .then(registration => console.log('Driver Service Worker registered with scope:', registration.scope))
+          .catch(err => console.error('Driver Service Worker registration failed:', err));
+      });
+    }
+  </script>
   <script type="module" src="/driver.tsx"></script>
 </body>
 </html>

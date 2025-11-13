@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import type { OrderManagementData, OrderAdminStatus, PaymentStatus, Driver } from '../types';
+import type { OrderManagementData, OrderAdminStatus, PaymentStatus, Driver, AppSettings } from '../types';
 import OrdersManagementTable from '../components/OrdersManagementTable';
 import Pagination from '../components/Pagination';
 import OrderDetailsModal from '../components/OrderDetailsModal';
@@ -7,7 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
 import OrderTrackingModal from '../components/OrderTrackingModal';
 import { db } from '../scripts/firebase/firebaseConfig.js';
-import { collection, query, onSnapshot, doc, updateDoc, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, updateDoc, orderBy, Timestamp, getDoc } from 'firebase/firestore';
 
 
 const ITEMS_PER_PAGE = 10;
@@ -60,6 +60,7 @@ const OrdersManagementPage: React.FC = () => {
     const [allDrivers, setAllDrivers] = useState<Driver[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
 
     const [activeTab, setActiveTab] = useState<OrderAdminStatus | 'الكل'>('الكل');
     const [currentPage, setCurrentPage] = useState(1);
@@ -115,6 +116,20 @@ const OrdersManagementPage: React.FC = () => {
             } as Driver));
             setAllDrivers(fetchedDrivers);
         });
+        
+        const fetchAppSettings = async () => {
+            const settingsDocRef = doc(db, 'settings', 'app_config');
+            try {
+                const docSnap = await getDoc(settingsDocRef);
+                if (docSnap.exists()) {
+                    setAppSettings(docSnap.data() as AppSettings);
+                }
+            } catch (error) {
+                console.error("Error fetching app settings in Orders Mgmt:", error);
+            }
+        };
+
+        fetchAppSettings();
 
 
         return () => {
@@ -171,6 +186,46 @@ const OrdersManagementPage: React.FC = () => {
 
         try {
             await updateDoc(orderRef, updateData);
+            
+            // Send Push Notification
+            if (driverId && appSettings?.notifications.fcmServerKey) {
+                const assignedDriver = allDrivers.find(d => d.id === driverId);
+                if (assignedDriver?.fcmToken) {
+                    console.log(`Sending notification to ${assignedDriver.name} with token ${assignedDriver.fcmToken}`);
+                    const message = {
+                        to: assignedDriver.fcmToken,
+                        notification: {
+                            title: "طلب جديد!",
+                            body: `لقد تم تعيين طلب جديد لك من مطعم ${currentOrder.restaurant}.`,
+                        },
+                        webpush: {
+                            fcm_options: {
+                                link: `${window.location.origin}/driver.html?view=active_orders`
+                            }
+                        }
+                    };
+                    
+                    try {
+                        const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `key=${appSettings.notifications.fcmServerKey}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(message)
+                        });
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            console.error("FCM send error:", errorData);
+                        } else {
+                            console.log("Notification sent successfully");
+                        }
+                    } catch (fcmError) {
+                        console.error("Error sending FCM message:", fcmError);
+                    }
+                }
+            }
+
         } catch (err) {
             console.error("Error assigning driver:", err);
             setError("فشل في تعيين الموزع.");

@@ -278,6 +278,7 @@ export interface Driver {
   ratePerKm: number;
   totalOrderValue?: number;
   totalEarnings?: number;
+  fcmToken?: string;
 }
 
 export interface DailyEarning {

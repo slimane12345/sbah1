@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, signInAnonymously } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+import { getMessaging } from "firebase/messaging";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -22,6 +23,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
+const messaging = getMessaging(app);
 
 // Automatically sign in anonymously to allow Firebase Storage operations
 // for unauthenticated sessions (like the admin panel). This satisfies
@@ -37,4 +39,4 @@ if (!auth.currentUser) {
 }
 
 
-export { db, auth, storage };
+export { db, auth, storage, messaging };

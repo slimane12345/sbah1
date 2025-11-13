@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { db } from '../scripts/firebase/firebaseConfig.js';
+import { db, messaging } from '../scripts/firebase/firebaseConfig.js';
+import { getToken, onMessage } from 'firebase/messaging';
 // FIX: import 'orderBy' to resolve 'Cannot find name 'orderBy'' error.
-import { doc, onSnapshot, updateDoc, collection, query, where, getDocs, Timestamp, runTransaction, increment, orderBy } from 'firebase/firestore';
-import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, PaymentStatus, DailyEarning, TranslatableString } from '../types.ts';
+import { doc, onSnapshot, updateDoc, collection, query, where, getDocs, Timestamp, runTransaction, increment, orderBy, getDoc } from 'firebase/firestore';
+import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, PaymentStatus, DailyEarning, TranslatableString, AppSettings } from '../types.ts';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ErrorDisplay from '../components/ErrorDisplay.tsx';
 import { useLanguage } from '../contexts/LanguageContext.tsx';
@@ -67,6 +68,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     const [driver, setDriver] = useState<Driver | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
 
     const [allNewOrders, setAllNewOrders] = useState<OrderManagementData[]>([]);
     const [myActiveOrders, setMyActiveOrders] = useState<OrderManagementData[]>([]);
@@ -88,6 +90,73 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     const { t } = useLanguage();
     const watchId = useRef<number | null>(null);
     const isOnline = driver?.status === 'متاح' || driver?.status === 'مشغول';
+
+    // Fetch app settings
+    useEffect(() => {
+        const fetchAppSettings = async () => {
+            const settingsDocRef = doc(db, 'settings', 'app_config');
+            try {
+                const docSnap = await getDoc(settingsDocRef);
+                if (docSnap.exists()) {
+                    setAppSettings(docSnap.data() as AppSettings);
+                }
+            } catch (error) {
+                console.error("Error fetching app settings for driver:", error);
+            }
+        };
+        fetchAppSettings();
+    }, []);
+
+    // Request permission and save token
+    useEffect(() => {
+        if (!appSettings || !driverId || !messaging) return;
+
+        const requestPermissionAndToken = async () => {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    console.log('Notification permission granted.');
+                    const currentToken = await getToken(messaging, {
+                        vapidKey: appSettings.notifications.fcmVapidKey,
+                    });
+                    if (currentToken) {
+                        console.log('FCM Token:', currentToken);
+                        // Save token to Firestore
+                        const driverRef = doc(db, 'drivers', driverId);
+                        await updateDoc(driverRef, { fcmToken: currentToken });
+                    } else {
+                        console.log('No registration token available. Request permission to generate one.');
+                    }
+                } else {
+                    console.log('Unable to get permission to notify.');
+                }
+            } catch (err) {
+                console.error('An error occurred while retrieving token. ', err);
+            }
+        };
+
+        requestPermissionAndToken();
+    }, [appSettings, driverId]);
+
+    // Handle foreground messages
+    useEffect(() => {
+        if (!messaging) return;
+        const unsubscribe = onMessage(messaging, (payload) => {
+            console.log('Message received in foreground. ', payload);
+            alert(`طلب جديد: ${payload.notification?.title}\n${payload.notification?.body}`);
+        });
+        return () => unsubscribe();
+    }, []);
+    
+    // Handle deep-linking from notification click
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const view = urlParams.get('view');
+        if (view === 'active_orders') {
+            setActiveView('active_orders');
+        }
+    }, []);
+
 
     // Fetch driver profile
     useEffect(() => {
