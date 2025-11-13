@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { ProductManagementData, AvailabilityStatus, ProductOptionGroup, ProductOption, TranslatableString, Category } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { storage } from '../scripts/firebase/firebaseConfig.js';
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 interface ProductModalProps {
     isOpen: boolean;
@@ -13,6 +11,23 @@ interface ProductModalProps {
     restaurantNames: string[];
     allCategories: Category[];
 }
+
+const TrashIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+    </svg>
+);
+
+const ToggleSwitch: React.FC<{ enabled: boolean; onChange: (enabled: boolean) => void }> = ({ enabled, onChange }) => (
+    <button
+        type="button"
+        className={`${enabled ? 'bg-blue-600' : 'bg-gray-200'} relative inline-flex items-center h-6 rounded-full w-11 transition-colors`}
+        onClick={() => onChange(!enabled)}
+    >
+        <span className={`${enabled ? 'translate-x-6' : 'translate-x-1'} inline-block w-4 h-4 transform bg-white rounded-full transition-transform`} />
+    </button>
+);
+
 
 const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, product, isSubmitting, restaurantNames, allCategories }) => {
     const { t, translateField } = useLanguage();
@@ -34,9 +49,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
         options: []
     });
     
-    const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string>('');
-    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         if (product) {
@@ -53,8 +66,14 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                 availability: product.availability,
                 options: (product.options || []).map(g => ({
                     ...g,
+                    id: g.id || `group-${crypto.randomUUID()}`, // Ensure ID exists
+                    required: g.required !== undefined ? g.required : true,
                     name: normalizeTranslatable(g.name),
-                    options: g.options.map(o => ({...o, name: normalizeTranslatable(o.name)}))
+                    options: (g.options || []).map(o => ({
+                        ...o, 
+                        id: o.id || `option-${crypto.randomUUID()}`, // Ensure ID exists
+                        name: normalizeTranslatable(o.name)
+                    }))
                 }))
             });
             setImagePreview(product.image || '');
@@ -71,10 +90,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
             });
             setImagePreview('');
         }
-        // Reset file input state when modal opens
-        setImageFile(null);
-        setIsUploading(false);
-    }, [product, isOpen, restaurantNames, allCategories]);
+    }, [product, isOpen, restaurantNames, allCategories, translateField]);
 
     if (!isOpen) return null;
 
@@ -97,48 +113,33 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
         }
     };
     
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setImageFile(file);
-            setImagePreview(URL.createObjectURL(file));
-            // Clear the URL input to prioritize file
-            setProductData(prev => ({ ...prev, image: '' }));
-        } else {
-            setImageFile(null);
-            // If file is cleared, revert preview to what was in the URL input or original product
-            setImagePreview(product?.image || '');
-        }
-    };
-    
     const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const url = e.target.value;
         setProductData(prev => ({ ...prev, image: url }));
         setImagePreview(url);
-        // Clear the file input if user types a URL
-        setImageFile(null);
-        const fileInput = document.getElementById('productImage') as HTMLInputElement;
-        if (fileInput) {
-            fileInput.value = '';
-        }
     };
 
-
     const handleAddOptionGroup = () => {
-        const newGroup: ProductOptionGroup = {
-            id: `group-${Date.now()}`,
-            name: { ar: '', fr: '' },
-            type: 'radio',
-            options: [],
-        };
-        setProductData(prev => ({ ...prev, options: [...(prev.options || []), newGroup] }));
+        setProductData(prev => ({
+            ...prev,
+            options: [
+                ...(prev.options || []),
+                {
+                    id: `group-${crypto.randomUUID()}`,
+                    name: { ar: '', fr: '' },
+                    type: 'radio',
+                    required: true,
+                    options: [],
+                }
+            ]
+        }));
     };
     
     const handleRemoveOptionGroup = (groupId: string) => {
         setProductData(prev => ({ ...prev, options: prev.options?.filter(g => g.id !== groupId) }));
     };
 
-    const handleGroupChange = (groupId: string, field: 'type', value: string) => {
+    const handleGroupChange = (groupId: string, field: 'type' | 'required', value: 'radio' | 'checkbox' | boolean) => {
         setProductData(prev => ({
             ...prev,
             options: prev.options?.map(g => g.id === groupId ? { ...g, [field]: value } : g)
@@ -153,10 +154,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
     };
     
     const handleAddOption = (groupId: string) => {
-        const newOption: ProductOption = { id: `option-${Date.now()}`, name: { ar: '', fr: '' }, price: 0 };
         setProductData(prev => ({
             ...prev,
-            options: prev.options?.map(g => g.id === groupId ? { ...g, options: [...g.options, newOption] } : g)
+            options: prev.options?.map(g => 
+                g.id === groupId 
+                ? { ...g, options: [...g.options, { id: `option-${crypto.randomUUID()}`, name: { ar: '', fr: '' }, price: 0 }] } 
+                : g
+            )
         }));
     };
     
@@ -183,33 +187,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        let imageUrl = productData.image; // Use URL from input by default
-
-        // If a new file is selected, upload it first.
-        if (imageFile) {
-            setIsUploading(true);
-            try {
-                const storageRef = ref(storage, `product_images/${Date.now()}_${imageFile.name}`);
-                const uploadTask = uploadBytesResumable(storageRef, imageFile);
-                
-                // Await the upload to complete
-                await uploadTask;
-
-                // Get the URL of the uploaded file
-                imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-            } catch (error) {
-                console.error("Image upload failed:", error);
-                alert("فشل رفع الصورة. يرجى المحاولة مرة أخرى.");
-                setIsUploading(false);
-                return; // Stop if upload fails
-            } finally {
-                setIsUploading(false); // Reset upload state regardless of success or failure
-            }
-        }
-        
-        // Now call the onSave prop with the final image URL.
-        // The parent component will handle the 'isSubmitting' state for the database write.
-        await onSave({ ...productData, image: imageUrl });
+        await onSave(productData);
     };
 
     return (
@@ -246,34 +224,19 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                                     <img src={imagePreview} alt="معاينة المنتج" className="h-20 w-20 rounded-md object-cover flex-shrink-0" />
                                 ) : (
                                     <div className="h-20 w-20 rounded-md bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                     </div>
                                 )}
-                                <div className="w-full space-y-2">
-                                     <div>
-                                        <label htmlFor="imageUrl" className="sr-only">رابط الصورة</label>
-                                        <input
-                                            id="imageUrl"
-                                            type="url"
-                                            placeholder="أو الصق رابط الصورة هنا"
-                                            value={productData.image}
-                                            onChange={handleUrlChange}
-                                            className="w-full border-gray-300 rounded-md text-sm"
-                                        />
-                                    </div>
-                                    <div className="relative flex items-center">
-                                        <div className="flex-grow border-t border-gray-300"></div>
-                                        <span className="flex-shrink mx-2 text-gray-500 text-xs">أو</span>
-                                        <div className="flex-grow border-t border-gray-300"></div>
-                                    </div>
+                                <div className="w-full">
+                                    <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">رابط الصورة</label>
                                     <input
-                                        id="productImage"
-                                        type="file"
-                                        accept="image/png, image/jpeg, image/webp"
-                                        onChange={handleFileChange}
-                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        id="imageUrl"
+                                        type="url"
+                                        placeholder="الصق رابط الصورة هنا"
+                                        value={productData.image}
+                                        onChange={handleUrlChange}
+                                        className="w-full border-gray-300 rounded-md text-sm"
                                     />
-                                    {isUploading && <p className="text-xs text-blue-600 mt-1">جاري رفع الصورة...</p>}
                                 </div>
                             </div>
                         </div>
@@ -283,23 +246,37 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                             <h3 className="font-semibold text-gray-700 mb-2">خيارات المنتج المتغيرة</h3>
                             <div className="space-y-4">
                                 {productData.options?.map((group) => (
-                                    <div key={group.id} className="p-3 bg-gray-50 rounded-md border">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <input type="text" placeholder={`${t('groupName')} (${t('arabic')})`} value={normalizeTranslatable(group.name).ar} onChange={e => handleGroupTranslatableChange(group.id, 'ar', e.target.value)} className="flex-1 border-gray-300 rounded-md text-sm" />
-                                            <input type="text" placeholder={`${t('groupName')} (${t('french')})`} value={normalizeTranslatable(group.name).fr} onChange={e => handleGroupTranslatableChange(group.id, 'fr', e.target.value)} className="flex-1 border-gray-300 rounded-md text-sm" />
-                                            <select value={group.type} onChange={e => handleGroupChange(group.id, 'type', e.target.value)} className="border-gray-300 rounded-md text-sm"><option value="radio">اختيار واحد</option><option value="checkbox">اختيارات متعددة</option></select>
-                                            <button type="button" onClick={() => handleRemoveOptionGroup(group.id)} className="text-red-500 hover:text-red-700 text-xs">حذف</button>
+                                    <div key={group.id} className="p-4 bg-gray-50 rounded-lg border space-y-3">
+                                        {/* Group Header */}
+                                        <div className="flex justify-between items-center gap-2">
+                                            <div className="flex-1 grid grid-cols-2 gap-2">
+                                                <input type="text" placeholder={`${t('groupName')} (${t('arabic')})`} value={normalizeTranslatable(group.name).ar} onChange={e => handleGroupTranslatableChange(group.id, 'ar', e.target.value)} className="border-gray-300 rounded-md text-sm" />
+                                                <input type="text" placeholder={`${t('groupName')} (${t('french')})`} value={normalizeTranslatable(group.name).fr} onChange={e => handleGroupTranslatableChange(group.id, 'fr', e.target.value)} className="flex-1 border-gray-300 rounded-md text-sm" />
+                                            </div>
+                                            <select value={group.type} onChange={e => handleGroupChange(group.id, 'type', e.target.value as 'radio' | 'checkbox')} className="border-gray-300 rounded-md text-sm"><option value="radio">اختيار واحد</option><option value="checkbox">اختيارات متعددة</option></select>
+                                            <div className="flex items-center gap-2">
+                                                <ToggleSwitch enabled={group.required} onChange={(val) => handleGroupChange(group.id, 'required', val)} />
+                                                <label className="text-sm font-medium text-gray-700">{t('required')}</label>
+                                            </div>
+                                            <button type="button" onClick={() => handleRemoveOptionGroup(group.id)} className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100">
+                                                <TrashIcon />
+                                            </button>
                                         </div>
-                                        <div className="space-y-2 pr-4 border-r-2">
+
+                                        {/* Options List */}
+                                        <div className="space-y-2 pr-4 border-r-2 border-gray-200">
                                             {group.options.map((option) => (
                                                  <div key={option.id} className="flex items-center gap-2">
                                                      <input type="text" placeholder={`${t('optionName')} (${t('arabic')})`} value={normalizeTranslatable(option.name).ar} onChange={e => handleOptionTranslatableChange(group.id, option.id, 'ar', e.target.value)} className="flex-1 border-gray-300 rounded-md text-sm" />
                                                      <input type="text" placeholder={`${t('optionName')} (${t('french')})`} value={normalizeTranslatable(option.name).fr} onChange={e => handleOptionTranslatableChange(group.id, option.id, 'fr', e.target.value)} className="flex-1 border-gray-300 rounded-md text-sm" />
-                                                     <input type="number" step="0.01" placeholder={t('additionalPrice')} value={option.price} onChange={e => handleOptionChange(group.id, option.id, 'price', parseFloat(e.target.value))} className="w-32 border-gray-300 rounded-md text-sm" />
-                                                     <button type="button" onClick={() => handleRemoveOption(group.id, option.id)} className="text-red-500 hover:text-red-700 text-xs">X</button>
+                                                     <div className="relative w-32">
+                                                        <input type="number" step="0.01" placeholder={t('additionalPrice')} value={option.price} onChange={e => handleOptionChange(group.id, option.id, 'price', parseFloat(e.target.value) || 0)} className="w-full border-gray-300 rounded-md text-sm pl-7" />
+                                                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-gray-500">{t('currency')}</span>
+                                                     </div>
+                                                     <button type="button" onClick={() => handleRemoveOption(group.id, option.id)} className="text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-red-50"><TrashIcon /></button>
                                                  </div>
                                             ))}
-                                             <button type="button" onClick={() => handleAddOption(group.id)} className="text-blue-600 hover:text-blue-800 text-sm font-semibold mt-2">+ {t('addNewAddress')}</button>
+                                             <button type="button" onClick={() => handleAddOption(group.id)} className="text-blue-600 hover:text-blue-800 text-sm font-semibold pt-2">+ {t('addNewOption')}</button>
                                         </div>
                                     </div>
                                 ))}
@@ -308,9 +285,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                         </div>
                     </div>
                     <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3">
-                        <button type="button" onClick={onClose} disabled={isSubmitting || isUploading} className="bg-white py-2 px-4 border rounded-md">إلغاء</button>
-                        <button type="submit" disabled={isSubmitting || isUploading} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-blue-300">
-                             {isUploading ? 'جاري الرفع...' : isSubmitting ? 'جاري الحفظ...' : 'حفظ'}
+                        <button type="button" onClick={onClose} disabled={isSubmitting} className="bg-white py-2 px-4 border rounded-md">إلغاء</button>
+                        <button type="submit" disabled={isSubmitting} className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 disabled:bg-blue-300">
+                             {isSubmitting ? 'جاري الحفظ...' : 'حفظ'}
                         </button>
                     </div>
                 </form>

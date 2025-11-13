@@ -57,6 +57,7 @@ export interface ProductOptionGroup {
   id: string;
   name: TranslatableString | string;
   type: 'radio' | 'checkbox';
+  required: boolean;
   options: ProductOption[];
 }
 

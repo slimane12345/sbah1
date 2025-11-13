@@ -238,6 +238,7 @@ export const translations: Record<string, Record<string, string>> = {
     groupName: 'اسم المجموعة',
     optionName: 'اسم الخيار',
     additionalPrice: 'سعر إضافي',
+    addNewOption: 'إضافة خيار جديد',
   },
   fr: {
     // ======== GLOBAL ========
@@ -478,5 +479,6 @@ export const translations: Record<string, Record<string, string>> = {
     groupName: 'Nom du groupe',
     optionName: 'Nom de l\'option',
     additionalPrice: 'Prix additionnel',
+    addNewOption: 'Ajouter une nouvelle option',
   }
 };
