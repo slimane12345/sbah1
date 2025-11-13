@@ -102,9 +102,24 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
             const file = e.target.files[0];
             setImageFile(file);
             setImagePreview(URL.createObjectURL(file));
+            // Clear the URL input to prioritize file
+            setProductData(prev => ({ ...prev, image: '' }));
         } else {
             setImageFile(null);
+            // If file is cleared, revert preview to what was in the URL input or original product
             setImagePreview(product?.image || '');
+        }
+    };
+    
+    const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const url = e.target.value;
+        setProductData(prev => ({ ...prev, image: url }));
+        setImagePreview(url);
+        // Clear the file input if user types a URL
+        setImageFile(null);
+        const fileInput = document.getElementById('productImage') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
         }
     };
 
@@ -162,13 +177,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
     const handleOptionTranslatableChange = (groupId: string, optionId: string, lang: 'ar' | 'fr', value: string) => {
         setProductData(prev => ({
             ...prev,
-            options: prev.options?.map(g => g.id === groupId ? { ...g, options: g.options.map(o => o.id === optionId ? { ...o, name: { ...(normalizeTranslatable(o.name)), [lang]: value } } : o) } : g)
+            options: prev.options?.map(g => g.id === groupId ? { ...g, options: g.options.map(o => o.id === optionId ? { ...o, name: { ...(normalizeTranslatable(o.name)), [lang]: value } } : g) } : g)
         }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        let imageUrl = productData.image; // Use existing image URL by default
+        let imageUrl = productData.image; // Use URL from input by default
 
         // If a new file is selected, upload it first.
         if (imageFile) {
@@ -225,22 +240,38 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                             <select value={productData.availability} onChange={e => handleInputChange('availability', e.target.value)} className="w-full border-gray-300 rounded-md"><option value="متوفر">متوفر</option><option value="غير متوفر">غير متوفر</option></select>
                         </div>
                         <div>
-                            <label htmlFor="productImage" className="block text-sm font-medium text-gray-700">صورة المنتج</label>
+                            <label className="block text-sm font-medium text-gray-700">صورة المنتج</label>
                             <div className="mt-1 flex items-center gap-4">
                                 {imagePreview ? (
-                                    <img src={imagePreview} alt="معاينة المنتج" className="h-16 w-16 rounded-md object-cover" />
+                                    <img src={imagePreview} alt="معاينة المنتج" className="h-20 w-20 rounded-md object-cover flex-shrink-0" />
                                 ) : (
-                                    <div className="h-16 w-16 rounded-md bg-gray-100 flex items-center justify-center text-gray-400">
+                                    <div className="h-20 w-20 rounded-md bg-gray-100 flex items-center justify-center text-gray-400 flex-shrink-0">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                     </div>
                                 )}
-                                <div className="w-full">
+                                <div className="w-full space-y-2">
+                                     <div>
+                                        <label htmlFor="imageUrl" className="sr-only">رابط الصورة</label>
+                                        <input
+                                            id="imageUrl"
+                                            type="url"
+                                            placeholder="أو الصق رابط الصورة هنا"
+                                            value={productData.image}
+                                            onChange={handleUrlChange}
+                                            className="w-full border-gray-300 rounded-md text-sm"
+                                        />
+                                    </div>
+                                    <div className="relative flex items-center">
+                                        <div className="flex-grow border-t border-gray-300"></div>
+                                        <span className="flex-shrink mx-2 text-gray-500 text-xs">أو</span>
+                                        <div className="flex-grow border-t border-gray-300"></div>
+                                    </div>
                                     <input
                                         id="productImage"
                                         type="file"
                                         accept="image/png, image/jpeg, image/webp"
                                         onChange={handleFileChange}
-                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-1.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                     />
                                     {isUploading && <p className="text-xs text-blue-600 mt-1">جاري رفع الصورة...</p>}
                                 </div>
