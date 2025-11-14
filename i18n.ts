@@ -11,6 +11,7 @@ export const translations: Record<string, Record<string, string>> = {
     back: 'العودة',
     backToMenu: 'العودة إلى القائمة',
     viewAll: 'عرض الكل',
+    now: 'الآن',
 
     // ======== HEADER & CART DROPDOWN ========
     searchPlaceholder: 'ابحث عن مطاعم، منتجات...',
@@ -23,6 +24,12 @@ export const translations: Record<string, Record<string, string>> = {
     total: 'الإجمالي',
     checkout: 'إتمام الطلب',
     continueShopping: 'متابعة التسوق',
+
+    // ======== BOTTOM NAV BAR ========
+    home: 'الرئيسية',
+    favourite: 'المفضلة',
+    myOrders: 'طلباتي',
+    settings: 'الإعدادات',
 
     // ======== FLOATING CART ========
     goToCheckout: 'الانتقال إلى الدفع',
@@ -253,6 +260,7 @@ export const translations: Record<string, Record<string, string>> = {
     back: 'Retour',
     backToMenu: 'Retour au menu',
     viewAll: 'Voir tout',
+    now: 'Maintenant',
 
     // ======== HEADER & CART DROPDOWN ========
     searchPlaceholder: 'Rechercher des restaurants, produits...',
@@ -265,6 +273,12 @@ export const translations: Record<string, Record<string, string>> = {
     total: 'Total',
     checkout: 'Passer la commande',
     continueShopping: 'Continuer les achats',
+    
+    // ======== BOTTOM NAV BAR ========
+    home: 'Accueil',
+    favourite: 'Favoris',
+    myOrders: 'Commandes',
+    settings: 'Réglages',
 
     // ======== FLOATING CART ========
     goToCheckout: 'Aller au paiement',

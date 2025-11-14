@@ -30,12 +30,12 @@ import CustomerHomePage from './pages/CustomerHomePage.tsx';
 import RestaurantProfilePage from './pages/RestaurantProfilePage.tsx';
 import CheckoutPage from './pages/CheckoutPage.tsx';
 import UserProfilePage from './pages/UserProfilePage.tsx';
-import FloatingCart from './components/restaurant_profile/FloatingCart.tsx';
 import CategoryProductsPage from './pages/CategoryProductsPage.tsx';
 import ProductDetailsPage from './pages/ProductDetailsPage.tsx';
 import LocationModal from './components/customer_home/LocationModal.tsx';
 import CustomerOrderTrackingModal from './components/user_profile/CustomerOrderTrackingModal.tsx';
 import InstallPwaBanner from './components/InstallPwaBanner.tsx';
+import BottomNavBar from './components/BottomNavBar.tsx'; // New component for customer navigation
 
 // Driver view components
 import DriverLoginPage from './pages/DriverLoginPage.tsx';
@@ -615,21 +615,14 @@ const MainApp: React.FC = () => {
 
     // Customer View
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-gray-50">
             <CustomerHeader 
               setCustomerPage={setCustomerPage} 
-              cartItems={cartItems}
-              setCartItems={setCartItems}
               settings={appSettings?.general ?? null}
             />
-            <main>{renderCustomerPage()}</main>
+            {/* Main content with padding for the bottom nav bar */}
+            <main className="pb-28">{renderCustomerPage()}</main>
             
-            {cartItems.length > 0 && customerPage !== 'checkout' && (
-                <FloatingCart 
-                    cartItems={cartItems} 
-                    onCheckout={() => setCustomerPage('checkout')} 
-                />
-            )}
              {notificationMessage && (
                 <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-[#3E2F1C] text-white flex items-center gap-3 px-6 py-3 rounded-lg shadow-lg animate-fade-in-down">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -650,6 +643,26 @@ const MainApp: React.FC = () => {
             {deferredInstallPrompt && (
                 <InstallPwaBanner onInstall={handleInstallApp} />
             )}
+            
+            {/* New Floating Action Button for Cart */}
+            {customerPage !== 'checkout' && (
+                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40">
+                    <button 
+                        onClick={() => setCustomerPage('checkout')}
+                        className="relative w-16 h-16 bg-red-600 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-red-700 transition-transform transform hover:scale-110"
+                    >
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        {cartItems.length > 0 && (
+                            <span className="absolute -top-1 -right-1 flex items-center justify-center h-6 w-6 rounded-full bg-white text-red-600 text-xs font-bold border-2 border-red-600">
+                                {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+                            </span>
+                        )}
+                    </button>
+                </div>
+            )}
+            
+            {/* New Bottom Navigation Bar */}
+            <BottomNavBar activePage={customerPage} setCustomerPage={setCustomerPage} />
         </div>
     );
 };

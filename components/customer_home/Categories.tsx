@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../scripts/firebase/firebaseConfig.js';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
 import type { Category } from '../../types';
 import LoadingSpinner from '../LoadingSpinner';
 import ErrorDisplay from '../ErrorDisplay';
 import { useLanguage } from '../../contexts/LanguageContext.tsx';
 
 interface CategoriesProps {
-    title: string;
     onNavigateToCategory: (categoryName: string) => void;
 }
 
-const Categories: React.FC<CategoriesProps> = ({ title, onNavigateToCategory }) => {
+const Categories: React.FC<CategoriesProps> = ({ onNavigateToCategory }) => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -19,7 +18,7 @@ const Categories: React.FC<CategoriesProps> = ({ title, onNavigateToCategory }) 
 
     useEffect(() => {
         setIsLoading(true);
-        const categoriesQuery = query(collection(db, "categories"), orderBy("name.ar"));
+        const categoriesQuery = query(collection(db, "categories"), orderBy("name.ar"), limit(8));
 
         const unsubscribe = onSnapshot(categoriesQuery, (querySnapshot) => {
             const fetchedCategories: Category[] = querySnapshot.docs.map(doc => ({
@@ -48,21 +47,22 @@ const Categories: React.FC<CategoriesProps> = ({ title, onNavigateToCategory }) 
     }
 
     return (
-        <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">{title}</h2>
+        <div className="mt-8">
             {categories.length > 0 ? (
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-4">
                     {categories.map((category) => (
                         <button 
                             onClick={() => onNavigateToCategory(translateField(category.name))}
                             key={category.id} 
-                            className="text-center no-underline transition-opacity duration-300 ease-in-out hover:opacity-80 group w-24 flex-shrink-0">
-                            <img 
-                                src={category.image}
-                                alt={translateField(category.name)}
-                                className="w-full h-24 object-cover rounded-lg mb-2 shadow-sm"
-                            />
-                            <h4 className="font-semibold text-gray-800 text-sm truncate">{translateField(category.name)}</h4>
+                            className="text-center group transition-transform transform hover:scale-105">
+                            <div className="relative w-full" style={{paddingBottom: '100%'}}>
+                                <img 
+                                    src={category.image}
+                                    alt={translateField(category.name)}
+                                    className="absolute inset-0 w-full h-full object-cover rounded-full shadow-sm group-hover:shadow-md"
+                                />
+                            </div>
+                            <h4 className="font-semibold text-gray-800 text-sm truncate mt-2">{translateField(category.name)}</h4>
                         </button>
                     ))}
                 </div>
