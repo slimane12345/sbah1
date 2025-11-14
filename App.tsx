@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Page, CustomerPage, ViewMode, CartItem, Restaurant, Product, UserLocation, UserProfileData, PastOrder, SavedAddress, OrderStatus, AppSettings } from './types.ts';
-import { db, auth, firebaseInitializationError } from './scripts/firebase/firebaseConfig.js';
-import { signInAnonymously } from 'firebase/auth';
+import { db } from './scripts/firebase/firebaseConfig.js';
 // FIX: Imported 'getDoc' to fetch single documents from Firestore.
 import { doc, setDoc, Timestamp, collection, query, where, getDocs, getDoc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
 
@@ -40,8 +39,7 @@ import BottomNavBar from './components/BottomNavBar.tsx'; // New component for c
 // Driver view components
 import DriverLoginPage from './pages/DriverLoginPage.tsx';
 import DriverDashboardPage from './pages/DriverDashboardPage.tsx';
-import LoadingSpinner from './components/LoadingSpinner.tsx';
-import ErrorDisplay from './components/ErrorDisplay.tsx';
+import FirebaseAppShell from './components/FirebaseAppShell.tsx';
 
 const pageTitles: Record<Page, string> = {
     dashboard: 'لوحة التحكم الرئيسية',
@@ -80,39 +78,6 @@ const mapBackendStatusToFrontend = (status: string): OrderStatus => {
 };
 
 const MainApp: React.FC = () => {
-    if (firebaseInitializationError) {
-        let detailedMessage: React.ReactNode = `An unexpected Firebase initialization error occurred: ${firebaseInitializationError.message}`;
-
-        if (firebaseInitializationError.message.includes('firestore is not available')) {
-            detailedMessage = (
-                <>
-                  <p className="font-bold">خطأ في إعداد Firebase Firestore</p>
-                  <p className="text-sm mt-2">خدمة Firestore غير متاحة. هذا يعني غالبًا أن قاعدة بيانات Firestore لم يتم إنشاؤها في مشروعك على Firebase.</p>
-                  <div className="text-left text-sm mt-4 bg-gray-800 text-white p-4 rounded-md font-mono" dir="ltr">
-                    <p className="font-semibold">How to fix:</p>
-                    <ol className="list-decimal list-inside mt-2 space-y-1">
-                      <li>Go to your <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">Firebase Console</a>.</li>
-                      <li>In the left menu, click <strong>Build</strong> &rarr; <strong>Firestore Database</strong>.</li>
-                      <li>Click <strong>Create database</strong>.</li>
-                      <li>Choose <strong>Start in production mode</strong> (or test mode).</li>
-                      <li>Select a location and click <strong>Enable</strong>.</li>
-                      <li>Once the database is created, refresh this page.</li>
-                    </ol>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-4">Error message: {firebaseInitializationError.message}</p>
-                </>
-            );
-        }
-        
-        return (
-            <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
-                <div className="max-w-2xl w-full">
-                    <ErrorDisplay message={detailedMessage} />
-                </div>
-            </div>
-        );
-    }
-
     // Determine view mode based on the HTML file being served. This is now fixed per entry point.
     const path = window.location.pathname;
     const isCustomerPath = path.includes('/customer.html');
@@ -155,52 +120,13 @@ const MainApp: React.FC = () => {
     // Driver state
     const [driverId, setDriverId] = useState<string | null>(() => localStorage.getItem('sbahDriverId'));
     
-    // Firebase initialization state
-    const [isFirebaseReady, setIsFirebaseReady] = useState(false);
-    const [firebaseError, setFirebaseError] = useState<React.ReactNode | null>(null);
-
     const MOCK_USER_ID = 'mock_customer_id';
 
-    // Handle Firebase Anonymous Auth
     useEffect(() => {
         // Set document direction to RTL
         document.documentElement.lang = 'ar';
         document.documentElement.dir = 'rtl';
-        
-        const anony_auth = async () => {
-          try {
-            if (auth && !auth.currentUser) {
-              await signInAnonymously(auth);
-              console.log("Firebase signed in anonymously for main app.");
-            }
-            setIsFirebaseReady(true);
-          } catch (error: any) {
-            if (error.code === 'auth/admin-restricted-operation') {
-              setFirebaseError(
-                <>
-                  <p className="font-bold">خطأ في مصادقة Firebase</p>
-                  <p className="text-sm mt-2">ميزة "تسجيل الدخول المجهول" غير مفعلة. هذه الميزة ضرورية لعمل التطبيق بشكل صحيح.</p>
-                  <div className="text-left text-sm mt-4 bg-gray-800 text-white p-4 rounded-md font-mono" dir="ltr">
-                    <p className="font-semibold">How to fix:</p>
-                    <ol className="list-decimal list-inside mt-2 space-y-1">
-                      <li>Go to your Firebase Console.</li>
-                      <li>Navigate to <strong>Authentication</strong> &rarr; <strong>Sign-in method</strong> tab.</li>
-                      <li>Find and <strong>enable</strong> the <strong>Anonymous</strong> sign-in provider.</li>
-                      <li>Save and refresh this page.</li>
-                    </ol>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-4">Error code: {error.code}</p>
-                </>
-              );
-            } else {
-              setFirebaseError(`حدث خطأ غير متوقع في Firebase: ${error.message}`);
-            }
-            // Still set ready to true to show the error screen instead of loading forever
-            setIsFirebaseReady(true);
-          }
-        };
-        anony_auth();
-      }, []);
+    }, []);
 
     const handleDriverLogin = (id: string) => {
         localStorage.setItem('sbahDriverId', id);
@@ -580,21 +506,6 @@ const MainApp: React.FC = () => {
         }
     };
 
-    if (!isFirebaseReady) {
-        return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>;
-    }
-
-    if (firebaseError) {
-        return (
-            <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
-                <div className="max-w-2xl w-full">
-                    <ErrorDisplay message={firebaseError} />
-                </div>
-            </div>
-        );
-    }
-
-
     if (viewMode === 'driver') {
         if (driverId) {
             return <DriverDashboardPage driverId={driverId} onLogout={handleDriverLogout} />;
@@ -672,7 +583,9 @@ const MainApp: React.FC = () => {
 
 const App: React.FC = () => {
     return (
-        <MainApp />
+        <FirebaseAppShell>
+            <MainApp />
+        </FirebaseAppShell>
     );
 };
 
