@@ -37,6 +37,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
     const [phone, setPhone] = useState(userProfile?.phone || '');
     const [addressDetails, setAddressDetails] = useState('');
     const [selectedMethod, setSelectedMethod] = useState<'cod' | 'card' | null>(null);
+    const [notes, setNotes] = useState('');
     
     // State for order processing
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -166,6 +167,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                 createdAt: Timestamp.now(),
                 driverId: null,
                 restaurantLocation: restaurantLocation,
+                customerNotes: notes,
             };
 
             await addDoc(collection(db, 'orders'), newOrder);
@@ -179,6 +181,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                 status: 'جديد',
                 items: newOrder.items.map(item => ({ name: item.productName, quantity: item.quantity, category: item.category })),
                 deliveryAddress: newOrder.deliveryAddress,
+                customerNotes: newOrder.customerNotes
             };
 
             setPlacedOrder(orderForTracker);
@@ -216,6 +219,20 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                             setSelectedMethod={setSelectedMethod}
                             settings={appSettings?.payment ?? null}
                         />
+                         <div className="bg-white rounded-lg shadow-md p-6">
+                            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3 mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                <span>ملاحظات إضافية (اختياري)</span>
+                            </h2>
+                            <textarea
+                                id="notes"
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                rows={3}
+                                className="w-full text-base border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                placeholder="مثال: اترك الطلب عند الباب، لا ترن الجرس..."
+                            ></textarea>
+                        </div>
                          {error && <p className="text-red-600 text-center font-semibold">{error}</p>}
                     </div>
 

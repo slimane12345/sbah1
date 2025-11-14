@@ -97,6 +97,7 @@ const OrdersManagementPage: React.FC = () => {
                     })),
                     deliveryAddress: data.deliveryAddress,
                     restaurantLocation: data.restaurantLocation || null,
+                    customerNotes: data.customerNotes || '',
                 };
             });
             setOrders(fetchedOrders);
