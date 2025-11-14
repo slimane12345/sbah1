@@ -3,6 +3,7 @@ import type { Page, CustomerPage, ViewMode, CartItem, Restaurant, Product, UserL
 import { db } from './scripts/firebase/firebaseConfig.js';
 // FIX: Imported 'getDoc' to fetch single documents from Firestore.
 import { doc, setDoc, Timestamp, collection, query, where, getDocs, getDoc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext.tsx';
 
 // Admin view components
 import Sidebar from './components/Sidebar.tsx';
@@ -78,6 +79,13 @@ const mapBackendStatusToFrontend = (status: string): OrderStatus => {
 };
 
 const MainApp: React.FC = () => {
+    const { language } = useLanguage();
+    
+    useEffect(() => {
+        document.documentElement.lang = language;
+        document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    }, [language]);
+
     // Determine view mode based on the HTML file being served. This is now fixed per entry point.
     const path = window.location.pathname;
     const isCustomerPath = path.includes('/customer.html');
@@ -121,12 +129,6 @@ const MainApp: React.FC = () => {
     const [driverId, setDriverId] = useState<string | null>(() => localStorage.getItem('sbahDriverId'));
     
     const MOCK_USER_ID = 'mock_customer_id';
-
-    useEffect(() => {
-        // Set document direction to RTL
-        document.documentElement.lang = 'ar';
-        document.documentElement.dir = 'rtl';
-    }, []);
 
     const handleDriverLogin = (id: string) => {
         localStorage.setItem('sbahDriverId', id);
@@ -584,7 +586,9 @@ const MainApp: React.FC = () => {
 const App: React.FC = () => {
     return (
         <FirebaseAppShell>
-            <MainApp />
+            <LanguageProvider>
+                <MainApp />
+            </LanguageProvider>
         </FirebaseAppShell>
     );
 };

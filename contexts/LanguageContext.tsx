@@ -1,49 +1,96 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-
-// This context is no longer in use and is pending complete removal.
-// For now, it provides a dummy implementation to prevent crashes in components that still import it.
-
-const dummyTranslate = (key: string) => key;
-
-const dummyTranslateField = (field: any): string => {
-    if (!field) return '';
-    if (typeof field === 'string') return field;
-    // Added safety check for non-objects or arrays
-    if (typeof field !== 'object' || Array.isArray(field)) return '';
-
-    // Prefer 'ar', then the first value in the object.
-    const val = field.ar || Object.values(field)[0];
-    
-    // Ensure the final result is a string before returning
-    if (typeof val === 'string') return val;
-    
-    // Fallback if the value is not a string (e.g., another object)
-    return '';
-};
+import { translations } from '../i18n.ts';
+import { db } from '../scripts/firebase/firebaseConfig.js';
+import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import type { Language, LanguageContextType, TranslatableString } from '../types.ts';
 
 
-const dummyContext: any = {
-  language: 'ar',
-  setLanguage: () => {},
-  t: dummyTranslate,
-  dbTranslations: {},
-  setDbTranslations: () => {},
-  isLoadingTranslations: false,
-  translateField: dummyTranslateField,
-};
-
-const LanguageContext = createContext<any>(dummyContext);
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // The provider's functionality has been removed. It now only renders its children.
+  const [language, setLanguage] = useState<Language>('ar');
+  const [dbTranslations, setDbTranslations] = useState<Record<string, Record<string, string>>>({});
+  const [isLoadingTranslations, setIsLoadingTranslations] = useState(true);
+
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') as Language;
+    if (savedLang && (savedLang === 'ar' || savedLang === 'fr')) {
+      setLanguage(savedLang);
+    }
+
+    const fetchTranslations = async () => {
+      setIsLoadingTranslations(true);
+      try {
+        if (!db) {
+            console.warn("Firestore (db) is not initialized, falling back to local translations.");
+            setDbTranslations(translations);
+            return;
+        }
+        const translationsCollection = collection(db, 'translations');
+        const snapshot = await getDocs(translationsCollection);
+        
+        if (snapshot.empty) {
+          console.log("Seeding translations to Firestore...");
+          await Promise.all([
+            setDoc(doc(db, 'translations', 'ar'), translations.ar),
+            setDoc(doc(db, 'translations', 'fr'), translations.fr)
+          ]);
+          setDbTranslations(translations);
+        } else {
+          const fetchedTranslations: Record<string, Record<string, string>> = {};
+          snapshot.forEach(doc => {
+            fetchedTranslations[doc.id] = doc.data();
+          });
+          setDbTranslations(fetchedTranslations);
+        }
+      } catch (error) {
+        console.error("Error fetching translations, falling back to local.", error);
+        setDbTranslations(translations); // Fallback to local on error
+      } finally {
+        setIsLoadingTranslations(false);
+      }
+    };
+
+    fetchTranslations();
+  }, []);
+
+  const handleSetLanguage = (lang: Language) => {
+    localStorage.setItem('appLanguage', lang);
+    setLanguage(lang);
+  };
+
+  const t = (key: string, replacements?: Record<string, string | number>): string => {
+    let translation = dbTranslations[language]?.[key] || translations[language]?.[key] || key;
+    if (replacements) {
+        Object.keys(replacements).forEach(rKey => {
+            const regex = new RegExp(`{{${rKey}}}`, 'g');
+            translation = translation.replace(regex, String(replacements[rKey]));
+        });
+    }
+    return translation;
+  };
+
+  const translateField = (field: TranslatableString | string | undefined): string => {
+    if (!field) return '';
+    if (typeof field === 'string') return field;
+    if (typeof field !== 'object' || Array.isArray(field)) return '';
+    // Return the translation for the current language, fallback to Arabic, then to the first available, then to empty.
+    const val = field[language] || field['ar'] || Object.values(field)[0];
+    if (typeof val === 'string') return val;
+    return '';
+  };
+
   return (
-    <LanguageContext.Provider value={dummyContext}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t, dbTranslations, setDbTranslations, isLoadingTranslations, translateField }}>
       {children}
     </LanguageContext.Provider>
   );
 };
 
-export const useLanguage = (): any => {
-  // This hook now returns a dummy context to prevent crashes.
-  return useContext(LanguageContext);
+export const useLanguage = (): LanguageContextType => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
 };

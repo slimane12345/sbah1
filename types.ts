@@ -1,6 +1,20 @@
 import React from 'react';
 import type { Timestamp } from 'firebase/firestore';
 
+// ========= LANGUAGE & TRANSLATIONS =========
+export type Language = 'ar' | 'fr';
+export type TranslatableString = { [key in Language]?: string; };
+
+export interface LanguageContextType {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: string, replacements?: Record<string, string | number>) => string;
+  dbTranslations: Record<string, Record<string, string>>;
+  setDbTranslations: React.Dispatch<React.SetStateAction<Record<string, Record<string, string>>>>;
+  isLoadingTranslations: boolean;
+  translateField: (field: TranslatableString | string | undefined) => string;
+}
+
 // ========= GENERAL & APP SHELL =========
 
 export type Page =
@@ -36,13 +50,13 @@ export type DriverView = 'overview' | 'orders' | 'active_orders' | 'earnings' | 
 
 export interface ProductOption {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   price: number;
 }
 
 export interface ProductOptionGroup {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   type: 'radio' | 'checkbox';
   required: boolean;
   options: ProductOption[];
@@ -50,11 +64,11 @@ export interface ProductOptionGroup {
 
 export interface Product {
   id: string;
-  name: string;
-  description: string;
+  name: TranslatableString | string;
+  description: TranslatableString | string;
   price: number;
   image: string;
-  category: string;
+  category: TranslatableString | string;
   options?: ProductOptionGroup[];
   restaurant: string;
 }
@@ -63,9 +77,9 @@ export type RestaurantStatus = 'مفتوح' | 'مغلق' | 'قيد المراج�
 
 export interface Restaurant {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   logo: string;
-  cuisine: string;
+  cuisine: TranslatableString | string;
   status: RestaurantStatus;
   rating: number;
   commissionRate: number;
@@ -103,7 +117,7 @@ export interface PastOrder {
   date: string;
   total: number;
   status: OrderStatus;
-  items: { name: any; quantity: number; category: string }[];
+  items: { name: TranslatableString | string; quantity: number; category: string }[];
   deliveryAddress: { addressText: string; latitude: number; longitude: number };
 }
 
@@ -192,7 +206,7 @@ export interface Review {
 
 export interface Category {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   image: string;
   slug: string;
 }
@@ -217,7 +231,7 @@ export type ApprovalStatus = 'Pending' | 'Approved' | 'Rejected';
 
 export interface RestaurantManagementData {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   ownerName: string;
   ownerEmail: string;
   ownerPhone: string;
@@ -226,7 +240,7 @@ export interface RestaurantManagementData {
   isActive: boolean;
   location?: { latitude: number; longitude: number; addressText: string };
   coverPhotoUrl?: string;
-  cuisine?: string;
+  cuisine?: TranslatableString | string;
 }
 
 export interface AiAnalysis {
@@ -240,13 +254,13 @@ export type AvailabilityStatus = 'متوفر' | 'غير متوفر';
 
 export interface ProductManagementData {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   image: string;
   restaurant: string;
-  category: string;
+  category: TranslatableString | string;
   price: number;
   availability: AvailabilityStatus;
-  description?: string;
+  description?: TranslatableString | string;
   options?: ProductOptionGroup[];
   tags?: string[];
   calories?: number;
@@ -293,7 +307,7 @@ export interface OrderManagementData {
   paymentMethod: 'COD' | 'Credit Card';
   date: string;
   courier: { name: string; avatar: string } | null;
-  items: { name: any; quantity: number; price: number; options?: any[]; category?: string }[];
+  items: { name: TranslatableString | string; quantity: number; price: number; options?: (TranslatableString | string)[]; category?: string }[];
   deliveryAddress: { latitude: number; longitude: number; addressText: string };
   restaurantLocation?: { lat: number, lng: number }; // For DriverDashboardPage
   driverId?: string | null;
@@ -330,7 +344,7 @@ export interface Offer {
 
 export interface CategoryManagementData {
   id: string;
-  name: string;
+  name: TranslatableString | string;
   image: string;
   slug: string;
   createdAt: string;

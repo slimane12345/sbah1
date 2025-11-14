@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect } from 'react';
 import type { Restaurant, Product, CartItem, CustomerPage, Review } from '../types.ts';
 import RestaurantHeader from '../components/restaurant_profile/RestaurantHeader.tsx';
@@ -9,6 +10,8 @@ import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ErrorDisplay from '../components/ErrorDisplay.tsx';
 import { db } from '../scripts/firebase/firebaseConfig.js';
 import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
+// FIX: Import `useLanguage` hook to handle translatable fields.
+import { useLanguage } from '../contexts/LanguageContext.tsx';
 
 
 const mockReviews: Review[] = [];
@@ -27,6 +30,7 @@ const RestaurantProfilePage: React.FC<RestaurantProfilePageProps> = ({ restauran
     const [menu, setMenu] = useState<{ [key: string]: Product[] }>({});
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { translateField } = useLanguage();
 
     useEffect(() => {
         setIsLoading(true);
@@ -71,7 +75,8 @@ const RestaurantProfilePage: React.FC<RestaurantProfilePageProps> = ({ restauran
         if (!restaurant) return;
 
         // Fetch menu once restaurant details are loaded
-        const productsQuery = query(collection(db, "products"), where("restaurantName", "==", restaurant.name));
+        const restaurantNameStr = translateField(restaurant.name);
+        const productsQuery = query(collection(db, "products"), where("restaurantName", "==", restaurantNameStr));
 
         const unsubscribe = onSnapshot(productsQuery, (querySnapshot) => {
             const fetchedProducts: Product[] = querySnapshot.docs.map(doc => {
@@ -84,12 +89,13 @@ const RestaurantProfilePage: React.FC<RestaurantProfilePageProps> = ({ restauran
                     image: data.imageUrl,
                     category: data.category,
                     options: data.options || [], // Fetch options
-                    restaurant: restaurant.name,
+                    restaurant: restaurantNameStr,
                  };
             });
             
             const groupedMenu = fetchedProducts.reduce((acc, product) => {
-                const category = product.category || 'متنوع';
+                // FIX: Convert TranslatableString to string before using as an index.
+                const category = translateField(product.category) || 'متنوع';
                 if (!acc[category]) acc[category] = [];
                 acc[category].push(product);
                 return acc;
@@ -105,7 +111,7 @@ const RestaurantProfilePage: React.FC<RestaurantProfilePageProps> = ({ restauran
         });
 
         return () => unsubscribe();
-    }, [restaurant]);
+    }, [restaurant, translateField]);
     
     if (isLoading) {
         return <div className="pt-20"><LoadingSpinner /></div>;
