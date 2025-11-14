@@ -301,7 +301,7 @@ export interface OrderManagementData {
   paymentMethod: 'COD' | 'Credit Card';
   date: string;
   courier: { name: string; avatar: string } | null;
-  items: { name: TranslatableString | string; quantity: number; price: number; options?: string[]; category?: string }[];
+  items: { name: TranslatableString | string; quantity: number; price: number; options?: (TranslatableString | string)[]; category?: string }[];
   deliveryAddress: { latitude: number; longitude: number; addressText: string };
   restaurantLocation?: { lat: number, lng: number }; // For DriverDashboardPage
   driverId?: string | null;

@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth, signInAnonymously } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
@@ -15,26 +15,19 @@ const firebaseConfig = {
   measurementId: "G-VKZFW5QPN6"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+let db, auth, storage, firebaseInitializationError;
 
-// Initialize Firestore, Auth & Storage
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
+try {
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
 
-// Automatically sign in anonymously to allow Firebase Storage operations
-// for unauthenticated sessions (like the admin panel). This satisfies
-// the default security rule `allow read, write: if request.auth != null;`.
-if (!auth.currentUser) {
-  signInAnonymously(auth)
-    .then(() => {
-      console.log("Firebase signed in anonymously.");
-    })
-    .catch((error) => {
-      console.error("Anonymous sign-in failed:", error);
-    });
+  // Initialize services
+  db = getFirestore(app);
+  auth = getAuth(app);
+  storage = getStorage(app);
+} catch (error) {
+  firebaseInitializationError = error;
+  console.error("Firebase initialization failed for driver app:", error);
 }
 
-
-export { db, auth, storage };
+export { db, auth, storage, firebaseInitializationError };

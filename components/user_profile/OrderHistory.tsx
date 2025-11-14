@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import type { PastOrder } from '../../types';
 import StatusBadge from '../StatusBadge';
@@ -10,7 +11,7 @@ interface OrderHistoryProps {
 }
 
 const OrderHistory: React.FC<OrderHistoryProps> = ({ orders, onTrackOrder }) => {
-    const { t } = useLanguage();
+    const { t, translateField } = useLanguage();
     
     return (
         <div className="bg-white shadow sm:rounded-lg">
@@ -31,7 +32,7 @@ const OrderHistory: React.FC<OrderHistoryProps> = ({ orders, onTrackOrder }) => 
                                         <StatusBadge status={order.status} />
                                     </div>
                                     <div className="mt-2 text-sm text-gray-600">
-                                        {order.items.map(item => `${item.quantity} x ${item.name}`).join(', ')}
+                                        {order.items.map(item => `${item.quantity} x ${translateField(item.name)}`).join(', ')}
                                     </div>
                                     <div className="flex justify-between items-center mt-3">
                                         <p className="font-bold">{order.total.toLocaleString('ar-MA')} د.م.</p>

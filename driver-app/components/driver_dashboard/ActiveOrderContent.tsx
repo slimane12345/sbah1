@@ -34,13 +34,24 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
     const customerLocation = order.deliveryAddress;
 
     const handleTrack = () => {
-        if (restaurantLocation && customerLocation) {
-            const origin = `${restaurantLocation.lat},${restaurantLocation.lng}`;
-            const destination = `${customerLocation.latitude},${customerLocation.longitude}`;
-            const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
-            window.open(url, '_blank', 'noopener,noreferrer');
+        if (isPickupPhase) {
+            // Driver is going TO the restaurant
+            if (restaurantLocation) {
+                const destination = `${restaurantLocation.lat},${restaurantLocation.lng}`;
+                const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        } else {
+            // Driver has the food and is going TO the customer
+            if (customerLocation) {
+                const destination = `${customerLocation.latitude},${customerLocation.longitude}`;
+                const url = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
         }
     };
+
+    const isTrackingDisabled = isPickupPhase ? !restaurantLocation : !customerLocation;
 
     return (
         <div className="space-y-6 pb-28 lg:pb-0">
@@ -73,7 +84,7 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
                                 {item.options && item.options.length > 0 && (
                                     <ul className="mr-4 mt-1 text-xs text-gray-500 list-disc list-inside">
                                         {item.options.map((option, optIndex) => (
-                                            <li key={optIndex}>{option}</li>
+                                            <li key={optIndex}>{translateField(option)}</li>
                                         ))}
                                     </ul>
                                 )}
@@ -96,17 +107,28 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
                 <div className="max-w-3xl mx-auto flex gap-4">
                     <button 
                         onClick={handleTrack}
-                        disabled={!restaurantLocation || !customerLocation}
-                        className="w-full lg:w-1/3 flex justify-center items-center gap-2 py-3 px-4 border border-gray-300 rounded-lg shadow-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                        disabled={isTrackingDisabled}
+                        className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-gray-300 rounded-lg shadow-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                     >
                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 19l-4.95-6.05a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                         </svg>
                         {t('trackOrder')}
                     </button>
+                     <button
+                        onClick={() => window.open(`tel:${order.customer.phone}`, '_blank')}
+                        disabled={!order.customer.phone}
+                        className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-gray-300 rounded-lg shadow-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                        title={!order.customer.phone ? 'رقم العميل غير متوفر' : 'اتصل بالعميل'}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                        </svg>
+                        مكالمة
+                    </button>
                     <button 
                         onClick={buttonAction} 
-                        className={`w-full lg:w-2/3 flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-semibold text-white ${isPickupPhase ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'}`}
+                        className={`flex-[2] flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-semibold text-white ${isPickupPhase ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'}`}
                     >
                         {buttonText}
                     </button>

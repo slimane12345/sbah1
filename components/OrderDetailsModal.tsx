@@ -58,7 +58,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
                                       <div className="font-semibold">{translateField(item.name)}</div>
                                       {item.options && item.options.length > 0 && (
                                           <ul className="list-disc list-inside text-xs text-gray-500 mt-1 mr-2">
-                                              {item.options.map((opt, i) => <li key={i}>{opt}</li>)}
+                                              {item.options.map((opt, i) => <li key={i}>{translateField(opt)}</li>)}
                                           </ul>
                                       )}
                                     </td>

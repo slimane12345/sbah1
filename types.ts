@@ -103,7 +103,7 @@ export interface PastOrder {
   date: string;
   total: number;
   status: OrderStatus;
-  items: { name: string; quantity: number; category: string }[];
+  items: { name: any; quantity: number; category: string }[];
   deliveryAddress: { addressText: string; latitude: number; longitude: number };
 }
 
@@ -293,7 +293,7 @@ export interface OrderManagementData {
   paymentMethod: 'COD' | 'Credit Card';
   date: string;
   courier: { name: string; avatar: string } | null;
-  items: { name: string; quantity: number; price: number; options?: string[]; category?: string }[];
+  items: { name: any; quantity: number; price: number; options?: any[]; category?: string }[];
   deliveryAddress: { latitude: number; longitude: number; addressText: string };
   restaurantLocation?: { lat: number, lng: number }; // For DriverDashboardPage
   driverId?: string | null;
