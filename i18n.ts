@@ -48,7 +48,7 @@ export const translations: Record<string, Record<string, string>> = {
     
     // ======== PRODUCT & CUSTOMIZATION ========
     addToCart: 'أضف إلى السلة',
-    addToCartWithPrice: 'أضف إلى السلة ({{price}} د.م.)',
+    addToCartWithPrice: 'أضف الى السلة',
     addOneForPrice: 'أضف 1 مقابل {{price}} د.م.',
     close: 'إغلاق',
     chooseOne: 'اختر 1',
