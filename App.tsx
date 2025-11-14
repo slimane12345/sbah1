@@ -163,6 +163,10 @@ const MainApp: React.FC = () => {
 
     // Handle Firebase Anonymous Auth
     useEffect(() => {
+        // Set document direction to RTL
+        document.documentElement.lang = 'ar';
+        document.documentElement.dir = 'rtl';
+        
         const anony_auth = async () => {
           try {
             if (auth && !auth.currentUser) {

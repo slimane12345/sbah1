@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import type { Restaurant, Product, CartItem, CustomerPage, Review } from '../types.ts';
 import RestaurantHeader from '../components/restaurant_profile/RestaurantHeader.tsx';
@@ -75,11 +76,10 @@ const RestaurantProfilePage: React.FC<RestaurantProfilePageProps> = ({ restauran
         const unsubscribe = onSnapshot(productsQuery, (querySnapshot) => {
             const fetchedProducts: Product[] = querySnapshot.docs.map(doc => {
                  const data = doc.data();
-                 const parsedPrice = parseFloat(data.price);
                  return {
                     id: doc.id,
                     name: data.name,
-                    price: isNaN(parsedPrice) ? 0 : parsedPrice,
+                    price: data.price,
                     description: data.description,
                     image: data.imageUrl,
                     category: data.category,
