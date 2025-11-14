@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { RestaurantManagementData, TranslatableString } from '../types';
-import { useLanguage } from '../contexts/LanguageContext';
+import type { RestaurantManagementData } from '../types';
 
 declare const L: any; // Make Leaflet globally available for TypeScript
 
@@ -13,9 +12,8 @@ interface RestaurantModalProps {
 }
 
 const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSave, isSubmitting, restaurant }) => {
-    const { t } = useLanguage();
-    const [name, setName] = useState<TranslatableString>({ ar: '', fr: '' });
-    const [cuisine, setCuisine] = useState<TranslatableString>({ ar: '', fr: '' });
+    const [name, setName] = useState('');
+    const [cuisine, setCuisine] = useState('');
     const [ownerName, setOwnerName] = useState('');
     const [ownerEmail, setOwnerEmail] = useState('');
     const [ownerPhone, setOwnerPhone] = useState('');
@@ -26,25 +24,19 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
     const mapInstance = useRef<any>(null);
     const markerInstance = useRef<any>(null);
     
-    const normalizeTranslatable = (field: TranslatableString | string | undefined): TranslatableString => {
-        if (!field) return { ar: '', fr: '' };
-        if (typeof field === 'string') return { ar: field, fr: '' };
-        return { ar: field.ar || '', fr: field.fr || '' };
-    };
-
     useEffect(() => {
         if (isOpen) {
             if (restaurant) {
-                setName(normalizeTranslatable(restaurant.name));
-                setCuisine(normalizeTranslatable(restaurant.cuisine));
+                setName(restaurant.name || '');
+                setCuisine(restaurant.cuisine || '');
                 setOwnerName(restaurant.ownerName);
                 setOwnerEmail(restaurant.ownerEmail);
                 setOwnerPhone(restaurant.ownerPhone || '');
                 setLocation(restaurant.location || null);
                 setCoverPhotoUrl(restaurant.coverPhotoUrl || '');
             } else {
-                setName({ ar: '', fr: '' });
-                setCuisine({ ar: '', fr: '' });
+                setName('');
+                setCuisine('');
                 setOwnerName('');
                 setOwnerEmail('');
                 setOwnerPhone('');
@@ -134,22 +126,12 @@ const RestaurantModal: React.FC<RestaurantModalProps> = ({ isOpen, onClose, onSa
                     <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">{t('nameInArabic')}</label>
-                                <input type="text" value={name.ar} onChange={(e) => setName(p => ({...p, ar: e.target.value}))} className="mt-1 w-full border-gray-300 rounded-md" required />
+                                <label className="block text-sm font-medium text-gray-700">اسم المطعم</label>
+                                <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" required />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">{t('nameInFrench')}</label>
-                                <input type="text" value={name.fr} onChange={(e) => setName(p => ({...p, fr: e.target.value}))} className="mt-1 w-full border-gray-300 rounded-md" />
-                            </div>
-                        </div>
-                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">{t('cuisineInArabic')}</label>
-                                <input type="text" value={cuisine.ar} onChange={(e) => setCuisine(p => ({...p, ar: e.target.value}))} className="mt-1 w-full border-gray-300 rounded-md" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">{t('cuisineInFrench')}</label>
-                                <input type="text" value={cuisine.fr} onChange={(e) => setCuisine(p => ({...p, fr: e.target.value}))} className="mt-1 w-full border-gray-300 rounded-md" />
+                                <label className="block text-sm font-medium text-gray-700">نوع المطبخ</label>
+                                <input type="text" value={cuisine} onChange={(e) => setCuisine(e.target.value)} className="mt-1 w-full border-gray-300 rounded-md" />
                             </div>
                         </div>
                         <div>

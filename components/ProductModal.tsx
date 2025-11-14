@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { ProductManagementData, AvailabilityStatus, ProductOptionGroup, ProductOption, TranslatableString, Category } from '../types';
-import { useLanguage } from '../contexts/LanguageContext';
+import type { ProductManagementData, AvailabilityStatus, ProductOptionGroup, ProductOption, Category } from '../types';
 import StatusToggle from './StatusToggle';
 
 interface ProductModalProps {
@@ -14,32 +13,22 @@ interface ProductModalProps {
 }
 
 const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, product, isSubmitting, restaurantNames, allCategories }) => {
-    const { t, translateField } = useLanguage();
     const [tagInput, setTagInput] = useState('');
 
     const getInitialData = (): Omit<ProductManagementData, 'id'> => {
-        const normalizeTranslatable = (field: TranslatableString | string | undefined): TranslatableString => {
-            if (!field) return { ar: '', fr: '' };
-            if (typeof field === 'string') return { ar: field, fr: '' };
-            return { ar: field.ar || '', fr: field.fr || '' };
-        };
-
         if (product) {
-            const categoryString = translateField(product.category);
-            const foundCategory = allCategories.find(c => translateField(c.name) === categoryString);
-            
             return {
-                name: normalizeTranslatable(product.name),
+                name: product.name || '',
                 restaurant: product.restaurant,
-                category: foundCategory?.name || normalizeTranslatable(product.category),
+                category: product.category,
                 price: product.price,
                 image: product.image,
-                description: normalizeTranslatable(product.description),
+                description: product.description || '',
                 availability: product.availability,
                 options: product.options?.map(group => ({
                     ...group,
-                    name: normalizeTranslatable(group.name),
-                    options: group.options.map(opt => ({...opt, name: normalizeTranslatable(opt.name)}))
+                    name: group.name || '',
+                    options: group.options.map(opt => ({...opt, name: opt.name || ''}))
                 })) || [],
                 tags: product.tags || [],
                 calories: product.calories,
@@ -48,12 +37,12 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
         }
         
         return {
-            name: { ar: '', fr: '' },
+            name: '',
             restaurant: restaurantNames[0] || '',
-            category: allCategories[0]?.name || { ar: '', fr: '' },
+            category: allCategories[0]?.name || '',
             price: 0,
             image: '',
-            description: { ar: '', fr: '' },
+            description: '',
             availability: 'متوفر',
             options: [],
             tags: [],
@@ -73,18 +62,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
     if (!isOpen) return null;
 
     // Handlers for state updates
-    const handleTranslatableChange = (field: 'name' | 'description', lang: 'ar' | 'fr', value: string) => {
-        setProductData(prev => ({ ...prev, [field]: { ...(prev[field] as TranslatableString), [lang]: value } }));
+    const handleChange = (field: keyof Omit<ProductManagementData, 'id'>, value: any) => {
+        setProductData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedCategoryName = e.target.value;
-        const selectedCategory = allCategories.find(c => translateField(c.name) === selectedCategoryName);
-        if (selectedCategory) {
-            setProductData(prev => ({ ...prev, category: selectedCategory.name }));
-        }
-    };
-    
     // Tag handlers
     const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' || e.key === ',') {
@@ -103,7 +84,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
     // Option Group handlers
     const addOptionGroup = () => {
         const newGroup: ProductOptionGroup = {
-            id: `group_${Date.now()}`, name: { ar: '', fr: '' }, type: 'radio', required: true, options: []
+            id: `group_${Date.now()}`, name: '', type: 'radio', required: true, options: []
         };
         setProductData(prev => ({ ...prev, options: [...(prev.options || []), newGroup] }));
     };
@@ -121,7 +102,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
 
     // Option handlers
     const addOption = (groupId: string) => {
-        const newOption: ProductOption = { id: `opt_${Date.now()}`, name: { ar: '', fr: '' }, price: 0 };
+        const newOption: ProductOption = { id: `opt_${Date.now()}`, name: '', price: 0 };
         setProductData(prev => ({
             ...prev,
             options: prev.options?.map(g => g.id === groupId ? { ...g, options: [...g.options, newOption] } : g)
@@ -161,18 +142,16 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                         {/* Left Column: Basic Info */}
                         <div className="space-y-4">
                             <h3 className="font-bold text-lg text-gray-700 border-b pb-2">المعلومات الأساسية</h3>
-                            <input type="text" placeholder={t('nameInArabic')} value={productData.name.ar} onChange={e => handleTranslatableChange('name', 'ar', e.target.value)} className="w-full border-gray-300 rounded-md" required />
-                            <input type="text" placeholder={t('nameInFrench')} value={productData.name.fr} onChange={e => handleTranslatableChange('name', 'fr', e.target.value)} className="w-full border-gray-300 rounded-md" />
-                            <textarea placeholder={t('descriptionInArabic')} value={productData.description.ar} onChange={e => handleTranslatableChange('description', 'ar', e.target.value)} rows={3} className="w-full border-gray-300 rounded-md" />
-                            <textarea placeholder={t('descriptionInFrench')} value={productData.description.fr} onChange={e => handleTranslatableChange('description', 'fr', e.target.value)} rows={3} className="w-full border-gray-300 rounded-md" />
+                            <input type="text" placeholder="اسم المنتج" value={productData.name} onChange={e => handleChange('name', e.target.value)} className="w-full border-gray-300 rounded-md" required />
+                            <textarea placeholder="وصف المنتج" value={productData.description} onChange={e => handleChange('description', e.target.value)} rows={3} className="w-full border-gray-300 rounded-md" />
                             <div className="grid grid-cols-2 gap-4">
-                                <select value={productData.restaurant} onChange={e => setProductData(p => ({...p, restaurant: e.target.value}))} className="w-full border-gray-300 rounded-md" required>{restaurantNames.map(name => <option key={name} value={name}>{name}</option>)}</select>
-                                <select value={translateField(productData.category)} onChange={handleCategoryChange} className="w-full border-gray-300 rounded-md" required>{allCategories.map(cat => <option key={cat.id} value={translateField(cat.name)}>{translateField(cat.name)}</option>)}</select>
+                                <select value={productData.restaurant} onChange={e => handleChange('restaurant', e.target.value)} className="w-full border-gray-300 rounded-md" required>{restaurantNames.map(name => <option key={name} value={name}>{name}</option>)}</select>
+                                <select value={productData.category} onChange={e => handleChange('category', e.target.value)} className="w-full border-gray-300 rounded-md" required>{allCategories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}</select>
                             </div>
-                            <input type="number" step="0.01" placeholder="السعر (د.م.)" value={productData.price} onChange={e => setProductData(p => ({...p, price: parseFloat(e.target.value) || 0}))} className="w-full border-gray-300 rounded-md" required />
+                            <input type="number" step="0.01" placeholder="السعر (د.م.)" value={productData.price} onChange={e => handleChange('price', parseFloat(e.target.value) || 0)} className="w-full border-gray-300 rounded-md" required />
                              <div>
                                 <label className="block text-sm font-medium text-gray-700">رابط الصورة</label>
-                                <input type="url" placeholder="https://..." value={productData.image} onChange={e => setProductData(p => ({...p, image: e.target.value}))} className="w-full border-gray-300 rounded-md mt-1" />
+                                <input type="url" placeholder="https://..." value={productData.image} onChange={e => handleChange('image', e.target.value)} className="w-full border-gray-300 rounded-md mt-1" />
                             </div>
                         </div>
 
@@ -183,7 +162,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                                 {productData.options?.map((group, groupIndex) => (
                                     <div key={group.id} className="p-3 border rounded-lg bg-gray-50 space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <input type="text" placeholder={t('groupName')} value={group.name.ar} onChange={e => updateOptionGroup(group.id, 'name', {...group.name, ar: e.target.value})} className="font-semibold w-full border-gray-300 rounded-md text-sm" />
+                                            <input type="text" placeholder="اسم المجموعة" value={group.name} onChange={e => updateOptionGroup(group.id, 'name', e.target.value)} className="font-semibold w-full border-gray-300 rounded-md text-sm" />
                                             <button type="button" onClick={() => deleteOptionGroup(group.id)} className="text-red-500 hover:text-red-700 p-1 mr-2 flex-shrink-0">&times;</button>
                                         </div>
                                         <div className="flex gap-4 text-sm">
@@ -194,13 +173,13 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                                         <div className="space-y-2">
                                             {group.options.map((option, optIndex) => (
                                                 <div key={option.id} className="flex gap-2 items-center bg-white p-2 rounded">
-                                                    <input type="text" placeholder={t('optionName')} value={option.name.ar} onChange={e => updateOption(group.id, option.id, 'name', {...option.name, ar: e.target.value})} className="w-full border-gray-300 rounded-md text-xs" />
-                                                    <input type="number" step="0.01" placeholder={t('additionalPrice')} value={option.price} onChange={e => updateOption(group.id, option.id, 'price', parseFloat(e.target.value) || 0)} className="w-28 border-gray-300 rounded-md text-xs" />
+                                                    <input type="text" placeholder="اسم الخيار" value={option.name} onChange={e => updateOption(group.id, option.id, 'name', e.target.value)} className="w-full border-gray-300 rounded-md text-xs" />
+                                                    <input type="number" step="0.01" placeholder="سعر إضافي" value={option.price} onChange={e => updateOption(group.id, option.id, 'price', parseFloat(e.target.value) || 0)} className="w-28 border-gray-300 rounded-md text-xs" />
                                                     <button type="button" onClick={() => deleteOption(group.id, option.id)} className="text-red-500 hover:text-red-700 p-1 flex-shrink-0">&times;</button>
                                                 </div>
                                             ))}
                                         </div>
-                                        <button type="button" onClick={() => addOption(group.id)} className="text-blue-600 text-xs font-semibold hover:underline">+ {t('addNewOption')}</button>
+                                        <button type="button" onClick={() => addOption(group.id)} className="text-blue-600 text-xs font-semibold hover:underline">+ إضافة خيار جديد</button>
                                     </div>
                                 ))}
                             </div>
@@ -222,18 +201,18 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">السعرات الحرارية</label>
-                                <input type="number" value={productData.calories || ''} onChange={e => setProductData(p => ({...p, calories: parseInt(e.target.value) || undefined}))} className="mt-1 w-full border-gray-300 rounded-md" />
+                                <input type="number" value={productData.calories || ''} onChange={e => handleChange('calories', parseInt(e.target.value) || undefined)} className="mt-1 w-full border-gray-300 rounded-md" />
                             </div>
                              <div>
                                 <label className="block text-sm font-medium text-gray-700">ترتيب العرض</label>
-                                <input type="number" value={productData.sortOrder || 0} onChange={e => setProductData(p => ({...p, sortOrder: parseInt(e.target.value) || 0}))} className="mt-1 w-full border-gray-300 rounded-md" />
+                                <input type="number" value={productData.sortOrder || 0} onChange={e => handleChange('sortOrder', parseInt(e.target.value) || 0)} className="mt-1 w-full border-gray-300 rounded-md" />
                             </div>
                         </div>
                     </div>
                     <div className="bg-gray-100 px-6 py-4 flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <label className="text-sm font-medium text-gray-700">التوفر</label>
-                            <StatusToggle enabled={productData.availability === 'متوفر'} onChange={val => setProductData(p => ({...p, availability: val ? 'متوفر' : 'غير متوفر'}))} />
+                            <StatusToggle enabled={productData.availability === 'متوفر'} onChange={val => handleChange('availability', val ? 'متوفر' : 'غير متوفر')} />
                         </div>
                         <div className="flex gap-3">
                             <button type="button" onClick={onClose} disabled={isSubmitting} className="bg-white py-2 px-4 border rounded-md">إلغاء</button>

@@ -16,15 +16,22 @@ const firebaseConfig = {
   measurementId: "G-VKZFW5QPN6"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore, Auth & Storage
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
-const messaging = getMessaging(app);
+let db, auth, storage, messaging, firebaseInitializationError;
 
-// Anonymous sign-in will be handled at the component level to provide user feedback.
+try {
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
 
-export { db, auth, storage, messaging };
+  // Initialize services
+  db = getFirestore(app);
+  auth = getAuth(app);
+  storage = getStorage(app);
+  messaging = getMessaging(app);
+} catch (error) {
+  firebaseInitializationError = error;
+  console.error("Firebase initialization failed:", error);
+}
+
+
+export { db, auth, storage, messaging, firebaseInitializationError };

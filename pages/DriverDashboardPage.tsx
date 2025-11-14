@@ -3,10 +3,9 @@ import { db, messaging } from '../scripts/firebase/firebaseConfig.js';
 import { getToken, onMessage } from 'firebase/messaging';
 // FIX: import 'orderBy' to resolve 'Cannot find name 'orderBy'' error.
 import { doc, onSnapshot, updateDoc, collection, query, where, getDocs, Timestamp, runTransaction, increment, orderBy, getDoc } from 'firebase/firestore';
-import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, PaymentStatus, DailyEarning, TranslatableString, AppSettings } from '../types.ts';
+import type { Driver, OrderManagementData, DriverView, OrderAdminStatus, PaymentStatus, DailyEarning, AppSettings } from '../types.ts';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ErrorDisplay from '../components/ErrorDisplay.tsx';
-import { useLanguage } from '../contexts/LanguageContext.tsx';
 import AcceptOrderModal from '../components/AcceptOrderModal.tsx';
 import DriverLayout from '../components/driver_dashboard/DriverLayout.tsx';
 import DriverHeader from '../components/driver_dashboard/DriverHeader.tsx';
@@ -52,7 +51,7 @@ const mapFirestoreDocToOrder = (doc: any): OrderManagementData => {
         date: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toLocaleDateString('ar-SA') : 'N/A',
         courier: data.driverId ? { name: data.driverName || 'N/A', avatar: data.driverAvatar || '' } : null,
         items: (data.items || []).map((item: any) => ({
-            name: item.productName, // This should be a TranslatableString now
+            name: item.productName,
             quantity: item.quantity,
             price: item.unitPrice,
             options: item.options || []
@@ -89,7 +88,6 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
     const [inAppNotification, setInAppNotification] = useState<{title: string; body: string} | null>(null);
 
 
-    const { t } = useLanguage();
     const watchId = useRef<number | null>(null);
     const isOnline = driver?.status === 'متاح' || driver?.status === 'مشغول';
 
@@ -391,7 +389,7 @@ const DriverDashboardPage: React.FC<DriverDashboardPageProps> = ({ driverId, onL
             case 'orders': return <AvailableOrdersContent orders={nearbyOrders} onAccept={setOrderToAccept} driver={driver} />;
             case 'active_orders': return <ActiveOrdersContent orders={myActiveOrders} onSelectOrder={setSelectedOrder} />;
             case 'earnings': return <EarningsContent stats={{ totalOrderValue: driver.totalOrderValue || 0, myTotalEarnings: driver.totalEarnings || 0 }} driver={driver} dailyEarnings={dailyEarnings} isLoading={isEarningsLoading} />;
-            case 'profile': return <div className="bg-white p-6 rounded-lg shadow-md">{t('profileSettings')} (coming soon)</div>;
+            case 'profile': return <div className="bg-white p-6 rounded-lg shadow-md">الملف الشخصي (قريباً)</div>;
             case 'overview':
             default:
                 return <OverviewContent driver={driver} stats={stats} nearbyOrders={nearbyOrders.slice(0, 3)} setActiveView={setActiveView} onAcceptOrder={setOrderToAccept} />;

@@ -31,31 +31,18 @@ export type ViewMode = 'admin' | 'customer' | 'driver';
 
 export type DriverView = 'overview' | 'orders' | 'active_orders' | 'earnings' | 'profile';
 
-export type Language = 'ar' | 'fr';
-export type TranslatableString = { [key in Language]?: string; };
-
-export interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
-  t: (key: string, replacements?: Record<string, string | number>) => string;
-  dbTranslations: Record<string, Record<string, string>>;
-  setDbTranslations: React.Dispatch<React.SetStateAction<Record<string, Record<string, string>>>>;
-  isLoadingTranslations: boolean;
-  translateField: (field: TranslatableString | string | undefined) => string;
-}
-
 
 // ========= MODELS & DATA STRUCTURES =========
 
 export interface ProductOption {
   id: string;
-  name: TranslatableString | string;
+  name: string;
   price: number;
 }
 
 export interface ProductOptionGroup {
   id: string;
-  name: TranslatableString | string;
+  name: string;
   type: 'radio' | 'checkbox';
   required: boolean;
   options: ProductOption[];
@@ -63,11 +50,11 @@ export interface ProductOptionGroup {
 
 export interface Product {
   id: string;
-  name: TranslatableString | string;
-  description: TranslatableString | string;
+  name: string;
+  description: string;
   price: number;
   image: string;
-  category: TranslatableString | string;
+  category: string;
   options?: ProductOptionGroup[];
   restaurant: string;
 }
@@ -76,9 +63,9 @@ export type RestaurantStatus = 'مفتوح' | 'مغلق' | 'قيد المراج�
 
 export interface Restaurant {
   id: string;
-  name: TranslatableString | string;
+  name: string;
   logo: string;
-  cuisine: TranslatableString | string;
+  cuisine: string;
   status: RestaurantStatus;
   rating: number;
   commissionRate: number;
@@ -205,7 +192,7 @@ export interface Review {
 
 export interface Category {
   id: string;
-  name: TranslatableString | string;
+  name: string;
   image: string;
   slug: string;
 }
@@ -230,7 +217,7 @@ export type ApprovalStatus = 'Pending' | 'Approved' | 'Rejected';
 
 export interface RestaurantManagementData {
   id: string;
-  name: TranslatableString | string;
+  name: string;
   ownerName: string;
   ownerEmail: string;
   ownerPhone: string;
@@ -239,7 +226,7 @@ export interface RestaurantManagementData {
   isActive: boolean;
   location?: { latitude: number; longitude: number; addressText: string };
   coverPhotoUrl?: string;
-  cuisine?: TranslatableString | string;
+  cuisine?: string;
 }
 
 export interface AiAnalysis {
@@ -253,13 +240,13 @@ export type AvailabilityStatus = 'متوفر' | 'غير متوفر';
 
 export interface ProductManagementData {
   id: string;
-  name: TranslatableString | string;
+  name: string;
   image: string;
   restaurant: string;
-  category: TranslatableString | string;
+  category: string;
   price: number;
   availability: AvailabilityStatus;
-  description?: TranslatableString | string;
+  description?: string;
   options?: ProductOptionGroup[];
   tags?: string[];
   calories?: number;
@@ -306,7 +293,7 @@ export interface OrderManagementData {
   paymentMethod: 'COD' | 'Credit Card';
   date: string;
   courier: { name: string; avatar: string } | null;
-  items: { name: TranslatableString | string; quantity: number; price: number; options?: string[]; category?: string }[];
+  items: { name: string; quantity: number; price: number; options?: string[]; category?: string }[];
   deliveryAddress: { latitude: number; longitude: number; addressText: string };
   restaurantLocation?: { lat: number, lng: number }; // For DriverDashboardPage
   driverId?: string | null;
@@ -343,7 +330,7 @@ export interface Offer {
 
 export interface CategoryManagementData {
   id: string;
-  name: TranslatableString | string;
+  name: string;
   image: string;
   slug: string;
   createdAt: string;

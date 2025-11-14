@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import type { CartItem, UserLocation, UserProfileData, AppSettings, PastOrder, TranslatableString } from '../types';
+import type { CartItem, UserLocation, UserProfileData, AppSettings, PastOrder } from '../types';
 import OrderSummary from '../components/checkout/OrderSummary';
 import AddressSelection from '../components/checkout/AddressSelection';
 import PaymentMethods from '../components/checkout/PaymentMethods';
 import CustomerInfo from '../components/checkout/CustomerInfo';
 import OrderTracker from '../components/checkout/OrderTracker';
-import { useLanguage } from '../contexts/LanguageContext.tsx';
 import { db } from '../scripts/firebase/firebaseConfig.js';
 import { collection, addDoc, Timestamp, query, where, getDocs, limit } from 'firebase/firestore';
 
@@ -32,8 +31,6 @@ function calculateDistance(loc1: { lat: number; lng: number }, loc2: { lat: numb
 
 
 const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, userLocation, onOpenLocationModal, userProfile, appSettings }) => {
-    // Fix: Destructure translateField to handle translatable strings.
-    const { t, translateField } = useLanguage();
     
     // State for user inputs
     const [name, setName] = useState(userProfile?.fullName || '');
@@ -116,19 +113,19 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
         
         // Validation
         if (cartItems.length === 0) {
-            setError(t('emptyCartError'));
+            setError('سلة التسوق فارغة.');
             return;
         }
         if (!userLocation) {
-            setError(t('noAddressError'));
+            setError('الرجاء تحديد عنوان التوصيل.');
             return;
         }
         if (!name.trim() || !phone.trim()) {
-            setError(t('customerInfoError'));
+            setError('الرجاء إدخال الاسم ورقم الهاتف.');
             return;
         }
         if (!selectedMethod) {
-            setError(t('paymentMethodError'));
+            setError('الرجاء اختيار طريقة الدفع.');
             return;
         }
 
@@ -180,8 +177,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
                 date: newOrder.createdAt.toDate().toLocaleDateString('ar-SA'),
                 total: newOrder.finalAmount,
                 status: 'جديد',
-                // Fix: Use translateField to convert category object/string to string.
-                items: newOrder.items.map(item => ({ name: translateField(item.productName), quantity: item.quantity, category: translateField(item.category) })),
+                items: newOrder.items.map(item => ({ name: item.productName, quantity: item.quantity, category: item.category })),
                 deliveryAddress: newOrder.deliveryAddress,
             };
 
@@ -189,7 +185,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ cartItems, onClearCart, use
             onClearCart();
         } catch (e: any) {
             console.error("Error placing order: ", e);
-            setError(e.message || t('placeOrderFailedError'));
+            setError(e.message || 'فشل إتمام الطلب. يرجى المحاولة مرة أخرى.');
         } finally {
             setIsPlacingOrder(false);
         }

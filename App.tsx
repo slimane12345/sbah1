@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import type { Page, CustomerPage, ViewMode, CartItem, Restaurant, Product, UserLocation, UserProfileData, PastOrder, SavedAddress, OrderStatus, AppSettings, TranslatableString } from './types.ts';
-import { db, auth } from './scripts/firebase/firebaseConfig.js';
+import type { Page, CustomerPage, ViewMode, CartItem, Restaurant, Product, UserLocation, UserProfileData, PastOrder, SavedAddress, OrderStatus, AppSettings } from './types.ts';
+import { db, auth, firebaseInitializationError } from './scripts/firebase/firebaseConfig.js';
 import { signInAnonymously } from 'firebase/auth';
 // FIX: Imported 'getDoc' to fetch single documents from Firestore.
 import { doc, setDoc, Timestamp, collection, query, where, getDocs, getDoc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
-import { LanguageProvider, useLanguage } from './contexts/LanguageContext.tsx';
 
 // Admin view components
 import Sidebar from './components/Sidebar.tsx';
@@ -81,6 +80,39 @@ const mapBackendStatusToFrontend = (status: string): OrderStatus => {
 };
 
 const MainApp: React.FC = () => {
+    if (firebaseInitializationError) {
+        let detailedMessage: React.ReactNode = `An unexpected Firebase initialization error occurred: ${firebaseInitializationError.message}`;
+
+        if (firebaseInitializationError.message.includes('firestore is not available')) {
+            detailedMessage = (
+                <>
+                  <p className="font-bold">خطأ في إعداد Firebase Firestore</p>
+                  <p className="text-sm mt-2">خدمة Firestore غير متاحة. هذا يعني غالبًا أن قاعدة بيانات Firestore لم يتم إنشاؤها في مشروعك على Firebase.</p>
+                  <div className="text-left text-sm mt-4 bg-gray-800 text-white p-4 rounded-md font-mono" dir="ltr">
+                    <p className="font-semibold">How to fix:</p>
+                    <ol className="list-decimal list-inside mt-2 space-y-1">
+                      <li>Go to your <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">Firebase Console</a>.</li>
+                      <li>In the left menu, click <strong>Build</strong> &rarr; <strong>Firestore Database</strong>.</li>
+                      <li>Click <strong>Create database</strong>.</li>
+                      <li>Choose <strong>Start in production mode</strong> (or test mode).</li>
+                      <li>Select a location and click <strong>Enable</strong>.</li>
+                      <li>Once the database is created, refresh this page.</li>
+                    </ol>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-4">Error message: {firebaseInitializationError.message}</p>
+                </>
+            );
+        }
+        
+        return (
+            <div className="min-h-screen flex items-center justify-center p-4 bg-gray-100">
+                <div className="max-w-2xl w-full">
+                    <ErrorDisplay message={detailedMessage} />
+                </div>
+            </div>
+        );
+    }
+
     // Determine view mode based on the HTML file being served. This is now fixed per entry point.
     const path = window.location.pathname;
     const isCustomerPath = path.includes('/customer.html');
@@ -123,9 +155,6 @@ const MainApp: React.FC = () => {
     // Driver state
     const [driverId, setDriverId] = useState<string | null>(() => localStorage.getItem('sbahDriverId'));
     
-    // Fix: Destructure translateField to handle translatable strings.
-    const { t, translateField } = useLanguage();
-
     // Firebase initialization state
     const [isFirebaseReady, setIsFirebaseReady] = useState(false);
     const [firebaseError, setFirebaseError] = useState<React.ReactNode | null>(null);
@@ -134,9 +163,13 @@ const MainApp: React.FC = () => {
 
     // Handle Firebase Anonymous Auth
     useEffect(() => {
+        // Set document direction to RTL
+        document.documentElement.lang = 'ar';
+        document.documentElement.dir = 'rtl';
+        
         const anony_auth = async () => {
           try {
-            if (!auth.currentUser) {
+            if (auth && !auth.currentUser) {
               await signInAnonymously(auth);
               console.log("Firebase signed in anonymously for main app.");
             }
@@ -299,7 +332,7 @@ const MainApp: React.FC = () => {
                         date: data.createdAt.toDate().toLocaleDateString('ar-SA'),
                         total: data.finalAmount,
                         status: mapBackendStatusToFrontend(data.status),
-                        items: data.items.map((i: any) => ({ name: translateField(i.productName), quantity: i.quantity, category: translateField(i.category) })),
+                        items: data.items.map((i: any) => ({ name: i.productName, quantity: i.quantity, category: i.category })),
                         deliveryAddress: data.deliveryAddress,
                     }));
                 setPastOrders(fetchedOrders);
@@ -324,8 +357,7 @@ const MainApp: React.FC = () => {
         };
 
         fetchProfilePageData();
-    // Fix: Add translateField to the dependency array.
-    }, [customerPage, translateField]);
+    }, [customerPage]);
 
 
     const handleLocationConfirm = async (coords: { lat: number, lng: number }) => {
@@ -405,8 +437,7 @@ const MainApp: React.FC = () => {
             }
         });
         
-        // Fix: Use translateField to convert product name to string for the notification.
-        setNotificationMessage(t('addedToCartNotification', { productName: translateField(newItem.product.name) }));
+        setNotificationMessage(`تمت إضافة "${newItem.product.name}" إلى سلتك!`);
         setTimeout(() => setNotificationMessage(null), 3000);
     };
     
@@ -601,7 +632,7 @@ const MainApp: React.FC = () => {
             )}
              {notificationMessage && (
                 <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-[#3E2F1C] text-white flex items-center gap-3 px-6 py-3 rounded-lg shadow-lg animate-fade-in-down">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <span className="font-semibold">{notificationMessage}</span>
                 </div>
             )}
@@ -623,25 +654,9 @@ const MainApp: React.FC = () => {
     );
 };
 
-
-const AppShell: React.FC<{children: React.ReactNode}> = ({ children }) => {
-    const { language } = useLanguage();
-    
-    useEffect(() => {
-        document.documentElement.lang = language;
-        document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
-    }, [language]);
-
-    return <>{children}</>;
-};
-
 const App: React.FC = () => {
     return (
-      <LanguageProvider>
-        <AppShell>
-          <MainApp />
-        </AppShell>
-      </LanguageProvider>
+        <MainApp />
     );
 };
 

@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { CategoryManagementData, TranslatableString } from '../types';
-import { useLanguage } from '../contexts/LanguageContext';
+import type { CategoryManagementData } from '../types';
 
 declare const L: any; // Make Leaflet globally available for TypeScript
 
 interface CategoryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (data: { name: TranslatableString; image: string; location: { latitude: number; longitude: number; addressText: string; } | null }) => void;
+    onSave: (data: { name: string; image: string; location: { latitude: number; longitude: number; addressText: string; } | null }) => void;
     category: CategoryManagementData | null;
     isSubmitting: boolean;
 }
 
 const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSave, category, isSubmitting }) => {
-    const { t } = useLanguage();
-    const [name, setName] = useState<TranslatableString>({ ar: '', fr: '' });
+    const [name, setName] = useState('');
     const [image, setImage] = useState('');
     const [location, setLocation] = useState<{ latitude: number; longitude: number; addressText: string } | null>(null);
 
@@ -23,18 +21,9 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSave, 
     const markerInstance = useRef<any>(null);
 
     useEffect(() => {
-        const currentName = category?.name;
-        if (typeof currentName === 'string') {
-            setName({ ar: currentName, fr: '' });
-        } else if (currentName) {
-            setName({ ar: currentName.ar || '', fr: currentName.fr || '' });
-        } else {
-            setName({ ar: '', fr: '' });
-        }
-        
+        setName(category?.name || '');
         setImage(category?.image || '');
         setLocation(category?.location || null);
-
     }, [category, isOpen]);
     
     const updateAddressFromCoords = async (lat: number, lng: number) => {
@@ -110,28 +99,16 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSave, 
                         <h2 className="text-xl font-bold text-gray-900">{category ? 'تعديل الفئة' : 'إضافة فئة جديدة'}</h2>
                     </div>
                     <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="categoryNameAr" className="block text-sm font-medium text-gray-700">{t('nameInArabic')}</label>
-                                <input
-                                    type="text"
-                                    id="categoryNameAr"
-                                    value={name.ar}
-                                    onChange={(e) => setName(prev => ({...prev, ar: e.target.value}))}
-                                    className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                />
-                            </div>
-                             <div>
-                                <label htmlFor="categoryNameFr" className="block text-sm font-medium text-gray-700">{t('nameInFrench')}</label>
-                                <input
-                                    type="text"
-                                    id="categoryNameFr"
-                                    value={name.fr}
-                                    onChange={(e) => setName(prev => ({...prev, fr: e.target.value}))}
-                                    className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
+                        <div>
+                            <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700">اسم الفئة</label>
+                            <input
+                                type="text"
+                                id="categoryName"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                required
+                            />
                         </div>
                         <div>
                             <label htmlFor="categoryImage" className="block text-sm font-medium text-gray-700">رابط الصورة</label>

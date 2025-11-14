@@ -7,7 +7,6 @@ import SavedAddresses from '../components/user_profile/SavedAddresses.tsx';
 import Rewards from '../components/user_profile/Rewards.tsx';
 import type { UserProfileData, PastOrder, SavedAddress } from '../types.ts';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
-import { useLanguage } from '../contexts/LanguageContext.tsx';
 
 type ProfileTab = 'profile' | 'orders' | 'addresses' | 'rewards';
 
@@ -37,7 +36,6 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({
     onInstallApp
 }) => {
     const [activeTab, setActiveTab] = useState<ProfileTab>('profile');
-    const { t } = useLanguage();
 
     const renderContent = () => {
         if (isLoading) {
@@ -68,11 +66,11 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({
         }
     };
     
-    const tabs: {id: ProfileTab, labelKey: string}[] = [
-        {id: 'profile', labelKey: 'profileSettings'},
-        {id: 'orders', labelKey: 'orderHistory'},
-        {id: 'addresses', labelKey: 'savedAddresses'},
-        {id: 'rewards', labelKey: 'rewardsAndPoints'},
+    const tabs: {id: ProfileTab, label: string}[] = [
+        {id: 'profile', label: 'الملف الشخصي'},
+        {id: 'orders', label: 'سجل الطلبات'},
+        {id: 'addresses', label: 'العناوين المحفوظة'},
+        {id: 'rewards', label: 'النقاط والمكافآت'},
     ];
 
     return (
@@ -90,7 +88,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = ({
                                         : 'text-gray-700 hover:bg-gray-100'
                                 }`}
                             >
-                                <span className="truncate">{t(tab.labelKey)}</span>
+                                <span className="truncate">{tab.label}</span>
                             </button>
                         ))}
                     </nav>

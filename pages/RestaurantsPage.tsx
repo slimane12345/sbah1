@@ -1,9 +1,9 @@
 
+
 import React, { useState, useMemo } from 'react';
 import type { Restaurant, RestaurantStatus } from '../types';
 import RestaurantsTable from '../components/RestaurantsTable';
 import Pagination from '../components/Pagination';
-import { useLanguage } from '../contexts/LanguageContext.tsx';
 
 const mockRestaurants: Restaurant[] = [
   { id: 'R001', name: 'مطعم البيت السعودي', logo: 'https://i.pravatar.cc/150?img=21', cuisine: 'سعودي', status: 'مفتوح', rating: 4.5, commissionRate: 15, totalOrders: 1204 },
@@ -19,8 +19,15 @@ const mockRestaurants: Restaurant[] = [
 const TABS: RestaurantStatus[] = ['مفتوح', 'مغلق', 'قيد المراجعة'];
 const ITEMS_PER_PAGE = 8;
 
+// Helper to safely get string from potentially bilingual field
+const nameToString = (field: any): string => {
+    if (!field) return '';
+    if (typeof field === 'string') return field;
+    return field.ar || Object.values(field)[0] || '';
+};
+
+
 const RestaurantsPage: React.FC = () => {
-    const { translateField } = useLanguage();
     const [activeTab, setActiveTab] = useState<RestaurantStatus | 'الكل'>('الكل');
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
@@ -29,13 +36,14 @@ const RestaurantsPage: React.FC = () => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         return mockRestaurants.filter(restaurant => {
             const matchesTab = activeTab === 'الكل' || restaurant.status === activeTab;
-            // Fix: Use translateField to convert TranslatableString to string before calling toLowerCase.
+            const restaurantName = nameToString(restaurant.name);
+            const restaurantCuisine = nameToString(restaurant.cuisine);
             const matchesSearch = 
-                (translateField(restaurant.name) || '').toLowerCase().includes(lowerCaseSearchTerm) ||
-                (translateField(restaurant.cuisine) || '').toLowerCase().includes(lowerCaseSearchTerm);
+                (restaurantName).toLowerCase().includes(lowerCaseSearchTerm) ||
+                (restaurantCuisine).toLowerCase().includes(lowerCaseSearchTerm);
             return matchesTab && matchesSearch;
         });
-    }, [activeTab, searchTerm, translateField]);
+    }, [activeTab, searchTerm]);
 
     const totalPages = Math.ceil(filteredRestaurants.length / ITEMS_PER_PAGE);
 

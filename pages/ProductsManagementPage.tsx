@@ -7,7 +7,6 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
 import { db } from '../scripts/firebase/firebaseConfig.js';
 import { collection, query, onSnapshot, doc, updateDoc, orderBy, Timestamp, addDoc, deleteDoc, getDocs, where } from 'firebase/firestore';
-import { GoogleGenAI } from '@google/genai';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -15,17 +14,11 @@ const mapAvailabilityToFrontend = (isAvailable: boolean): 'متوفر' | 'غير
     return isAvailable ? 'متوفر' : 'غير متوفر';
 };
 
-// Helper function to call Gemini API for translation
-const translateText = async (text: string, targetLanguage: 'French' | 'Arabic'): Promise<string> => {
-    if (!process.env.API_KEY) throw new Error("API_KEY environment variable is not set.");
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = `Translate the following text to ${targetLanguage}. Return only the translated text, without any introductory phrases or explanations.\n\nText: "${text}"`;
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-    });
-    return response.text.trim();
+// Helper to safely get string from potentially bilingual field
+const nameToString = (field: any): string => {
+    if (!field) return '';
+    if (typeof field === 'string') return field;
+    return field.ar || Object.values(field)[0] || '';
 };
 
 const ProductsManagementPage: React.FC = () => {
@@ -38,10 +31,6 @@ const ProductsManagementPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<ProductManagementData | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
-    // Translation state
-    const [translatingProductId, setTranslatingProductId] = useState<string | null>(null);
-    const [isBulkTranslating, setIsBulkTranslating] = useState(false);
     
     // State for restaurant names and categories to populate dropdowns in modal
     const [restaurantNames, setRestaurantNames] = useState<string[]>([]);
@@ -57,13 +46,13 @@ const ProductsManagementPage: React.FC = () => {
                 const data = doc.data();
                 return {
                     id: doc.id,
-                    name: data.name || { ar: 'N/A', fr: '' },
+                    name: nameToString(data.name) || 'N/A',
                     image: data.imageUrl || '',
                     restaurant: data.restaurantName || 'N/A',
-                    category: data.category || { ar: 'N/A', fr: '' },
+                    category: nameToString(data.category) || 'N/A',
                     price: data.price || 0,
                     availability: mapAvailabilityToFrontend(data.isAvailable),
-                    description: data.description || { ar: '', fr: '' },
+                    description: nameToString(data.description) || '',
                     options: data.options || [],
                     tags: data.tags || [],
                     calories: data.calories,
@@ -83,12 +72,12 @@ const ProductsManagementPage: React.FC = () => {
             try {
                 const restQuery = query(collection(db, "restaurants"), where("approvalStatus", "==", "Approved"));
                 const restSnapshot = await getDocs(restQuery);
-                const names = restSnapshot.docs.map(doc => doc.data().name.ar || doc.data().name); // Prioritize Arabic name for dropdown
+                const names = restSnapshot.docs.map(doc => nameToString(doc.data().name));
                 setRestaurantNames(names);
 
-                const catQuery = query(collection(db, "categories"), orderBy("name.ar"));
+                const catQuery = query(collection(db, "categories"), orderBy("name"));
                 const catSnapshot = await getDocs(catQuery);
-                const cats = catSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+                const cats = catSnapshot.docs.map(doc => ({ id: doc.id, name: nameToString(doc.data().name), image: doc.data().image, slug: doc.data().slug }));
                 setAllCategories(cats);
 
             } catch (err) {
@@ -100,60 +89,6 @@ const ProductsManagementPage: React.FC = () => {
 
         return () => unsubscribe();
     }, []);
-
-    const handleTranslateProduct = async (productId: string) => {
-        setTranslatingProductId(productId);
-        setError(null);
-        try {
-            const product = products.find(p => p.id === productId);
-            if (!product) throw new Error("Product not found");
-
-            const productRef = doc(db, 'products', productId);
-            const updates: { [key: string]: any } = {};
-
-            const name = typeof product.name === 'string' ? { ar: product.name, fr: '' } : product.name;
-            const description = typeof product.description === 'string' ? { ar: product.description, fr: '' } : product.description;
-
-            if (name?.ar && !name?.fr) {
-                updates['name.fr'] = await translateText(name.ar, 'French');
-            }
-            if (description?.ar && !description?.fr) {
-                updates['description.fr'] = await translateText(description.ar, 'French');
-            }
-
-            if (Object.keys(updates).length > 0) {
-                await updateDoc(productRef, updates);
-            }
-
-        } catch (err: any) {
-            console.error("Translation error:", err);
-            setError(`فشل الترجمة: ${err.message}`);
-        } finally {
-            setTranslatingProductId(null);
-        }
-    };
-    
-    const handleBulkTranslate = async () => {
-        setIsBulkTranslating(true);
-        setError(null);
-        const productsToTranslate = products.filter(p => {
-             const name = typeof p.name === 'string' ? { ar: p.name, fr: '' } : p.name;
-             return name?.ar && !name?.fr;
-        });
-
-        if (productsToTranslate.length === 0) {
-            alert('لا توجد منتجات تحتاج إلى ترجمة.');
-            setIsBulkTranslating(false);
-            return;
-        }
-
-        for (const product of productsToTranslate) {
-            await handleTranslateProduct(product.id);
-        }
-
-        setIsBulkTranslating(false);
-        alert(`تمت ترجمة ${productsToTranslate.length} منتج بنجاح.`);
-    };
 
     const handleEdit = (product: ProductManagementData) => {
         setEditingProduct(product);
@@ -168,14 +103,18 @@ const ProductsManagementPage: React.FC = () => {
     const handleSave = async (productData: Omit<ProductManagementData, 'id'>) => {
         setIsSubmitting(true);
         const dataToSave = {
-            name: productData.name,
+            name: { ar: productData.name },
             restaurantName: productData.restaurant,
-            category: productData.category,
+            category: { ar: productData.category },
             price: productData.price,
             imageUrl: productData.image,
-            description: productData.description,
+            description: { ar: productData.description },
             isAvailable: productData.availability === 'متوفر',
-            options: productData.options || [],
+            options: productData.options?.map(group => ({
+                ...group,
+                name: { ar: group.name },
+                options: group.options.map(opt => ({...opt, name: { ar: opt.name }}))
+            })) || [],
             tags: productData.tags || [],
             calories: productData.calories || null,
             sortOrder: productData.sortOrder || 0,
@@ -201,7 +140,7 @@ const ProductsManagementPage: React.FC = () => {
     };
 
     const handleDelete = async (product: ProductManagementData) => {
-        if (window.confirm(`هل أنت متأكد من رغبتك في حذف المنتج: ${typeof product.name === 'string' ? product.name : product.name.ar}؟`)) {
+        if (window.confirm(`هل أنت متأكد من رغبتك في حذف المنتج: ${product.name}؟`)) {
             try {
                 await deleteDoc(doc(db, "products", product.id));
             } catch (err) {
@@ -214,12 +153,12 @@ const ProductsManagementPage: React.FC = () => {
     const filteredProducts = useMemo(() => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         return products.filter(product => {
-            const name = typeof product.name === 'string' ? product.name : product.name.ar || '';
-            const category = typeof product.category === 'string' ? product.category : product.category.ar || '';
+            const name = product.name || '';
+            const category = product.category || '';
             
-            return (name || '').toLowerCase().includes(lowerCaseSearchTerm) ||
+            return (name).toLowerCase().includes(lowerCaseSearchTerm) ||
                 (product.restaurant || '').toLowerCase().includes(lowerCaseSearchTerm) ||
-                (category || '').toLowerCase().includes(lowerCaseSearchTerm);
+                (category).toLowerCase().includes(lowerCaseSearchTerm);
         });
     }, [products, searchTerm]);
 
@@ -246,9 +185,6 @@ const ProductsManagementPage: React.FC = () => {
                             }}
                             className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                         />
-                         <button onClick={handleBulkTranslate} disabled={isBulkTranslating} className="bg-teal-500 text-white px-4 py-2 rounded-md hover:bg-teal-600 text-sm disabled:bg-teal-300 whitespace-nowrap">
-                            {isBulkTranslating ? 'جاري الترجمة...' : 'ترجمة كل الحقول الناقصة'}
-                        </button>
                         <button onClick={handleAddNew} className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 text-sm">
                             إضافة منتج
                         </button>
@@ -261,8 +197,6 @@ const ProductsManagementPage: React.FC = () => {
                             products={paginatedProducts} 
                             onEdit={handleEdit} 
                             onDelete={handleDelete}
-                            onTranslate={handleTranslateProduct}
-                            translatingProductId={translatingProductId} 
                         />
                         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                     </>

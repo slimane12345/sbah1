@@ -2,7 +2,6 @@ import React from 'react';
 import type { RestaurantManagementData } from '../types';
 import ApprovalStatusBadge from './ApprovalStatusBadge';
 import StatusToggle from './StatusToggle';
-import { useLanguage } from '../contexts/LanguageContext';
 
 interface RestaurantsManagementTableProps {
   data: RestaurantManagementData[];
@@ -19,7 +18,6 @@ const RestaurantsManagementTable: React.FC<RestaurantsManagementTableProps> = ({
   onToggleActive, 
   onEdit
 }) => {
-  const { translateField } = useLanguage();
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white">
@@ -37,7 +35,7 @@ const RestaurantsManagementTable: React.FC<RestaurantsManagementTableProps> = ({
           {data.map((req) => (
               <tr key={req.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {translateField(req.name)}
+                  {req.name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div>

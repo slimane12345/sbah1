@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { db } from '../scripts/firebase/firebaseConfig.js';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
@@ -6,7 +7,6 @@ import type { Product } from '../types.ts';
 import LoadingSpinner from '../components/LoadingSpinner.tsx';
 import ErrorDisplay from '../components/ErrorDisplay.tsx';
 import ProductCard from '../components/restaurant_profile/ProductCard.tsx';
-import { useLanguage } from '../contexts/LanguageContext.tsx';
 
 interface CategoryProductsPageProps {
     categoryName: string;
@@ -18,8 +18,6 @@ const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({ categoryNam
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    // Fix: Destructure translateField to handle translatable strings.
-    const { t, translateField } = useLanguage();
 
     useEffect(() => {
         setIsLoading(true);
@@ -33,8 +31,7 @@ const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({ categoryNam
             const fetchedProducts: Product[] = [];
             querySnapshot.forEach(doc => {
                 const data = doc.data();
-                // Fix: Use translateField to correctly get the category name string for comparison.
-                const productCategory = translateField(data.category); // Check object then string
+                const productCategory = data.category;
                 if (productCategory === categoryName) {
                      fetchedProducts.push({
                         id: doc.id,
@@ -57,8 +54,7 @@ const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({ categoryNam
         });
 
         return () => unsubscribe();
-    // Fix: Add translateField to the dependency array.
-    }, [categoryName, translateField]);
+    }, [categoryName]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">
@@ -83,7 +79,7 @@ const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({ categoryNam
                 </div>
             ) : (
                 <div className="text-center py-10">
-                    <p className="text-gray-600">{t('noProductsInCategory')}</p>
+                    <p className="text-gray-600">لا توجد منتجات متاحة في هذه الفئة حاليًا.</p>
                 </div>
             )}
         </div>

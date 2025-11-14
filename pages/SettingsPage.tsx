@@ -4,14 +4,13 @@ import PaymentSettings from '../components/settings/PaymentSettings';
 import DeliverySettings from '../components/settings/DeliverySettings';
 import PushNotificationsSettings from '../components/settings/PushNotificationsSettings';
 import SmsEmailSettings from '../components/settings/SmsEmailSettings';
-import LanguageSettings from '../components/settings/LanguageSettings'; // New
 import { db } from '../scripts/firebase/firebaseConfig.js';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import type { AppSettings } from '../types';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorDisplay from '../components/ErrorDisplay';
 
-type SettingsTab = 'general' | 'payment' | 'delivery' | 'push' | 'sms' | 'languages';
+type SettingsTab = 'general' | 'payment' | 'delivery' | 'push' | 'sms';
 
 const TABS: { id: SettingsTab; label: string; icon: React.ReactElement }[] = [
     { id: 'general', label: 'إعدادات عامة', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg> },
@@ -19,7 +18,6 @@ const TABS: { id: SettingsTab; label: string; icon: React.ReactElement }[] = [
     { id: 'delivery', label: 'إعدادات التوصيل', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24" stroke="currentColor"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-2h8a1 1 0 001-1z" /></svg> },
     { id: 'push', label: 'إشعارات البوش', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V5a2 2 0 10-4 0v.083A6 6 0 004 11v3.159c0 .538-.214 1.055-.595 1.436L2 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg> },
     { id: 'sms', label: 'إعدادات SMS/Email', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> },
-    { id: 'languages', label: 'اللغات والترجمة', icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h-3.236c-.131 0-.24-.103-.24-.229l.004-.004.01-.02.022-.04.028-.052.042-.075.052-.09.06-.104.064-.112.068-.116.072-.12.072-.12.072-.119.072-.116.072-.112.068-.104.064-.09.052-.075.042-.052.028-.04.022-.02.01-.004L15 15.229c.332-1.07.332-2.31 0-3.382l-.004-.01-.01-.02-.022-.04-.028-.052-.042-.075-.052-.09-.06-.104-.064-.112-.068-.116-.072-.12-.072-.12-.072-.119-.072-.116-.072-.112-.068-.104-.064-.09-.052-.075-.042-.052-.028-.04-.022-.02-.01zM15 9.172l.004-.01.01-.02.022-.04.028-.052.042-.075.052-.09.06-.104.064-.112.068-.116.072-.12.072-.12.072-.119.072-.116.072-.112.068-.104.064-.09.052-.075.042-.052.028-.04.022-.02.01-.004L15 6.771c.332 1.07.332 2.31 0 3.382zM12 17.5a4.5 4.5 0 01-3.236-1.5" /></svg> },
 ];
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -74,7 +72,7 @@ const SettingsPage: React.FC = () => {
     const renderContent = () => {
         if (isLoading) return <div className="bg-white p-6 rounded-lg shadow-md"><LoadingSpinner /></div>;
         if (error) return <div className="bg-white p-6 rounded-lg shadow-md"><ErrorDisplay message={error} onRetry={fetchSettings} /></div>;
-        if (!settings && activeTab !== 'languages') return null;
+        if (!settings) return null;
 
         switch (activeTab) {
             case 'general':
@@ -87,8 +85,6 @@ const SettingsPage: React.FC = () => {
                 return <PushNotificationsSettings initialSettings={settings!.notifications} />;
             case 'sms':
                 return <SmsEmailSettings initialSettings={settings!.smsEmail} />;
-            case 'languages':
-                return <LanguageSettings />;
             default:
                 return null;
         }

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { RestaurantManagementData, ApprovalStatus, AiAnalysis, TranslatableString } from '../types';
+import type { RestaurantManagementData, ApprovalStatus, AiAnalysis } from '../types';
 import RestaurantsManagementTable from '../components/RestaurantsManagementTable';
 import Pagination from '../components/Pagination';
 import AiAnalysisModal from '../components/AiAnalysisModal';
@@ -18,6 +18,14 @@ const mapApprovalStatus = (status: string): ApprovalStatus => {
         return status;
     }
     return 'Pending';
+};
+
+// Helper to safely get string from potentially bilingual field
+const nameToString = (field: any): string => {
+    if (!field) return '';
+    if (typeof field === 'string') return field;
+    // Assuming 'ar' is the primary language
+    return field.ar || Object.values(field)[0] || '';
 };
 
 const RestaurantsManagementPage: React.FC = () => {
@@ -48,7 +56,7 @@ const RestaurantsManagementPage: React.FC = () => {
                 const data = doc.data();
                 return {
                     id: doc.id,
-                    name: data.name || 'N/A',
+                    name: nameToString(data.name) || 'N/A',
                     ownerName: data.ownerName || 'N/A',
                     ownerEmail: data.ownerEmail || 'N/A',
                     ownerPhone: data.ownerPhone || 'N/A',
@@ -57,7 +65,7 @@ const RestaurantsManagementPage: React.FC = () => {
                     isActive: data.isActive === true,
                     location: data.location || undefined,
                     coverPhotoUrl: data.coverPhotoUrl || '',
-                    cuisine: data.cuisineType || '',
+                    cuisine: nameToString(data.cuisineType) || '',
                 };
             });
             setRestaurants(fetchedRestaurants);
@@ -121,13 +129,13 @@ const RestaurantsManagementPage: React.FC = () => {
         setIsSubmitting(true);
         try {
             const dataToSave = {
-                name: newData.name,
+                name: { ar: newData.name }, // Save in the old bilingual format for now
                 ownerName: newData.ownerName,
                 ownerEmail: newData.ownerEmail,
                 ownerPhone: newData.ownerPhone,
                 coverPhotoUrl: newData.coverPhotoUrl,
                 location: newData.location,
-                cuisineType: newData.cuisine,
+                cuisineType: { ar: newData.cuisine }, // Save in the old bilingual format
             };
 
             if (id) {
@@ -170,7 +178,7 @@ const RestaurantsManagementPage: React.FC = () => {
         return restaurants.filter(req => {
             const matchesTab = activeTab === 'الكل' || req.approvalStatus === activeTab;
             
-            const name = typeof req.name === 'string' ? req.name : req.name.ar || req.name.fr || '';
+            const name = req.name || '';
 
             const matchesSearch =
                 (name || '').toLowerCase().includes(lowerCaseSearchTerm) ||

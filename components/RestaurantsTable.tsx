@@ -6,6 +6,13 @@ interface RestaurantsTableProps {
   restaurants: Restaurant[];
 }
 
+// Helper to safely get string from potentially bilingual field
+const nameToString = (field: any): string => {
+    if (!field) return '';
+    if (typeof field === 'string') return field;
+    return field.ar || Object.values(field)[0] || '';
+};
+
 const RestaurantsTable: React.FC<RestaurantsTableProps> = ({ restaurants }) => {
   return (
     <div className="overflow-x-auto">
@@ -26,11 +33,11 @@ const RestaurantsTable: React.FC<RestaurantsTableProps> = ({ restaurants }) => {
             <tr key={restaurant.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 <div className="flex items-center">
-                  <img className="h-10 w-10 rounded-full object-cover ml-4" src={restaurant.logo} alt={restaurant.name} />
-                  {restaurant.name}
+                  <img className="h-10 w-10 rounded-full object-cover ml-4" src={restaurant.logo} alt={nameToString(restaurant.name)} />
+                  {nameToString(restaurant.name)}
                 </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{restaurant.cuisine}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{nameToString(restaurant.cuisine)}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 <RestaurantStatusBadge status={restaurant.status} />
               </td>
