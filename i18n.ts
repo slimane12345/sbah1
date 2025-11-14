@@ -48,7 +48,7 @@ export const translations: Record<string, Record<string, string>> = {
     
     // ======== PRODUCT & CUSTOMIZATION ========
     addToCart: 'أضف إلى السلة',
-    addToCartWithPrice: 'أضف إلى السلة ({{price}} د.م.)',
+    addToCartWithPrice: 'اضافة الى السلة',
     addOneForPrice: 'أضف 1 مقابل {{price}} د.م.',
     close: 'إغلاق',
     chooseOne: 'اختر 1',
@@ -297,7 +297,7 @@ export const translations: Record<string, Record<string, string>> = {
     
     // ======== PRODUCT & CUSTOMIZATION ========
     addToCart: 'Ajouter au panier',
-    addToCartWithPrice: 'Ajouter au panier ({{price}} D.M.)',
+    addToCartWithPrice: 'Ajouter au panier',
     addOneForPrice: 'Ajouter 1 pour {{price}} D.M.',
     close: 'Fermer',
     chooseOne: 'Choisissez 1',
