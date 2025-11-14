@@ -14,6 +14,17 @@ interface CategoryProductsPageProps {
     onProductClick: (product: Product) => void;
 }
 
+// Helper to safely get string from potentially bilingual field
+const nameToString = (field: any): string => {
+    if (!field) return '';
+    if (typeof field === 'string') return field;
+    if (typeof field !== 'object' || Array.isArray(field)) return '';
+    const val = field.ar || Object.values(field)[0];
+    if (typeof val === 'string') return val;
+    return '';
+};
+
+
 const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({ categoryName, onBack, onProductClick }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -21,18 +32,16 @@ const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({ categoryNam
 
     useEffect(() => {
         setIsLoading(true);
-        // This query is tricky because category name is now an object.
-        // Firestore doesn't support querying nested object keys directly like `where("category.ar", "==", categoryName)`.
-        // A better data model would use a category ID.
-        // For now, we fetch all products and filter client-side, which is inefficient but works for this structure.
+        // We fetch all products and filter client-side because Firestore doesn't easily support
+        // querying nested object keys (e.g., `where("category.ar", "==", ...)` without composite indexes.
         const productsQuery = query(collection(db, "products"));
 
         const unsubscribe = onSnapshot(productsQuery, (querySnapshot) => {
             const fetchedProducts: Product[] = [];
             querySnapshot.forEach(doc => {
                 const data = doc.data();
-                const productCategory = data.category;
-                if (productCategory === categoryName) {
+                // Correctly extract the string name from the category object for comparison.
+                if (nameToString(data.category) === categoryName) {
                      fetchedProducts.push({
                         id: doc.id,
                         name: data.name,

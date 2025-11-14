@@ -4,11 +4,23 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 // For now, it provides a dummy implementation to prevent crashes in components that still import it.
 
 const dummyTranslate = (key: string) => key;
-const dummyTranslateField = (field: any) => {
+
+const dummyTranslateField = (field: any): string => {
     if (!field) return '';
     if (typeof field === 'string') return field;
-    return field.ar || Object.values(field)[0] || '';
+    // Added safety check for non-objects or arrays
+    if (typeof field !== 'object' || Array.isArray(field)) return '';
+
+    // Prefer 'ar', then the first value in the object.
+    const val = field.ar || Object.values(field)[0];
+    
+    // Ensure the final result is a string before returning
+    if (typeof val === 'string') return val;
+    
+    // Fallback if the value is not a string (e.g., another object)
+    return '';
 };
+
 
 const dummyContext: any = {
   language: 'ar',
