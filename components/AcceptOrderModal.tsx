@@ -66,7 +66,7 @@ const AcceptOrderModal: React.FC<AcceptOrderModalProps> = ({ isOpen, onClose, on
                             </div>
                             <div className="flex items-center gap-2">
                                  <div className="text-green-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.5 2.5 0 00-1.167-.217c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5c.346 0 .68-.07.983-.195v1.698c-.288-.063-.567-.144-.829-.248a4.5 4.5 0 01-2.652-7.518 4.5 4.5 0 014.5-4.5c.615 0 1.206.12 1.74.341V5.518a4.5 4.5 0 01-2.652-7.518 4.5 4.5 0 014.5-4.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5c-.346 0-.68-.07-.983-.195v-1.698c.288.063.567.144.829.248a4.5 4.5 0 012.652 7.518 4.5 4.5 0 01-4.5 4.5c-.615 0-1.206-.12-1.74-.341V14.482a4.5 4.5 0 012.652 7.518 4.5 4.5 0 01-4.5 4.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5c.346 0 .68-.07.983.195v1.698c-.288.063-.567.144-.829.248a4.5 4.5 0 01-2.652-7.518 4.5 4.5 0 014.5-4.5z" /></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.5 2.5 0 00-1.167-.217c-1.38 0-2.5 1.12-2.5 2.5s1.12 2.5 2.5 2.5c.346 0 .68-.07.983-.195v1.698c-.288-.063-.567-.144-.829-.248a4.5 4.5 0 01-2.652-7.518 4.5 4.5 0 014.5-4.5c.615 0 1.206.12 1.74.341V5.518a4.5 4.5 0 01-2.652-7.518 4.5 4.5 0 014.5-4.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5c-.346 0-.68-.07-.983-.195v-1.698c.288.063.567.144.829.248a4.5 4.5 0 012.652 7.518 4.5 4.5 0 01-4.5 4.5c-.615 0-1.206-.12-1.74-.341V14.482a4.5 4.5 0 012.652 7.518 4.5 4.5 0 01-4.5 4.5c-1.38 0-2.5-1.12-2.5-2.5s1.12 2.5 2.5 2.5c.346 0 .68-.07.983.195v1.698c-.288.063-.567.144-.829.248a4.5 4.5 0 01-2.652-7.518 4.5 4.5 0 014.5-4.5z" /></svg>
                                  </div>
                                 <p className="font-semibold text-green-600">{earnings !== null ? `${earnings.toFixed(2)} ${t('currency')}` : 'N/A'}</p>
                             </div>
@@ -84,7 +84,7 @@ const AcceptOrderModal: React.FC<AcceptOrderModalProps> = ({ isOpen, onClose, on
                                         {item.options && item.options.length > 0 && (
                                             <ul className="mr-4 mt-1 text-xs text-gray-500 list-disc list-inside">
                                                 {item.options.map((option, optIndex) => (
-                                                    <li key={optIndex}>{option}</li>
+                                                    <li key={optIndex}>{translateField(option)}</li>
                                                 ))}
                                             </ul>
                                         )}

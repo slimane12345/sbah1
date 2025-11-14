@@ -12,6 +12,14 @@ interface ProductModalProps {
     allCategories: Category[];
 }
 
+// Helper to safely get string from potentially bilingual field
+const nameToString = (field: any): string => {
+    if (!field) return '';
+    if (typeof field === 'string') return field;
+    if (typeof field !== 'object' || Array.isArray(field)) return '';
+    return field.ar || Object.values(field)[0] || '';
+};
+
 const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, product, isSubmitting, restaurantNames, allCategories }) => {
     const [tagInput, setTagInput] = useState('');
 
@@ -27,8 +35,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSave, pr
                 availability: product.availability,
                 options: product.options?.map(group => ({
                     ...group,
-                    name: group.name || '',
-                    options: group.options.map(opt => ({...opt, name: opt.name || ''}))
+                    name: nameToString(group.name),
+                    options: group.options.map(opt => ({...opt, name: nameToString(opt.name)}))
                 })) || [],
                 tags: product.tags || [],
                 calories: product.calories,
