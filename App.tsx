@@ -315,7 +315,7 @@ const MainApp: React.FC = () => {
     
     // Fetch extra data only for the profile page
     useEffect(() => {
-        if (customerPage !== 'profile') return;
+        if (customerPage !== 'profile' && customerPage !== 'orders') return;
 
         const fetchProfilePageData = async () => {
             setIsProfileLoading(true);
@@ -552,6 +552,9 @@ const MainApp: React.FC = () => {
                             userProfile={userProfile}
                             appSettings={appSettings}
                         />;
+            case 'favourite':
+                return <div className="p-8 text-center"><h1 className="text-2xl font-bold">المفضلة</h1><p className="mt-2 text-gray-600">هذه الصفحة قيد الإنشاء.</p></div>;
+            case 'orders':
             case 'profile':
                  return <UserProfilePage
                     user={userProfile}
@@ -625,7 +628,7 @@ const MainApp: React.FC = () => {
             
              {notificationMessage && (
                 <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-[#3E2F1C] text-white flex items-center gap-3 px-6 py-3 rounded-lg shadow-lg animate-fade-in-down">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <span className="font-semibold">{notificationMessage}</span>
                 </div>
             )}

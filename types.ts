@@ -25,7 +25,7 @@ export type Page =
   | 'customers'
   | 'restaurants';
 
-export type CustomerPage = 'home' | 'restaurant' | 'category-products' | 'product-details' | 'checkout' | 'profile';
+export type CustomerPage = 'home' | 'restaurant' | 'category-products' | 'product-details' | 'checkout' | 'profile' | 'favourite' | 'orders';
 
 export type ViewMode = 'admin' | 'customer' | 'driver';
 
