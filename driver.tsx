@@ -3,14 +3,16 @@ import { createRoot } from 'react-dom/client';
 import DriverLoginPage from './pages/DriverLoginPage.tsx';
 import DriverDashboardPage from './pages/DriverDashboardPage.tsx';
 import FirebaseAppShell from './components/FirebaseAppShell.tsx';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext.tsx';
 
 const DriverAppContent: React.FC = () => {
     const [driverId, setDriverId] = useState<string | null>(() => localStorage.getItem('sbahDriverId'));
+    const { language } = useLanguage();
     
     useEffect(() => {
-        document.documentElement.lang = 'ar';
-        document.documentElement.dir = 'rtl';
-    }, []);
+        document.documentElement.lang = language;
+        document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    }, [language]);
 
     const handleLogin = (id: string) => {
         localStorage.setItem('sbahDriverId', id);
@@ -33,7 +35,9 @@ const DriverAppContent: React.FC = () => {
 const DriverApp: React.FC = () => {
     return (
         <FirebaseAppShell>
-            <DriverAppContent />
+            <LanguageProvider>
+                <DriverAppContent />
+            </LanguageProvider>
         </FirebaseAppShell>
     );
 };
