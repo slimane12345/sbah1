@@ -45,7 +45,7 @@ const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({ categoryNam
                      fetchedProducts.push({
                         id: doc.id,
                         name: data.name,
-                        price: data.price,
+                        price: data.price || 0,
                         description: data.description,
                         image: data.imageUrl,
                         category: data.category,

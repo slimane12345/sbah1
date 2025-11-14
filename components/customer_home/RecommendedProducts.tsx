@@ -31,7 +31,7 @@ const RecommendedProducts: React.FC<RecommendedProductsProps> = ({ title, onProd
                  return {
                     id: doc.id,
                     name: data.name,
-                    price: data.price,
+                    price: data.price || 0,
                     description: data.description,
                     image: data.imageUrl,
                     category: data.category,
