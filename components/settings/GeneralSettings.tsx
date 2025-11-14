@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { db } from '../../scripts/firebase/firebaseConfig.js';
+import React, { useState, useEffect, useRef } from 'react';
+import { db, storage } from '../../scripts/firebase/firebaseConfig.js';
 import { doc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import type { AppSettings } from '../../types';
 
 const SettingsCard: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
@@ -16,11 +17,15 @@ interface GeneralSettingsProps {
 
 const GeneralSettings: React.FC<GeneralSettingsProps> = ({ initialSettings }) => {
     const [formData, setFormData] = useState(initialSettings);
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(initialSettings.logoUrl);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         setFormData(initialSettings);
+        setPreviewUrl(initialSettings.logoUrl);
     }, [initialSettings]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -28,13 +33,38 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ initialSettings }) =>
         setFormData(prev => ({ ...prev, [id]: value }));
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setLogoFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewUrl(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
         setMessage(null);
         const settingsRef = doc(db, 'settings', 'app_config');
+        
         try {
-            await updateDoc(settingsRef, { general: formData });
+            let dataToSave = { ...formData };
+
+            // If a new logo file was selected, upload it
+            if (logoFile) {
+                const logoRef = ref(storage, `logos/platform_logo_${Date.now()}`);
+                await uploadBytes(logoRef, logoFile);
+                const downloadURL = await getDownloadURL(logoRef);
+                dataToSave.logoUrl = downloadURL;
+            }
+
+            await updateDoc(settingsRef, { general: dataToSave });
+            setFormData(dataToSave); // Update local state with new URL if uploaded
+            setLogoFile(null); // Reset file input
             setMessage({ text: 'تم حفظ التغييرات بنجاح!', type: 'success' });
         } catch (err) {
             console.error(err);
@@ -84,30 +114,40 @@ const GeneralSettings: React.FC<GeneralSettingsProps> = ({ initialSettings }) =>
                         onChange={handleChange}
                     />
                 </div>
-                <div>
-                    <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-700 mb-1">
-                        رابط شعار المنصة (URL)
-                    </label>
-                    <div className="mt-1 flex items-center">
-                         {formData.logoUrl ? (
-                            <img src={formData.logoUrl} alt="Logo Preview" className="h-12 w-12 rounded-full object-cover" />
-                        ) : (
-                            <span className="inline-block h-12 w-12 rounded-full overflow-hidden bg-gray-100">
-                                <svg className="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                            </span>
-                        )}
-                        <input
-                            type="url"
-                            id="logoUrl"
-                            className="mr-5 flex-1 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="https://example.com/logo.png"
-                            value={formData.logoUrl}
-                            onChange={handleChange}
-                        />
+                 <div>
+                    <label className="block text-sm font-medium text-gray-700">شعار المنصة</label>
+                    <div className="mt-2 flex items-center gap-5">
+                        <div className="flex-shrink-0">
+                            {previewUrl ? (
+                                <img src={previewUrl} alt="Logo Preview" className="h-16 w-16 rounded-full object-contain bg-gray-100 p-1" />
+                            ) : (
+                                <span className="inline-block h-16 w-16 rounded-full overflow-hidden bg-gray-100">
+                                    <svg className="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M24 20.993V24H0v-2.997A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex-grow">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                className="hidden"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                            >
+                                تغيير الشعار
+                            </button>
+                            <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 2MB.</p>
+                        </div>
                     </div>
                 </div>
+
 
                 <div className="text-left pt-4">
                      {message && (
