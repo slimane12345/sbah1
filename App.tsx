@@ -36,6 +36,7 @@ import LocationModal from './components/customer_home/LocationModal.tsx';
 import CustomerOrderTrackingModal from './components/user_profile/CustomerOrderTrackingModal.tsx';
 import InstallPwaBanner from './components/InstallPwaBanner.tsx';
 import BottomNavBar from './components/BottomNavBar.tsx'; // New component for customer navigation
+import CartDropdown from './components/CartDropdown.tsx';
 
 // Driver view components
 import DriverLoginPage from './pages/DriverLoginPage.tsx';
@@ -103,6 +104,7 @@ const MainApp: React.FC = () => {
     const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [isCartOpen, setIsCartOpen] = useState(false);
 
     // Global location state
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
@@ -528,6 +530,8 @@ const MainApp: React.FC = () => {
             </div>
         );
     }
+    
+    const totalCartItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
     // Customer View
     return (
@@ -535,6 +539,15 @@ const MainApp: React.FC = () => {
             <CustomerHeader 
               setCustomerPage={setCustomerPage} 
               settings={appSettings?.general ?? null}
+              cartItemCount={totalCartItems}
+              onCartClick={() => setIsCartOpen(prev => !prev)}
+            />
+            <CartDropdown 
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                cartItems={cartItems}
+                setCartItems={setCartItems}
+                setCustomerPage={setCustomerPage}
             />
             {/* Main content with padding for the bottom nav bar */}
             <main className="pb-28">{renderCustomerPage()}</main>
@@ -560,19 +573,14 @@ const MainApp: React.FC = () => {
                 <InstallPwaBanner onInstall={handleInstallApp} />
             )}
             
-            {/* New Floating Action Button for Cart */}
-            {customerPage !== 'checkout' && (
-                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-40">
+            {/* New Floating Action Button for Cart - Replaced by header cart dropdown */}
+            {customerPage !== 'checkout' && cartItems.length > 0 && (
+                <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 lg:hidden">
                     <button 
                         onClick={() => setCustomerPage('checkout')}
-                        className="relative w-16 h-16 bg-red-600 rounded-full shadow-lg flex items-center justify-center text-white hover:bg-red-700 transition-transform transform hover:scale-110"
+                        className="btn-customer-primary w-full max-w-xs mx-auto shadow-lg"
                     >
-                         <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                        {cartItems.length > 0 && (
-                            <span className="absolute -top-1 -right-1 flex items-center justify-center h-6 w-6 rounded-full bg-white text-red-600 text-xs font-bold border-2 border-red-600">
-                                {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
-                            </span>
-                        )}
+                         الذهاب إلى الدفع ({totalCartItems} منتجات)
                     </button>
                 </div>
             )}

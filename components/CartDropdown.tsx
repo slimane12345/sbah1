@@ -12,7 +12,6 @@ interface CartDropdownProps {
 
 const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose, cartItems, setCartItems, setCustomerPage }) => {
   const { t, translateField } = useLanguage();
-  if (!isOpen) return null;
 
   const handleRemoveItem = (itemIndex: number) => {
     setCartItems(prevItems => prevItems.filter((_, index) => index !== itemIndex));
@@ -33,7 +32,6 @@ const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose, cartItems,
 
   const cartContent = (
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm flex flex-col h-full">
-          {/* Header section with black title and light border */}
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
               <h3 className="font-bold text-lg text-gray-900">{t('yourCart')}</h3>
               {cartItems.length > 0 && (
@@ -44,18 +42,17 @@ const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose, cartItems,
           </div>
 
           {cartItems.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-6">
+              <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                   <p className="text-gray-700 mb-4">{t('yourCartIsEmpty')}</p>
                   <button
                     onClick={onClose}
-                    className="w-full btn-customer-primary"
+                    className="btn-customer-primary"
                   >
                     {t('startShopping')}
                   </button>
               </div>
           ) : (
               <>
-                  {/* Items list with black/gray text */}
                   <div className="flex-1 overflow-y-auto p-4 space-y-4">
                       {cartItems.map((item, index) => (
                           <div key={`${item.product.id}-${index}`} className="flex items-center gap-4">
@@ -75,7 +72,6 @@ const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose, cartItems,
                           </div>
                       ))}
                   </div>
-                  {/* Footer with light gray background and black text */}
                   <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
                       <div className="flex justify-between items-center mb-4">
                           <span className="font-semibold text-gray-900">{t('total')}:</span>
@@ -99,13 +95,15 @@ const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose, cartItems,
       </div>
   );
   
+  if (!isOpen) return null;
+  
   return (
     <>
       {/* Mobile Side Panel */}
       <div className={`md:hidden fixed inset-0 z-50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose}></div>
         <div className={`absolute right-0 top-0 bottom-0 w-4/5 max-w-sm bg-transparent transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-           <div className="h-full p-4">
+           <div className="h-full py-4 pl-4 pr-0">
                 {cartContent}
            </div>
         </div>
@@ -113,10 +111,9 @@ const CartDropdown: React.FC<CartDropdownProps> = ({ isOpen, onClose, cartItems,
 
       {/* Desktop Dropdown */}
       <div className={`hidden md:block absolute top-full mt-3 z-50 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'} ${useLanguage().language === 'ar' ? 'left-0' : 'right-0'}`}>
-          <div className="w-80">
+          <div className="w-96">
               {cartContent}
-              {/* Arrow pointing to the cart icon */}
-              <div className={`absolute top-0 -mt-2 w-4 h-4 bg-white transform rotate-45 ${useLanguage().language === 'ar' ? 'left-4' : 'right-4'}`}></div>
+              <div className={`absolute top-0 -mt-2 w-4 h-4 bg-white transform rotate-45 ${useLanguage().language === 'ar' ? 'left-6' : 'right-6'}`}></div>
           </div>
       </div>
     </>
