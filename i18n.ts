@@ -219,6 +219,7 @@ export const translations: Record<string, Record<string, string>> = {
     codWithAmount: 'نقداً عند الاستلام ({{amount}} {{currency}})',
     paidElectronically: 'تم الدفع إلكترونياً',
     confirmAcceptance: 'تأكيد القبول',
+    customerNotes: 'ملاحظات العميل',
     payDues: 'دفع المستحقات',
     confirmPaymentTitle: 'تأكيد دفع المستحقات',
     confirmPaymentMessage: 'هل أنت متأكد من دفع مستحقات {{driverName}}؟ سيتم تصفير رصيد أرباحه البالغ {{amount}} {{currency}}.',
@@ -260,7 +261,6 @@ export const translations: Record<string, Record<string, string>> = {
     back: 'Retour',
     backToMenu: 'Retour au menu',
     viewAll: 'Voir tout',
-    now: 'Maintenant',
 
     // ======== HEADER & CART DROPDOWN ========
     searchPlaceholder: 'Rechercher des restaurants, produits...',
@@ -468,6 +468,7 @@ export const translations: Record<string, Record<string, string>> = {
     codWithAmount: 'Paiement à la livraison ({{amount}} {{currency}})',
     paidElectronically: 'Payé électroniquement',
     confirmAcceptance: 'Confirmer l\'acceptation',
+    customerNotes: 'Notes du client',
     payDues: 'Payer les dus',
     confirmPaymentTitle: 'Confirmer le paiement des dus',
     confirmPaymentMessage: 'Êtes-vous sûr de vouloir payer les dus de {{driverName}} ? Son solde de gains de {{amount}} {{currency}} sera remis à zéro.',

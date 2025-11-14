@@ -46,7 +46,19 @@ const OverviewContent: React.FC<OverviewContentProps> = ({ driver, stats, nearby
                                 return (
                                 <div key={order.id} className="border p-4 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div className="flex-1">
-                                        <p className="font-bold">{translateField(order.restaurant)}</p>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <p className="font-bold">{translateField(order.restaurant)}</p>
+                                            {order.customerNotes && (
+                                                <div className="group relative flex items-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                    </svg>
+                                                    <span className="absolute bottom-full mb-2 w-max max-w-xs bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -translate-x-1/2 left-1/2 z-10">
+                                                        {order.customerNotes}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
                                         <p className="text-sm text-gray-600">{order.deliveryAddress.addressText}</p>
                                         <div className="text-xs text-gray-500 mt-1">
                                             <span>{t('distance')}: ~{

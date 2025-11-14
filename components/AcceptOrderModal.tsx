@@ -103,6 +103,16 @@ const AcceptOrderModal: React.FC<AcceptOrderModalProps> = ({ isOpen, onClose, on
                                 : t('paidElectronically')}
                         </p>
                     </div>
+
+                    {/* Customer Notes */}
+                    {order.customerNotes && (
+                        <div>
+                            <p className="text-gray-500 text-sm mb-1 font-medium">{t('customerNotes')}</p>
+                            <div className="text-sm bg-amber-50 p-3 rounded-lg border border-amber-200">
+                                <p className="text-amber-800 font-semibold">{order.customerNotes}</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-lg">
                     <button onClick={onClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">
