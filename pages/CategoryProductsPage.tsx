@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { db } from '../scripts/firebase/firebaseConfig.js';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
@@ -42,10 +41,11 @@ const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({ categoryNam
                 const data = doc.data();
                 // Correctly extract the string name from the category object for comparison.
                 if (nameToString(data.category) === categoryName) {
+                     const parsedPrice = parseFloat(data.price);
                      fetchedProducts.push({
                         id: doc.id,
                         name: data.name,
-                        price: data.price || 0,
+                        price: isNaN(parsedPrice) ? 0 : parsedPrice,
                         description: data.description,
                         image: data.imageUrl,
                         category: data.category,

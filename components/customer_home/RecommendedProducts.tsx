@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import type { Product } from '../../types';
 import { db } from '../../scripts/firebase/firebaseConfig.js';
@@ -28,10 +29,11 @@ const RecommendedProducts: React.FC<RecommendedProductsProps> = ({ title, onProd
         const unsubscribe = onSnapshot(productsQuery, (querySnapshot) => {
             const fetchedProducts: Product[] = querySnapshot.docs.map(doc => {
                  const data = doc.data();
+                 const parsedPrice = parseFloat(data.price);
                  return {
                     id: doc.id,
                     name: data.name,
-                    price: data.price || 0,
+                    price: isNaN(parsedPrice) ? 0 : parsedPrice,
                     description: data.description,
                     image: data.imageUrl,
                     category: data.category,
