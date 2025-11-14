@@ -25,7 +25,7 @@ export const translations: Record<string, Record<string, string>> = {
     continueShopping: 'متابعة التسوق',
 
     // ======== FLOATING CART ========
-    goToCheckout: 'اذهب للدفع',
+    goToCheckout: 'الانتقال إلى الدفع',
 
     // ======== CUSTOMER HOME PAGE ========
     // Location Selector
@@ -83,8 +83,9 @@ export const translations: Record<string, Record<string, string>> = {
     step3: 'المندوب في الطريق للمطعم',
     step4: 'المندوب في طريقه إليك',
     step5: 'تم التوصيل',
-    eta: 'الوقت المتوقع للتوصيل',
+    eta: 'الوقت التقديري للوصول',
     etaValue: '{{start}}-{{end}} دقائق',
+    etaRangeInMinutes: '10-15 دقيقة',
     deliveryDestination: 'سيتم توصيل طلبك إلى',
 
     // ======== CATEGORY PRODUCTS PAGE ========
@@ -100,7 +101,7 @@ export const translations: Record<string, Record<string, string>> = {
     trackOrderTitle: 'تتبع الطلب',
     deliveryDetails: 'تفاصيل التوصيل',
     currentOrderStatus: 'حالة الطلب الحالية',
-    etaCustomer: 'الوقت المتوقع للوصول',
+    etaCustomer: 'الوقت التقديري للوصول',
     etaCustomerValue: '~{{start}}-{{end}} دقائق',
     restaurant: 'المطعم',
     noLocationDataForTracking: "لا توجد بيانات موقع متاحة لتتبع هذا الطلب.",
@@ -112,7 +113,7 @@ export const translations: Record<string, Record<string, string>> = {
     rewardsAndPoints: 'النقاط والمكافآت',
     // ProfileSettings Component
     profile: 'الملف الشخصي',
-    profileInfoMessage: 'هذه المعلومات لن تكون ظاهرة بشكل عام.',
+    profileInfoMessage: 'هذه المعلومات خاصة ولن تظهر للعامة.',
     name: 'الاسم',
     email: 'البريد الإلكتروني',
     phone: 'رقم الهاتف',
@@ -238,6 +239,7 @@ export const translations: Record<string, Record<string, string>> = {
     groupName: 'اسم المجموعة',
     optionName: 'اسم الخيار',
     additionalPrice: 'سعر إضافي',
+    addNewOption: 'إضافة خيار جديد',
   },
   fr: {
     // ======== GLOBAL ========
@@ -323,8 +325,9 @@ export const translations: Record<string, Record<string, string>> = {
     step3: 'Livreur en route',
     step4: 'Livreur en chemin vers vous',
     step5: 'Livré',
-    eta: 'Heure de livraison estimée',
+    eta: "Heure d'arrivée estimée",
     etaValue: '{{start}}-{{end}} minutes',
+    etaRangeInMinutes: '10-15 minutes',
     deliveryDestination: 'Votre commande sera livrée à',
 
     // ======== CATEGORY PRODUCTS PAGE ========
@@ -340,7 +343,7 @@ export const translations: Record<string, Record<string, string>> = {
     trackOrderTitle: 'Suivi de commande',
     deliveryDetails: 'Détails de la livraison',
     currentOrderStatus: 'Statut actuel de la commande',
-    etaCustomer: 'Heure d\'arrivée estimée',
+    etaCustomer: "Heure d'arrivée estimée",
     etaCustomerValue: '~{{start}}-{{end}} minutes',
     restaurant: 'Restaurant',
     noLocationDataForTracking: "Aucune donnée de localisation disponible pour suivre cette commande.",
@@ -352,7 +355,7 @@ export const translations: Record<string, Record<string, string>> = {
     rewardsAndPoints: 'Points et récompenses',
     // ProfileSettings Component
     profile: 'Profil',
-    profileInfoMessage: "Ces informations ne seront pas visibles publiquiquement.",
+    profileInfoMessage: "Ces informations sont privées et ne seront pas visibles publiquement.",
     name: 'Nom',
     email: 'E-mail',
     phone: 'Téléphone',
@@ -478,5 +481,6 @@ export const translations: Record<string, Record<string, string>> = {
     groupName: 'Nom du groupe',
     optionName: 'Nom de l\'option',
     additionalPrice: 'Prix additionnel',
+    addNewOption: 'Ajouter une nouvelle option',
   }
 };

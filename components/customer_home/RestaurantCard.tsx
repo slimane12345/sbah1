@@ -8,14 +8,14 @@ interface RestaurantCardProps {
 }
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant, onClick }) => {
-    const { translateField } = useLanguage();
+    const { translateField, t } = useLanguage();
     return (
         <div onClick={onClick} className="bg-white rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer overflow-hidden group">
             <div className="relative">
                 <img src={restaurant.coverImage} alt={translateField(restaurant.name)} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div className="absolute top-2 left-2 bg-white rounded-full px-2 py-1 text-xs font-bold">
-                    10-15 دقيقة
+                    {t('etaRangeInMinutes')}
                 </div>
                  <img src={restaurant.logo} alt={`${translateField(restaurant.name)} logo`} className="absolute bottom-2 right-2 h-14 w-14 rounded-full border-2 border-white shadow-md object-cover" />
             </div>
