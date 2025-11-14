@@ -74,17 +74,6 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
                 </InfoCard>
             </div>
 
-            {order.customerNotes && (
-                <InfoCard 
-                    title={t('customerNotes')} 
-                    icon={
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-5-5h11.5a2.5 2.5 0 002.5-2.5V8.5A2.5 2.5 0 0017.5 6H6.5A2.5 2.5 0 004 8.5v8.286a2.5 2.5 0 002.5 2.5h5.429L16 20z" /></svg>
-                    }
-                >
-                    <p className="font-semibold text-base text-amber-800">{order.customerNotes}</p>
-                </InfoCard>
-            )}
-
             <div className="bg-white p-4 rounded-lg shadow">
                  <h3 className="font-bold text-gray-800 mb-2">{t('products')}</h3>
                  <div className="text-sm bg-gray-50 p-3 rounded-lg border max-h-40 overflow-y-auto">
@@ -104,6 +93,17 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
                     </ul>
                 </div>
             </div>
+
+            {order.customerNotes && (
+                <InfoCard 
+                    title={t('customerNotes')} 
+                    icon={
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-5-5h11.5a2.5 2.5 0 002.5-2.5V8.5A2.5 2.5 0 0017.5 6H6.5A2.5 2.5 0 004 8.5v8.286a2.5 2.5 0 002.5 2.5h5.429L16 20z" /></svg>
+                    }
+                >
+                    <p className="font-semibold text-base text-amber-800">{order.customerNotes}</p>
+                </InfoCard>
+            )}
 
             <div className="bg-white p-4 rounded-lg shadow">
                 <h3 className="font-bold text-gray-800 mb-2">{t('payment')}</h3>
