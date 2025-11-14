@@ -84,7 +84,7 @@ const ActiveOrderDetail: React.FC<ActiveOrderDetailProps> = ({ order, onUpdateSt
                                 {item.options && item.options.length > 0 && (
                                     <ul className="mr-4 mt-1 text-xs text-gray-500 list-disc list-inside">
                                         {item.options.map((option, optIndex) => (
-                                            <li key={optIndex}>{option}</li>
+                                            <li key={optIndex}>{translateField(option)}</li>
                                         ))}
                                     </ul>
                                 )}
