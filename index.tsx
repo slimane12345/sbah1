@@ -1,14 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-// Fix: Added the '.tsx' extension to be more explicit.
 import App from './App.tsx';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext.tsx';
+
+const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { language } = useLanguage();
+
+    useEffect(() => {
+        document.documentElement.lang = language;
+        document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    }, [language]);
+
+    return <>{children}</>;
+}
 
 const container = document.getElementById('root');
 if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <App />
+      <LanguageProvider>
+        <AppShell>
+            <App />
+        </AppShell>
+      </LanguageProvider>
     </React.StrictMode>
   );
 } else {
