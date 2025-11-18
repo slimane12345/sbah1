@@ -1,0 +1,80 @@
+
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sbah ☀️ - اطلب فطورك اليومي</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Global Leaflet icon fix to prevent "Script error" from cross-origin image loading.
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+    body {
+      font-family: 'Cairo', sans-serif;
+    }
+    /* Add to cart notification animation */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-fade-in-down {
+      animation: fadeInDown 0.5s ease-out forwards;
+    }
+    /* Customer View Button Styles */
+    .btn-customer-primary {
+      background-color: #D9982C;
+      color: #3E2F1C;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      padding: 14px 32px;
+      cursor: pointer;
+      text-align: center;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .btn-customer-primary:hover {
+      background-color: #C6891D;
+      transform: scale(1.03);
+    }
+    .btn-customer-primary:active {
+      background-color: #B77D1A;
+      transform: scale(1);
+    }
+    .btn-customer-primary:disabled {
+      background-color: #D1D5DB; /* Tailwind gray-300 */
+      color: #6B7280; /* Tailwind gray-500 */
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    /* Custom Leaflet Marker Styles */
+    .leaflet-div-icon-custom {
+      background: transparent;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

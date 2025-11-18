@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة تحكم منصة التوصيل</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Global Leaflet icon fix to prevent "Script error" from cross-origin image loading.
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #f7f7f7; 
+    }
+    /* Add to cart notification animation */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .animate-fade-in-down {
+      animation: fadeInDown 0.5s ease-out forwards;
+    }
+    /* Customer View Button Styles - NEW RED THEME */
+    .btn-customer-primary {
+      background-color: #e50914; /* Vibrant Red */
+      color: #FFFFFF;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 28px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 14px 0 rgba(229, 9, 20, 0.3);
+    }
+    .btn-customer-primary:hover {
+      background-color: #f6121D;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px 0 rgba(229, 9, 20, 0.35);
+    }
+    .btn-customer-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 14px 0 rgba(229, 9, 20, 0.3);
+    }
+    .btn-customer-primary:disabled {
+      background-color: #D1D5DB;
+      color: #6B7280;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    /* Secondary Button */
+    .btn-customer-secondary {
+        background-color: #FFF;
+        color: #1f2937; 
+        font-family: 'Cairo', sans-serif;
+        font-weight: 600;
+        font-size: 16px;
+        border: 1px solid #E5E7EB; /* Light border */
+        border-radius: 8px;
+        padding: 12px 28px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px 0 rgba(0,0,0,0.05);
+    }
+    .btn-customer-secondary:hover {
+        background-color: #F9FAFB;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px 0 rgba(0,0,0,0.08);
+    }
+    .btn-customer-secondary:disabled {
+      background-color: #F3F4F6;
+      color: #9CA3AF;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      border-color: #E5E7EB;
+    }
+    /* Overrides for specific buttons if needed */
+    .btn-customer-black {
+      /* This class is now an alias for the primary button */
+    }
+    /* Custom Leaflet Marker Styles */
+    .leaflet-div-icon-custom {
+      background: transparent;
+      border: none;
+    }
+    /* Utility to hide scrollbars */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.5.0/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.3.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
+    "vite": "https://aistudiocdn.com/vite@^7.2.2",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.0",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "url": "https://aistudiocdn.com/url@^0.11.4"
+  }
+}
+</script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

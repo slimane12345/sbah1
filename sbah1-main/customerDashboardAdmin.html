@@ -1,0 +1,724 @@
+
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sbah1 - Customer Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
+        :root {
+            --background-light: #f7faff;
+            --background-dark: #1a202c;
+            --card-bg-light: #ffffff;
+            --card-bg-dark: #2d3748;
+            --text-light: #2d3748;
+            --text-dark: #e2e8f0;
+            --border-light: #e2e8f0;
+            --border-dark: #4a5568;
+        }
+        .light {
+            background-color: var(--background-light);
+            color: var(--text-light);
+        }
+        .dark {
+            background-color: var(--background-dark);
+            color: var(--text-dark);
+        }
+        .card {
+            background-color: var(--card-bg-light);
+            border: 1px solid var(--border-light);
+        }
+        .dark .card {
+            background-color: var(--card-bg-dark);
+            border-color: var(--border-dark);
+        }
+        .dark input, .dark select, .dark textarea {
+            background-color: #4a5568;
+            border-color: #718096;
+            color: #e2e8f0;
+        }
+        .sidebar-item.active { background-color: #4299e1; color: white; }
+        .modal { display: none; }
+        .modal.active { display: flex; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .dark ::-webkit-scrollbar-track { background: #2d3748; }
+        .dark ::-webkit-scrollbar-thumb { background: #4a5568; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #718096; }
+    </style>
+</head>
+<body class="transition-colors duration-300">
+
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-white dark:bg-gray-800 shadow-lg flex-shrink-0 transition-all duration-300 -translate-x-full md:translate-x-0">
+            <div class="p-4 border-b dark:border-gray-700 flex items-center justify-between">
+                <h1 class="text-xl font-bold text-blue-500">Sbah1 Admin</h1>
+                 <button id="close-sidebar-btn" class="md:hidden text-gray-500 dark:text-gray-400">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="p-4 space-y-2">
+                <a href="#dashboard" class="sidebar-item flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors active">
+                    <i class="fas fa-tachometer-alt w-5 text-center"></i><span>Dashboard</span>
+                </a>
+                <a href="#homepage" class="sidebar-item flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors">
+                    <i class="fas fa-home w-5 text-center"></i><span>Home Page</span>
+                </a>
+                <a href="#orders" class="sidebar-item flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors">
+                    <i class="fas fa-receipt w-5 text-center"></i><span>Orders</span>
+                </a>
+                <a href="#customers" class="sidebar-item flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors">
+                    <i class="fas fa-users w-5 text-center"></i><span>Customers</span>
+                </a>
+                <a href="#settings" class="sidebar-item flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-500 hover:text-white transition-colors">
+                    <i class="fas fa-cog w-5 text-center"></i><span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Header -->
+            <header class="card flex justify-between items-center p-4 shadow-sm z-10">
+                 <button id="menu-btn" class="text-gray-500 dark:text-gray-400 md:hidden">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="relative w-full max-w-xs">
+                    <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button id="theme-toggle" class="text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <img src="https://i.pravatar.cc/150?img=50" alt="Admin" class="w-8 h-8 rounded-full">
+                        <span class="hidden sm:inline">Admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="flex-1 p-4 md:p-6 overflow-y-auto">
+                <div id="content-container">
+                    <!-- Dashboard Section (Initially Active) -->
+                    <section id="dashboard-content" class="page-content space-y-6">
+                        <h2 class="text-2xl font-bold">Dashboard</h2>
+                        <div class="card p-6 rounded-lg">
+                            <h3 class="font-semibold text-lg mb-4">Welcome to your Dashboard!</h3>
+                            <p>Use the sidebar to manage different parts of your customer application.</p>
+                        </div>
+                    </section>
+                    
+                    <!-- Home Page Section -->
+                    <section id="homepage-content" class="page-content space-y-6 hidden">
+                        <h2 class="text-2xl font-bold">Home Page Management</h2>
+                        <div class="card p-6 rounded-lg">
+                            <h3 class="font-semibold text-lg mb-4">Homepage Banners</h3>
+                            <div id="banners-container" class="space-y-4"></div>
+                            <button id="add-banner-btn" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                <i class="fas fa-plus mr-2"></i>Add Banner
+                            </button>
+                        </div>
+                         <!-- Promo Offers -->
+                        <div class="card p-6 rounded-lg">
+                            <h3 class="font-semibold text-lg mb-4">Promo Offers</h3>
+                            <div id="offers-container" class="overflow-x-auto"></div>
+                            <button id="add-offer-btn" class="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                                <i class="fas fa-plus mr-2"></i>Add Offer
+                            </button>
+                        </div>
+                        <!-- Hero Section -->
+                        <div class="card p-6 rounded-lg">
+                            <h3 class="font-semibold text-lg mb-4">Hero Section</h3>
+                            <form id="hero-form" class="space-y-4">
+                                <div>
+                                    <label for="hero-title" class="block text-sm">Hero Title</label>
+                                    <input type="text" id="hero-title" class="mt-1 w-full border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label for="hero-subtitle" class="block text-sm">Hero Subtitle</label>
+                                    <input type="text" id="hero-subtitle" class="mt-1 w-full border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label for="hero-bgColor" class="block text-sm">Background Color</label>
+                                    <input type="color" id="hero-bgColor" class="mt-1 w-full h-10 rounded-md">
+                                </div>
+                                <button type="submit" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Save Hero Section</button>
+                            </form>
+                        </div>
+                    </section>
+
+                    <!-- Orders Section -->
+                    <section id="orders-content" class="page-content space-y-6 hidden">
+                        <h2 class="text-2xl font-bold">Orders Monitoring</h2>
+                        <div class="card rounded-lg overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-gray-100 dark:bg-gray-700">
+                                        <tr>
+                                            <th class="p-3">Order ID</th>
+                                            <th class="p-3">Customer</th>
+                                            <th class="p-3">Items</th>
+                                            <th class="p-3">Total</th>
+                                            <th class="p-3">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="orders-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Customers Section -->
+                    <section id="customers-content" class="page-content space-y-6 hidden">
+                        <h2 class="text-2xl font-bold">Customer Management</h2>
+                         <div class="card rounded-lg overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-gray-100 dark:bg-gray-700">
+                                        <tr>
+                                            <th class="p-3">Name</th>
+                                            <th class="p-3">Phone</th>
+                                            <th class="p-3">Last Order</th>
+                                            <th class="p-3">Status</th>
+                                            <th class="p-3">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customers-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Settings Section -->
+                    <section id="settings-content" class="page-content space-y-6 hidden">
+                        <h2 class="text-2xl font-bold">App Settings</h2>
+                        <div id="settings-form" class="card p-6 rounded-lg space-y-6">
+                            <div>
+                                <h3 class="font-semibold text-lg">Delivery</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                        <label for="baseFee" class="block text-sm">Base Delivery Fee (MAD)</label>
+                                        <input type="number" id="baseFee" class="mt-1 w-full border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label for="kmFee" class="block text-sm">Fee per KM (MAD)</label>
+                                        <input type="number" id="kmFee" class="mt-1 w-full border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label for="freeDeliveryMinimum" class="block text-sm">Free Delivery Minimum (MAD)</label>
+                                        <input type="number" id="freeDeliveryMinimum" class="mt-1 w-full border-gray-300 rounded-md">
+                                    </div>
+                                     <div>
+                                        <label for="minOrderPrice" class="block text-sm">Minimum Order Price (MAD)</label>
+                                        <input type="number" id="minOrderPrice" class="mt-1 w-full border-gray-300 rounded-md">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="border-t pt-6 dark:border-gray-700">
+                                <h3 class="font-semibold text-lg">Working Hours</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                        <label for="workingHours" class="block text-sm">Working Hours (e.g., 9:00 AM - 11:00 PM)</label>
+                                        <input type="text" id="workingHours" class="mt-1 w-full border-gray-300 rounded-md">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="border-t pt-6 dark:border-gray-700">
+                                <h3 class="font-semibold text-lg">UI Colors</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                                     <div>
+                                        <label for="primaryColor" class="block text-sm">Primary</label>
+                                        <input type="color" id="primaryColor" class="mt-1 w-full h-10 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label for="secondaryColor" class="block text-sm">Secondary</label>
+                                        <input type="color" id="secondaryColor" class="mt-1 w-full h-10 rounded-md">
+                                    </div>
+                                     <div>
+                                        <label for="buttonBgColor" class="block text-sm">Button Background</label>
+                                        <input type="color" id="buttonBgColor" class="mt-1 w-full h-10 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label for="textColor" class="block text-sm">Text</label>
+                                        <input type="color" id="textColor" class="mt-1 w-full h-10 rounded-md">
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="save-settings-btn" class="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600">Save Settings</button>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Banner Modal -->
+    <div id="banner-modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center p-4 z-50">
+        <div class="card rounded-lg w-full max-w-lg fade-in">
+            <form id="banner-form" class="p-6 space-y-4">
+                <h3 id="banner-modal-title" class="text-xl font-bold">Add Banner</h3>
+                <input type="hidden" id="banner-id">
+                <div>
+                    <label for="banner-title" class="block text-sm">Title</label>
+                    <input type="text" id="banner-title" class="mt-1 w-full border-gray-300 rounded-md" required>
+                </div>
+                 <div>
+                    <label for="banner-subtitle" class="block text-sm">Subtitle (Optional)</label>
+                    <input type="text" id="banner-subtitle" class="mt-1 w-full border-gray-300 rounded-md">
+                </div>
+                <div>
+                    <label for="banner-link" class="block text-sm">Link (e.g., /category/pizza)</label>
+                    <input type="text" id="banner-link" class="mt-1 w-full border-gray-300 rounded-md" required>
+                </div>
+                 <div>
+                    <label for="banner-image" class="block text-sm">Image</label>
+                    <input type="file" id="banner-image" class="mt-1 w-full text-sm">
+                    <img id="image-preview" src="" alt="Image Preview" class="mt-2 h-24 rounded-md hidden">
+                    <input type="hidden" id="banner-imageUrl">
+                </div>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" id="cancel-banner-btn" class="bg-gray-200 dark:bg-gray-600 px-4 py-2 rounded-lg">Cancel</button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Save Banner</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Offer Modal -->
+    <div id="offer-modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center p-4 z-50">
+        <div class="card rounded-lg w-full max-w-lg fade-in">
+            <form id="offer-form" class="p-6 space-y-4">
+                <h3 id="offer-modal-title" class="text-xl font-bold">Add Offer</h3>
+                <input type="hidden" id="offer-id">
+                <div>
+                    <label for="offer-code" class="block text-sm">Promo Code</label>
+                    <input type="text" id="offer-code" class="mt-1 w-full border-gray-300 rounded-md" required>
+                </div>
+                 <div>
+                    <label for="offer-description" class="block text-sm">Description</label>
+                    <textarea id="offer-description" class="mt-1 w-full border-gray-300 rounded-md" required></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="offer-type" class="block text-sm">Discount Type</label>
+                        <select id="offer-type" class="mt-1 w-full border-gray-300 rounded-md">
+                            <option value="percentage">Percentage</option>
+                            <option value="fixed">Fixed Amount</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label for="offer-value" class="block text-sm">Value</label>
+                        <input type="number" id="offer-value" class="mt-1 w-full border-gray-300 rounded-md" required>
+                    </div>
+                </div>
+                 <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="offer-validFrom" class="block text-sm">Valid From</label>
+                        <input type="date" id="offer-validFrom" class="mt-1 w-full border-gray-300 rounded-md" required>
+                    </div>
+                     <div>
+                        <label for="offer-validTo" class="block text-sm">Valid To</label>
+                        <input type="date" id="offer-validTo" class="mt-1 w-full border-gray-300 rounded-md" required>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-4 pt-4">
+                    <button type="button" id="cancel-offer-btn" class="bg-gray-200 dark:bg-gray-600 px-4 py-2 rounded-lg">Cancel</button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Save Offer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Spinner Overlay -->
+    <div id="spinner-overlay" class="modal fixed inset-0 bg-black bg-opacity-25 items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, getDoc, setDoc, updateDoc, deleteDoc, orderBy, query, where, Timestamp, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDKs7QQjax0FcogazrXOeSExrDxlVlfbBE",
+            authDomain: "sbah-ece2e.firebaseapp.com",
+            projectId: "sbah-ece2e",
+            storageBucket: "sbah-ece2e.appspot.com",
+            messagingSenderId: "1018203020293",
+            appId: "1:1018203020293:web:3adeab254fab74d234906c",
+            measurementId: "G-VKZFW5QPN6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const sidebar = document.getElementById('sidebar');
+        const menuBtn = document.getElementById('menu-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const themeToggle = document.getElementById('theme-toggle');
+        const sidebarItems = document.querySelectorAll('.sidebar-item');
+        const pageContents = document.querySelectorAll('.page-content');
+        const spinner = document.getElementById('spinner-overlay');
+
+        function showSpinner() { spinner.classList.add('active'); }
+        function hideSpinner() { spinner.classList.remove('active'); }
+
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            themeToggle.innerHTML = document.documentElement.classList.contains('dark') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        });
+
+        menuBtn.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
+        closeSidebarBtn.addEventListener('click', () => sidebar.classList.add('-translate-x-full'));
+        
+        sidebarItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = item.getAttribute('href').substring(1);
+                sidebarItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                pageContents.forEach(content => content.id === `${targetId}-content` ? content.classList.remove('hidden') : content.classList.add('hidden'));
+                if (window.innerWidth < 768) sidebar.classList.add('-translate-x-full');
+            });
+        });
+
+        // --- HOME PAGE MANAGEMENT ---
+        const layoutDocRef = doc(db, 'layout_settings', 'home_page');
+
+        // Banners
+        const bannersContainer = document.getElementById('banners-container');
+        const addBannerBtn = document.getElementById('add-banner-btn');
+        const bannerModal = document.getElementById('banner-modal');
+        const bannerForm = document.getElementById('banner-form');
+        const cancelBannerBtn = document.getElementById('cancel-banner-btn');
+        const imagePreview = document.getElementById('image-preview');
+        const bannerImageInput = document.getElementById('banner-image');
+        let currentBanners = [];
+
+        function renderBanners() {
+            bannersContainer.innerHTML = '';
+            currentBanners.forEach((banner, index) => {
+                const bannerEl = document.createElement('div');
+                bannerEl.className = 'card p-4 rounded-lg flex items-center justify-between gap-4';
+                bannerEl.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <img src="${banner.imageUrl}" class="w-20 h-12 object-cover rounded-md">
+                        <div>
+                            <p class="font-semibold">${banner.title}</p>
+                            <p class="text-xs text-gray-500">${banner.link}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="edit-banner-btn text-blue-500 hover:text-blue-700 mr-4" data-index="${index}"><i class="fas fa-edit"></i></button>
+                        <button class="remove-banner-btn text-red-500 hover:text-red-700" data-index="${index}"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                bannersContainer.appendChild(bannerEl);
+            });
+        }
+        
+        function openBannerModal(banner = null, index = -1) {
+            bannerForm.reset();
+            imagePreview.classList.add('hidden');
+            bannerForm['banner-id'].value = index;
+            if (banner) {
+                document.getElementById('banner-modal-title').textContent = 'Edit Banner';
+                bannerForm['banner-title'].value = banner.title;
+                bannerForm['banner-subtitle'].value = banner.subtitle || '';
+                bannerForm['banner-link'].value = banner.link;
+                bannerForm['banner-imageUrl'].value = banner.imageUrl;
+                imagePreview.src = banner.imageUrl;
+                imagePreview.classList.remove('hidden');
+            } else {
+                 document.getElementById('banner-modal-title').textContent = 'Add Banner';
+            }
+            bannerModal.classList.add('active');
+        }
+
+        addBannerBtn.addEventListener('click', () => openBannerModal());
+        cancelBannerBtn.addEventListener('click', () => bannerModal.classList.remove('active'));
+        bannerImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => { imagePreview.src = event.target.result; imagePreview.classList.remove('hidden'); }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        bannerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showSpinner();
+            const index = parseInt(bannerForm['banner-id'].value);
+            const title = bannerForm['banner-title'].value;
+            const subtitle = bannerForm['banner-subtitle'].value;
+            const link = bannerForm['banner-link'].value;
+            let imageUrl = bannerForm['banner-imageUrl'].value;
+
+            const imageFile = bannerImageInput.files[0];
+            if (imageFile) {
+                const storageRef = ref(storage, `banners/${Date.now()}_${imageFile.name}`);
+                await uploadBytes(storageRef, imageFile);
+                imageUrl = await getDownloadURL(storageRef);
+            }
+            
+            const bannerData = { id: `banner-${Date.now()}`, title, subtitle, link, imageUrl, enabled: true, order: index === -1 ? currentBanners.length + 1 : currentBanners[index].order };
+            
+            if (index > -1) {
+                currentBanners[index] = {...currentBanners[index], ...bannerData};
+            } else {
+                currentBanners.push(bannerData);
+            }
+            await setDoc(layoutDocRef, { banners: currentBanners }, { merge: true });
+            bannerModal.classList.remove('active');
+            hideSpinner();
+        });
+
+        bannersContainer.addEventListener('click', async (e) => {
+             const removeBtn = e.target.closest('.remove-banner-btn');
+             if (removeBtn) {
+                const index = removeBtn.dataset.index;
+                if (confirm('Are you sure you want to delete this banner?')) {
+                    showSpinner();
+                    currentBanners.splice(index, 1);
+                    await setDoc(layoutDocRef, { banners: currentBanners }, { merge: true });
+                    hideSpinner();
+                }
+             }
+             const editBtn = e.target.closest('.edit-banner-btn');
+             if (editBtn) {
+                 const index = editBtn.dataset.index;
+                 openBannerModal(currentBanners[index], index);
+             }
+        });
+
+        // Hero Section
+        const heroForm = document.getElementById('hero-form');
+        heroForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showSpinner();
+            const heroData = {
+                title: heroForm['hero-title'].value,
+                subtitle: heroForm['hero-subtitle'].value,
+                bgColor: heroForm['hero-bgColor'].value
+            };
+            await updateDoc(layoutDocRef, { hero: heroData });
+            hideSpinner();
+            alert('Hero section saved!');
+        });
+
+        // Offers
+        const offersContainer = document.getElementById('offers-container');
+        const addOfferBtn = document.getElementById('add-offer-btn');
+        const offerModal = document.getElementById('offer-modal');
+        const offerForm = document.getElementById('offer-form');
+        const cancelOfferBtn = document.getElementById('cancel-offer-btn');
+
+        function renderOffers(offers) {
+            offersContainer.innerHTML = `<table class="w-full text-sm text-left">
+                <thead class="bg-gray-100 dark:bg-gray-700">
+                    <tr><th class="p-2">Code</th><th class="p-2">Value</th><th class="p-2">Expires</th><th class="p-2">Actions</th></tr>
+                </thead>
+                <tbody>${offers.map(offer => `
+                    <tr class="border-b dark:border-gray-700">
+                        <td class="p-2 font-mono">${offer.code}</td>
+                        <td class="p-2">${offer.discountValue}${offer.discountType === 'percentage' ? '%' : ' MAD'}</td>
+                        <td class="p-2">${new Date(offer.validTo.toDate()).toLocaleDateString()}</td>
+                        <td class="p-2">
+                            <button class="edit-offer-btn text-blue-500" data-id="${offer.id}"><i class="fas fa-edit"></i></button>
+                            <button class="remove-offer-btn text-red-500 ml-2" data-id="${offer.id}"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`).join('')}
+                </tbody></table>`;
+        }
+
+        onSnapshot(query(collection(db, "offers"), orderBy("createdAt", "desc")), (snapshot) => {
+            renderOffers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+
+        const openOfferModal = async (offerId = null) => {
+            offerForm.reset();
+            offerForm['offer-id'].value = offerId || '';
+            if (offerId) {
+                document.getElementById('offer-modal-title').textContent = 'Edit Offer';
+                const offerSnap = await getDoc(doc(db, 'offers', offerId));
+                if (offerSnap.exists()) {
+                    const data = offerSnap.data();
+                    offerForm['offer-code'].value = data.code;
+                    offerForm['offer-description'].value = data.description;
+                    offerForm['offer-type'].value = data.discountType;
+                    offerForm['offer-value'].value = data.discountValue;
+                    offerForm['offer-validFrom'].value = data.validFrom.toDate().toISOString().split('T')[0];
+                    offerForm['offer-validTo'].value = data.validTo.toDate().toISOString().split('T')[0];
+                }
+            } else {
+                document.getElementById('offer-modal-title').textContent = 'Add Offer';
+            }
+            offerModal.classList.add('active');
+        };
+        addOfferBtn.addEventListener('click', () => openOfferModal());
+        cancelOfferBtn.addEventListener('click', () => offerModal.classList.remove('active'));
+
+        offerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showSpinner();
+            const id = offerForm['offer-id'].value;
+            const offerData = {
+                code: offerForm['offer-code'].value,
+                description: offerForm['offer-description'].value,
+                discountType: offerForm['offer-type'].value,
+                discountValue: parseFloat(offerForm['offer-value'].value),
+                validFrom: Timestamp.fromDate(new Date(offerForm['offer-validFrom'].value)),
+                validTo: Timestamp.fromDate(new Date(offerForm['offer-validTo'].value)),
+            };
+            if (id) {
+                await updateDoc(doc(db, 'offers', id), offerData);
+            } else {
+                await addDoc(collection(db, 'offers'), { ...offerData, createdAt: Timestamp.now(), usageCount: 0 });
+            }
+            offerModal.classList.remove('active');
+            hideSpinner();
+        });
+
+        offersContainer.addEventListener('click', async (e) => {
+            const editBtn = e.target.closest('.edit-offer-btn');
+            if (editBtn) openOfferModal(editBtn.dataset.id);
+            const removeBtn = e.target.closest('.remove-offer-btn');
+            if (removeBtn && confirm('Delete this offer?')) {
+                showSpinner();
+                await deleteDoc(doc(db, 'offers', removeBtn.dataset.id));
+                hideSpinner();
+            }
+        });
+        
+        // --- ORDERS MONITORING ---
+        const ordersTableBody = document.getElementById('orders-table-body');
+        onSnapshot(query(collection(db, "orders"), orderBy("createdAt", "desc"), limit(20)), (snapshot) => {
+            ordersTableBody.innerHTML = snapshot.docs.map(docSnap => {
+                const order = { id: docSnap.id, ...docSnap.data() };
+                return `<tr class="border-b dark:border-gray-700">
+                    <td class="p-3 font-medium text-blue-500">${order.orderNumber}</td>
+                    <td class="p-3">${order.customerName}</td>
+                    <td class="p-3">${order.items.length} items</td>
+                    <td class="p-3 font-semibold">${order.finalAmount.toFixed(2)} MAD</td>
+                    <td class="p-3">${order.status}</td>
+                </tr>`;
+            }).join('');
+        });
+
+        // --- CUSTOMER MANAGEMENT ---
+        const customersTableBody = document.getElementById('customers-table-body');
+        async function renderCustomers(users) {
+            let rows = '';
+            for (const user of users) {
+                const q = query(collection(db, "orders"), where("customerId", "==", user.id), orderBy("createdAt", "desc"), limit(1));
+                const lastOrderSnap = await getDocs(q);
+                const lastOrderDate = lastOrderSnap.empty ? 'N/A' : lastOrderSnap.docs[0].data().createdAt.toDate().toLocaleDateString();
+                
+                rows += `<tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="p-3 font-medium">${user.fullName || user.phone || 'N/A'}</td>
+                    <td class="p-3">${user.phone || 'N/A'}</td>
+                    <td class="p-3">${lastOrderDate}</td>
+                    <td class="p-3">${user.isBlocked ? '<span class="text-red-500 font-bold">Blocked</span>' : '<span class="text-green-500">Active</span>'}</td>
+                    <td class="p-3">
+                        <button data-id="${user.id}" class="toggle-block-btn text-white px-3 py-1 rounded-md text-xs ${user.isBlocked ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}">
+                            ${user.isBlocked ? 'Unblock' : 'Block'}
+                        </button>
+                    </td>
+                </tr>`;
+            }
+            customersTableBody.innerHTML = rows;
+        }
+        
+        onSnapshot(query(collection(db, "users")), (snapshot) => {
+            const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderCustomers(users);
+        });
+
+        customersTableBody.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.toggle-block-btn');
+            if (btn) {
+                showSpinner();
+                const userRef = doc(db, 'users', btn.dataset.id);
+                const userSnap = await getDoc(userRef);
+                await updateDoc(userRef, { isBlocked: !userSnap.data().isBlocked });
+                hideSpinner();
+            }
+        });
+
+        // --- SETTINGS ---
+        const saveSettingsBtn = document.getElementById('save-settings-btn');
+        const settingsRef = doc(db, 'settings', 'appSettings');
+        
+        async function loadSettings() {
+            const docSnap = await getDoc(settingsRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                document.getElementById('baseFee').value = data.delivery?.baseFee ?? '';
+                document.getElementById('kmFee').value = data.delivery?.kmFee ?? '';
+                document.getElementById('freeDeliveryMinimum').value = data.delivery?.freeDeliveryMinimum ?? '';
+                document.getElementById('minOrderPrice').value = data.minOrderPrice ?? '';
+                document.getElementById('workingHours').value = data.workingHours ?? '';
+                document.getElementById('primaryColor').value = data.colors?.primary ?? '#000000';
+                document.getElementById('secondaryColor').value = data.colors?.secondary ?? '#000000';
+                document.getElementById('buttonBgColor').value = data.colors?.buttonBg ?? '#000000';
+                document.getElementById('textColor').value = data.colors?.text ?? '#000000';
+            }
+        }
+        
+        saveSettingsBtn.addEventListener('click', async () => {
+            showSpinner();
+            const settingsData = {
+                delivery: {
+                    baseFee: parseFloat(document.getElementById('baseFee').value) || 0,
+                    kmFee: parseFloat(document.getElementById('kmFee').value) || 0,
+                    freeDeliveryMinimum: parseFloat(document.getElementById('freeDeliveryMinimum').value) || 0,
+                },
+                minOrderPrice: parseFloat(document.getElementById('minOrderPrice').value) || 0,
+                workingHours: document.getElementById('workingHours').value,
+                colors: {
+                    primary: document.getElementById('primaryColor').value,
+                    secondary: document.getElementById('secondaryColor').value,
+                    buttonBg: document.getElementById('buttonBgColor').value,
+                    text: document.getElementById('textColor').value,
+                }
+            };
+            await setDoc(settingsRef, settingsData, { merge: true });
+            hideSpinner();
+            alert('Settings saved successfully!');
+        });
+        
+        // --- INITIAL DATA LOAD ---
+        function initializeDashboard() {
+            hideSpinner();
+            onSnapshot(layoutDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    currentBanners = data.banners || [];
+                    renderBanners();
+                    if (data.hero) {
+                        heroForm['hero-title'].value = data.hero.title || '';
+                        heroForm['hero-subtitle'].value = data.hero.subtitle || '';
+                        heroForm['hero-bgColor'].value = data.hero.bgColor || '#FFFFFF';
+                    }
+                }
+            });
+            loadSettings();
+        }
+
+        initializeDashboard();
+    </script>
+</body>
+</html>

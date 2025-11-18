@@ -1,0 +1,21 @@
+{
+  "name": "Sbah ☀️",
+  "short_name": "Sbah",
+  "description": "اطلب فطورك اليومي بكل سهولة من أفضل المطاعم في مدينتك.",
+  "start_url": "/customer.html",
+  "display": "standalone",
+  "background_color": "#FFF9E6",
+  "theme_color": "#FC883A",
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/assets/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

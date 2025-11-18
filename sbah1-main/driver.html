@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sbah ☀️ - واجهة الموزع</title>
+  <link rel="manifest" href="/driver-manifest.json">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Global Leaflet icon fix
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    body { font-family: 'Cairo', sans-serif; }
+    .leaflet-div-icon-custom { background: transparent; border: none; }
+     /* Add to cart notification animation */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px) translateX(50%);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) translateX(50%);
+      }
+    }
+    .animate-fade-in-down {
+      animation: fadeInDown 0.5s ease-out forwards;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module">
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/driver-sw.js')
+          .then(registration => console.log('Driver Service Worker registered with scope:', registration.scope))
+          .catch(err => console.error('Driver Service Worker registration failed:', err));
+      });
+    }
+  </script>
+  <script type="module" src="/driver.tsx"></script>
+</body>
+</html>
